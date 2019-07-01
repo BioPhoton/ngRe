@@ -20,7 +20,10 @@ import {map} from 'rxjs/operators';
         primitiveInterval$ | push: {{primitiveInterval$ | push}}
       </div>
       <div *ngIf="dV.mutable">
-        mutableInterval$ | push: {{(mutableInterval$ | push:false)?.value}}
+        mutableInterval$ | push: {{(mutableInterval$ | push)?.value}}
+      </div>
+      <div *ngIf="dV.mutableArgs">
+        mutableInterval$ | push:false: {{(mutableInterval$ | push:false)?.value}}
       </div>
       <div *ngIf="dV.immutable">
         immutableInterval$ | push: {{(immutableInterval$ | push)?.value}}
@@ -39,6 +42,7 @@ export class ContainerComponent {
     async: false,
     primitive: false,
     mutable: false,
+    mutableArgs: false,
     immutable: false,
     input: false
   };
