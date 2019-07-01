@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {timer} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {map, shareReplay} from 'rxjs/operators';
 
 @Component({
   selector: 'app-container',
@@ -13,6 +13,10 @@ import {map} from 'rxjs/operators';
         {{v.key}}
       </button>
       <br>
+      <button (click)="isNew = !isNew">
+        onlyNewRefs: {{isNew}}
+      </button>
+      <br>
       <div *ngIf="dV.async">
         async-pipe: {{primitiveInterval$ | async}}
       </div>
@@ -23,7 +27,7 @@ import {map} from 'rxjs/operators';
         mutableInterval$ | push: {{(mutableInterval$ | push)?.value}}
       </div>
       <div *ngIf="dV.mutableArgs">
-        mutableInterval$ | push:false: {{(mutableInterval$ | push:false)?.value}}
+        mutableInterval$ | push:forwardOnlyNewRefs: {{(mutableInterval$ | push:isNew)?.value}}
       </div>
       <div *ngIf="dV.immutable">
         immutableInterval$ | push: {{(immutableInterval$ | push)?.value}}
@@ -47,8 +51,10 @@ export class ContainerComponent {
     input: false
   };
 
+  isNew = true;
+
   mutualData = {value: 0};
-  primitiveInterval$ = timer(0, 1000);
+  primitiveInterval$ = timer(0, 1000).pipe(shareReplay(1));
   mutableInterval$ = this.primitiveInterval$.pipe(
     map(value => {
       this.mutualData.value = value;

@@ -1,6 +1,6 @@
 import {ChangeDetectorRef, OnDestroy, Pipe, PipeTransform} from '@angular/core';
-import {isObservable, Observable, of, Subject} from 'rxjs';
-import {distinctUntilChanged, map, switchAll, takeUntil, tap, withLatestFrom} from 'rxjs/operators';
+import {combineLatest, isObservable, Observable, of, Subject} from 'rxjs';
+import {distinctUntilChanged, map, switchAll, takeUntil, tap} from 'rxjs/operators';
 import {detectChanges} from './detectChanges';
 
 /**
@@ -18,34 +18,44 @@ import {detectChanges} from './detectChanges';
 export class PushPipe implements PipeTransform, OnDestroy {
   private value: any = null;
 
-  checkReference$$ = new Subject<boolean>();
   ngOnDestroy$$ = new Subject<boolean>();
-  observablesToSubscribe$ = new Subject<Observable<any>>();
 
-  handleChangesSideEffect$ = this.observablesToSubscribe$.pipe(
-    // only forward new references (avoids holding a local reference to the previous observable => this.currentObs !== obs)
-    distinctUntilChanged(),
-
-    // if onPush === true then check if value is referentially equal to previous
-    withLatestFrom(this.checkReference$$),
-    map(([o$, checkReference]) => checkReference ? o$.pipe(distinctUntilChanged()) : o$),
-
-    // trigger change detection for new observables bound in the template
-    detectChanges(this.cdRef),
-
-    // unsubscribe from previous observables
-    // then flatten the latest internal observables into the output
-    switchAll(),
-
-    // assign value
-    tap(v => this.value = v),
-
-    // trigger change detection for distinct values
-    detectChanges(this.cdRef),
-
-    // unsubscribe if component gets destroyed
-    takeUntil(this.ngOnDestroy$$)
+  checkReference$$ = new Subject<boolean>();
+  checkReference$ = this.checkReference$$.pipe(
+    // only forward distinct values
+    distinctUntilChanged()
   );
+
+  observablesToSubscribe$$ = new Subject<Observable<any>>();
+  observablesToSubscribe$ = this.observablesToSubscribe$$
+    .pipe(
+      // only forward new references (avoids holding a local reference to the previous observable => this.currentObs !== obs)
+      distinctUntilChanged(),
+      // trigger change detection for new observables bound in the template
+      detectChanges(this.cdRef)
+    );
+
+  handleChangesSideEffect$ = combineLatest(
+    this.observablesToSubscribe$,
+    this.checkReference$
+  )
+    .pipe(
+      // if onPush === true then check if value is referentially equal to previous
+      map(([o$, checkReference]) => checkReference ? o$.pipe(distinctUntilChanged()) : o$),
+
+      // unsubscribe from previous observables
+      // then flatten the latest internal observables into the output
+      switchAll(),
+
+      // assign value that will get returned from the transform function on the next change detection
+      tap(v => this.value = v),
+
+      // trigger change detection for the to get the newly assigned value rendered
+      detectChanges(this.cdRef),
+
+      // unsubscribe if component gets destroyed
+      takeUntil(this.ngOnDestroy$$)
+    );
 
   constructor(private cdRef: ChangeDetectorRef) {
     this.handleChangesSideEffect$
@@ -62,7 +72,7 @@ export class PushPipe implements PipeTransform, OnDestroy {
   transform<T>(obs: Observable<T>, forwardOnlyNewReferences: boolean): T;
   transform<T>(obs: Observable<T> | null | undefined, forwardOnlyNewReferences = true): T | null {
     this.checkReference$$.next(forwardOnlyNewReferences);
-    this.observablesToSubscribe$.next(!isObservable(obs) ? of(null) : obs);
+    this.observablesToSubscribe$$.next(!isObservable(obs) ? of(null) : obs);
     return this.value;
   }
 }
