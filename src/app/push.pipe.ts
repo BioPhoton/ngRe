@@ -40,8 +40,8 @@ export class PushPipe implements PipeTransform, OnDestroy {
     this.checkReference$
   )
     .pipe(
-      // if onPush === true then check if value is referentially equal to previous
-      map(([o$, checkReference]) => checkReference ? o$.pipe(distinctUntilChanged()) : o$),
+      // if checkReference is truesy then check if value is referentially equal to previous
+      map<any, any>(([o$, checkReference]) => checkReference ? o$.pipe(distinctUntilChanged()) : o$),
 
       // unsubscribe from previous observables
       // then flatten the latest internal observables into the output
