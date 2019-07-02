@@ -26,6 +26,7 @@ export class PushPipe implements PipeTransform, OnDestroy {
     distinctUntilChanged()
   );
 
+  // @TODO fix any types
   observablesToSubscribe$$ = new Subject<Observable<any>>();
   observablesToSubscribe$ = this.observablesToSubscribe$$
     .pipe(
@@ -41,6 +42,7 @@ export class PushPipe implements PipeTransform, OnDestroy {
   )
     .pipe(
       // if checkReference is truesy then check if value is referentially equal to previous
+      // @TODO fix any types
       map<any, any>(([o$, checkReference]) => checkReference ? o$.pipe(distinctUntilChanged()) : o$),
 
       // unsubscribe from previous observables
