@@ -3,7 +3,7 @@ import {timer} from 'rxjs';
 import {map, shareReplay} from 'rxjs/operators';
 
 @Component({
-  selector: 'app-container',
+  selector: 'app-push-pipe',
   template: `
     <div>
       <button
@@ -41,7 +41,7 @@ import {map, shareReplay} from 'rxjs/operators';
     </div>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ContainerComponent {
+export class PushPipeContainerComponent {
   dV = {
     async: false,
     primitive: false,
