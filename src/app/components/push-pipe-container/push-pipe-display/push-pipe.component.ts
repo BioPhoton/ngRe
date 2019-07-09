@@ -7,7 +7,6 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
       value: {{value | json}}
     </p>
   `,
-  styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PushPipeComponent {

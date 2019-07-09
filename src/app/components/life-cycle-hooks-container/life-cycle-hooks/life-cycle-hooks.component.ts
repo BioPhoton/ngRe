@@ -2,7 +2,8 @@ import {
   AfterContentChecked,
   AfterContentInit,
   AfterViewChecked,
-  AfterViewInit, ChangeDetectionStrategy,
+  AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   DoCheck,
   Input,
@@ -12,24 +13,18 @@ import {
   SimpleChanges
 } from '@angular/core';
 import {Observable} from 'rxjs';
-import {take} from 'rxjs/operators';
-import {hook$} from '../../reactive-hook';
+import {hook$} from '../../../addons/decorators/hook';
 
 @Component({
   selector: 'app-reactive-lifecycle-hooks',
   template: `
-    <p>
-      reactive-lifecycle-hooks works!
-    </p>
+    <p>reactive-lifecycle-hooks works!</p>
     {{state | json}}
   `,
-  styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ReactiveLifeCycleHooksComponent implements OnChanges, DoCheck, OnInit, AfterViewInit,
+export class LifeCycleHooksComponent implements OnChanges, DoCheck, OnInit, AfterViewInit,
   AfterViewChecked, AfterContentInit, AfterContentChecked, OnDestroy {
-
-  @Input() state;
 
   @hook$('doCheck') doCheck$: Observable<void>;
   @hook$('onChanges') onChanges$: Observable<SimpleChanges>;
@@ -40,13 +35,15 @@ export class ReactiveLifeCycleHooksComponent implements OnChanges, DoCheck, OnIn
   @hook$('afterViewInit') afterViewInit$: Observable<void>;
   @hook$('onDestroy') onDestroy$: Observable<void>;
 
+  @Input() state;
+
   constructor() {
-    this.doCheck$.pipe(take(10)).subscribe(v => console.log('doCheck$', v));
-    this.onChanges$.pipe(take(10)).subscribe(v => console.log('onChanges$', v));
+    this.doCheck$.subscribe(v => console.log('doCheck$', v));
+    this.onChanges$.subscribe(v => console.log('onChanges$', v));
     this.onInit$.subscribe(v => console.log('onInit$', v));
-    this.afterContentChecked$.pipe(take(100)).subscribe(v => console.log('afterContentChecked$', v));
+    this.afterContentChecked$.subscribe(v => console.log('afterContentChecked$', v));
     this.afterContentInit$.subscribe(v => console.log('afterContentInit$', v));
-    this.afterViewChecked$.pipe(take(100)).subscribe(v => console.log('afterViewChecked$', v));
+    this.afterViewChecked$.subscribe(v => console.log('afterViewChecked$', v));
     this.afterViewInit$.subscribe(v => console.log('afterViewInit$', v));
     this.onDestroy$.subscribe(v => console.log('onDestroy$', v));
 

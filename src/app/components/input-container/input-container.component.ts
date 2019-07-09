@@ -1,6 +1,7 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
 import {interval} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {map, tap} from 'rxjs/operators';
+import {detectChanges} from '../../addons/rxjs/operators/detectChanges';
 
 @Component({
   selector: 'app-input-container',
@@ -11,23 +12,23 @@ import {map} from 'rxjs/operators';
     <pre>
       {{state$ | push | json}}
     </pre>
+    <!-- switch to push pipe after ivy fix -->
     <app-input [state]="state$ | async"></app-input>
   `,
-  styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InputContainerComponent implements OnInit {
+export class InputContainerComponent implements AfterViewInit {
 
   state$ = interval(1000)
     .pipe(
       map(value => ({value}))
     );
 
-  constructor(private cdr: ChangeDetectorRef) {
+  constructor() {
+
   }
 
-  ngOnInit() {
-    this.cdr.detectChanges();
+  ngAfterViewInit(): void {
+    console.log('InputContainerComponent ngAfterViewInit');
   }
-
 }

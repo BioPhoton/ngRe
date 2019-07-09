@@ -1,21 +1,19 @@
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
-import {interval, Observable, timer} from 'rxjs';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {timer} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {hook$} from '../reactive-hook';
 
 @Component({
   selector: 'app-reactive-life-cycle-hooks-container',
   template: `
-    <h1>
+    <p>
       reactive-lifecycle-hooks-container works!
-    </h1>
+    </p>
     {{state$ | push | json}}
     <app-reactive-lifecycle-hooks [state]="state$ | async"></app-reactive-lifecycle-hooks>
   `,
-  styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ReactiveLifeCycleHooksContainerComponent implements OnInit {
+export class LifeCycleHooksContainerComponent {
 
   initialState = {
     value: 0,
@@ -30,13 +28,7 @@ export class ReactiveLifeCycleHooksContainerComponent implements OnInit {
       }))
     );
 
-  @hook$('onInit') onInit$: Observable<void>;
   constructor() {
-    this.onInit$.subscribe(console.log);
-  }
-
-  ngOnInit() {
-    console.log('adfangOnInitngOnInitngOnInitngOnInitngOnInitngOnInitdsfsdafasfasdfas');
   }
 
 }

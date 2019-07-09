@@ -40,8 +40,8 @@
           "options": {
             "outputPath": "dist/reactiveAddons",
             "index": "src/index.html",
-            "main": "src/main-no-zone.ts",
-            "polyfills": "src/polyfills-no-zone.ts",
+            "main": "src/main.ts",
+            "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "aot": true,
             "assets": [

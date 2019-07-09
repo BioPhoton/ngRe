@@ -32,7 +32,7 @@ export function hook$(hookName: string): Function {
   ) => {
     const subject = new Subject();
     const cDef: ComponentDef<any> = component.constructor[NG_COMPONENT_DEF];
-
+    console.log('hook$', hookName);
     const target = hooksWrapped[hookName] ? component : cDef;
     const hook = hooksWrapped[hookName] ? getCompHookName(hookName) : hookName;
     // @TODO fix case for ngOnChanges not implemented

@@ -1,4 +1,6 @@
-import {AfterViewInit, ChangeDetectorRef, Component} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
+import {NavigationEnd, Router} from '@angular/router';
+import {filter} from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -8,30 +10,36 @@ import {AfterViewInit, ChangeDetectorRef, Component} from '@angular/core';
         <a routerLink="push-pipe">PushPipe</a>
       </li>
       <li>
-        <a routerLink="live-cycle-hooks">ReactiveLifeCycleHooks</a>
+        <a routerLink="live-cycle-hooks">LifeCycleHooks</a>
       </li>
       <li>
         <a routerLink="input">Input</a>
       </li>
       <li>
-        <a routerLink="from-view">FromView</a>
+        <a routerLink="output">Output</a>
       </li>
     </ul>
     <router-outlet></router-outlet>
-  `
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements AfterViewInit {
 
-  constructor(private cd: ChangeDetectorRef) {
+  constructor(private cd: ChangeDetectorRef, private router: Router) {
 
+    router.events
+      .pipe(
+        filter(e => e instanceof NavigationEnd),
+        // tap(_ => detectChanges(this.cd))
+      )
+      .subscribe(console.log);
   }
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      console.log('ngAfterViewInit');
+      console.log('AppComponent ngAfterViewInit');
       this.cd.detectChanges();
-    }, 100);
-
+    }, 1000);
   }
 
 }

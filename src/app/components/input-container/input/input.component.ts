@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {Observable, pipe, UnaryFunction} from 'rxjs';
-import {distinctUntilChanged, map} from 'rxjs/operators';
-import {hook$} from '../../reactive-hook';
+import {AfterViewInit, ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+// import {Observable} from 'rxjs';
+// import {hook$} from '../../../addons/decorators/hook';
+// import {getChange} from '../../../addons/rxjs/operators/getChange';
 
 @Component({
   selector: 'app-input',
@@ -12,35 +12,30 @@ import {hook$} from '../../reactive-hook';
     <pre>
       state: {{state | json}}
     </pre>
-    <pre>
+    <!--<pre>
       state$: {{state$ | push | json}}
-    </pre>
+    </pre>-->
   `,
-  styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InputComponent implements OnChanges {
+export class InputComponent implements OnChanges, AfterViewInit {
+
+  // @hook$('onChanges') onChanges$: Observable<SimpleChanges>;
 
   @Input() state: { value: number };
-
-  @hook$('onChanges') onChanges$: Observable<SimpleChanges>;
-
-  state$: Observable<{ value: number }> = this.onChanges$
-    .pipe(this.fromInput('state'));
+  // state$: Observable<{ value: number }> = this.onChanges$.pipe(getChange('state'));
 
   constructor() {
 
   }
 
+  // @TODO remove after fixed reactive hooks
   ngOnChanges(changes: SimpleChanges): void {
 
   }
 
-
-  fromInput(prop: string): UnaryFunction {
-    return pipe(
-      map((change: SimpleChanges) => change[prop].currentValue),
-      distinctUntilChanged()
-    );
+  ngAfterViewInit(): void {
+    console.log('InputComponent ngAfterViewInit');
   }
+
 }

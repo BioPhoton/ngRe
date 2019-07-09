@@ -6,12 +6,12 @@ import {PushPipe} from './addons/pipes/push.pipe';
 import {AppComponent} from './app.component';
 import {InputContainerComponent} from './components/input-container/input-container.component';
 import {InputComponent} from './components/input-container/input/input.component';
-import {OutputBindingContainerComponent} from './components/output-binding-container/output-binding-container.component';
-import {OutputBindingComponent} from './components/output-binding-container/output-binding/output-binding.component';
+import {OutputContainerComponent} from './components/output-container/output-container.component';
+import {OutputComponent} from './components/output-container/output/output.component';
 import {PushPipeContainerComponent} from './components/push-pipe-container/push-pipe-container.component';
 import {PushPipeComponent} from './components/push-pipe-container/push-pipe-display/push-pipe.component';
-import {ReactiveLifeCycleHooksContainerComponent} from './components/reactive-life-cycle-hooks-container/reactive-life-cycle-hooks-container.component';
-import {ReactiveLifeCycleHooksComponent} from './components/reactive-life-cycle-hooks-container/reactive-life-cycle-hooks/reactive-life-cycle-hooks.component';
+// import {LifeCycleHooksContainerComponent} from './components/life-cycle-hooks-container/life-cycle-hooks-container.component';
+// import {LifeCycleHooksComponent} from './components/life-cycle-hooks-container/life-cycle-hooks/life-cycle-hooks.component';
 
 @NgModule({
   declarations: [
@@ -19,10 +19,10 @@ import {ReactiveLifeCycleHooksComponent} from './components/reactive-life-cycle-
     PushPipeContainerComponent,
     PushPipeComponent,
     PushPipe,
-    ReactiveLifeCycleHooksContainerComponent,
-    ReactiveLifeCycleHooksComponent,
-    OutputBindingContainerComponent,
-    OutputBindingComponent,
+   // LifeCycleHooksContainerComponent,
+   // LifeCycleHooksComponent,
+    OutputContainerComponent,
+    OutputComponent,
     InputContainerComponent,
     InputComponent
   ],
@@ -33,17 +33,17 @@ import {ReactiveLifeCycleHooksComponent} from './components/reactive-life-cycle-
         path: 'push-pipe',
         component: PushPipeContainerComponent
       },
-      {
+     /* {
         path: 'live-cycle-hooks',
-        component: ReactiveLifeCycleHooksContainerComponent
-      },
+        component: LifeCycleHooksContainerComponent
+      },*/
       {
         path: 'input',
         component: InputContainerComponent
       },
       {
-        path: 'from-view',
-        component: OutputBindingContainerComponent
+        path: 'output',
+        component: OutputContainerComponent
       }
     ])
   ],
