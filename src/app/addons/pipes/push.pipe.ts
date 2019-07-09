@@ -1,7 +1,7 @@
 import {ChangeDetectorRef, OnDestroy, Pipe, PipeTransform} from '@angular/core';
 import {combineLatest, isObservable, Observable, of, Subject} from 'rxjs';
 import {distinctUntilChanged, map, switchAll, takeUntil, tap} from 'rxjs/operators';
-import {detectChanges} from './detectChanges';
+import {detectChanges} from '../rxjs/operators/detectChanges';
 
 /**
  * @description
@@ -31,9 +31,7 @@ export class PushPipe implements PipeTransform, OnDestroy {
   observablesToSubscribe$ = this.observablesToSubscribe$$
     .pipe(
       // only forward new references (avoids holding a local reference to the previous observable => this.currentObs !== obs)
-      distinctUntilChanged(),
-      // trigger change detection for new observables bound in the template
-      detectChanges(this.cdRef)
+      distinctUntilChanged()
     );
 
   handleChangesSideEffect$ = combineLatest(

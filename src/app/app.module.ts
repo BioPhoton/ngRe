@@ -1,22 +1,30 @@
 import {NgModule} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
 import {RouterModule} from '@angular/router';
+import {PushPipe} from './addons/pipes/push.pipe';
 
 import {AppComponent} from './app.component';
-import {PushPipeContainerComponent} from './push-pipe-container/push-pipe-container.component';
-import {PushPipeDisplayComponent} from './push-pipe-container/push-pipe-display/push-pipe-display.component';
-import {PushPipe} from './push.pipe';
-import {ReactiveLifeCycleHooksContainerComponent} from './reactive-life-cycle-hooks-container/reactive-life-cycle-hooks-container.component';
-import {ReactiveLifeCycleHooksComponent} from './reactive-life-cycle-hooks-container/reactive-life-cycle-hooks/reactive-life-cycle-hooks.component';
+import {InputContainerComponent} from './components/input-container/input-container.component';
+import {InputComponent} from './components/input-container/input/input.component';
+import {OutputBindingContainerComponent} from './components/output-binding-container/output-binding-container.component';
+import {OutputBindingComponent} from './components/output-binding-container/output-binding/output-binding.component';
+import {PushPipeContainerComponent} from './components/push-pipe-container/push-pipe-container.component';
+import {PushPipeComponent} from './components/push-pipe-container/push-pipe-display/push-pipe.component';
+import {ReactiveLifeCycleHooksContainerComponent} from './components/reactive-life-cycle-hooks-container/reactive-life-cycle-hooks-container.component';
+import {ReactiveLifeCycleHooksComponent} from './components/reactive-life-cycle-hooks-container/reactive-life-cycle-hooks/reactive-life-cycle-hooks.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     PushPipeContainerComponent,
-    PushPipeDisplayComponent,
+    PushPipeComponent,
     PushPipe,
     ReactiveLifeCycleHooksContainerComponent,
-    ReactiveLifeCycleHooksComponent
+    ReactiveLifeCycleHooksComponent,
+    OutputBindingContainerComponent,
+    OutputBindingComponent,
+    InputContainerComponent,
+    InputComponent
   ],
   imports: [
     BrowserModule,
@@ -28,6 +36,14 @@ import {ReactiveLifeCycleHooksComponent} from './reactive-life-cycle-hooks-conta
       {
         path: 'live-cycle-hooks',
         component: ReactiveLifeCycleHooksContainerComponent
+      },
+      {
+        path: 'input',
+        component: InputContainerComponent
+      },
+      {
+        path: 'from-view',
+        component: OutputBindingContainerComponent
       }
     ])
   ],

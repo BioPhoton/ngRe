@@ -10,7 +10,7 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
   styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PushPipeDisplayComponent {
+export class PushPipeComponent {
 
   @Input() value;
 

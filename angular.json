@@ -40,8 +40,8 @@
           "options": {
             "outputPath": "dist/reactiveAddons",
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "main": "src/main-no-zone.ts",
+            "polyfills": "src/polyfills-no-zone.ts",
             "tsConfig": "tsconfig.app.json",
             "aot": true,
             "assets": [
@@ -77,6 +77,10 @@
                   "maximumError": "5mb"
                 }
               ]
+            },
+            "noZone": {
+              "main": "src/main-no-zone.ts",
+              "polyfills": "src/polyfills-no-zone.ts"
             }
           }
         },
@@ -88,6 +92,9 @@
           "configurations": {
             "production": {
               "browserTarget": "reactiveAddons:build:production"
+            },
+            "noZone": {
+              "browserTarget": "reactiveAddons:build:noZone"
             }
           }
         },
