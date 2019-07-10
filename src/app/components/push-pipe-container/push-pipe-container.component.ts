@@ -1,17 +1,21 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component} from '@angular/core';
-import {Observable, Subject, timer} from 'rxjs';
-import {map, scan, shareReplay, startWith, withLatestFrom} from 'rxjs/operators';
+import {defer, from, fromEvent, interval, Observable, timer} from 'rxjs';
+import {distinctUntilChanged, map, mergeAll, shareReplay, switchMap, withLatestFrom} from 'rxjs/operators';
+import {LocalState} from '../../addons/state/local-state';
+
+interface ButtonState {
+  async: boolean;
+  primitive: boolean;
+  mutable: boolean;
+  mutableArgs: boolean;
+  immutable: boolean;
+  input: boolean;
+}
 
 interface ViewState {
+  num: number;
   isNew: boolean;
-  buttons: {
-    async: boolean,
-    primitive: boolean,
-    mutable: boolean,
-    mutableArgs: boolean,
-    immutable: boolean,
-    input: boolean
-  };
+  buttons: ButtonState;
 }
 
 
@@ -23,15 +27,13 @@ interface ViewState {
       <button
         *ngFor="let v of state.buttons | keyvalue"
         [id]="v.key"
-        (click)="buttonIdClicks$$.next(v.key)"
         [style.fontWeight]="state.buttons[v.key] ? 'bold' : ''">
         {{v.key}}
       </button>
       <br>
-      <!-- <button (click)="viewCommand$$.isNew">
-         onlyNewRefs: {{isNew}}
-       </button>
-       -->
+      <button id="isNew">
+        onlyNewRefs: {{state.isNew}}
+      </button>
       <br>
       <div *ngIf="state.buttons as buttons">
         <div *ngIf="buttons.async">
@@ -63,8 +65,9 @@ interface ViewState {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PushPipeContainerComponent implements AfterViewInit {
-  mutualData = {value: 0};
+  // STATE
   initState: ViewState = {
+    num: 0,
     isNew: false,
     buttons: {
       async: false,
@@ -75,17 +78,40 @@ export class PushPipeContainerComponent implements AfterViewInit {
       input: false
     }
   };
+  localState = new LocalState<ViewState>(this.initState);
 
-  viewCommand$$ = new Subject();
-  viewCommand$: Observable<any> = this.viewCommand$$.asObservable();
-  viewState$: Observable<ViewState> = this.viewCommand$
+  // QUERIES
+  viewState$: Observable<ViewState> = this.localState.state$;
+  isNew$: Observable<boolean> = this.localState.state$
+    .pipe(map(s => s.isNew));
+  buttons$: Observable<ButtonState> = this.localState.state$
+    .pipe(map(s => s.buttons));
+
+  // COMMANDS
+  // @TODO why defer here?
+  isNewCommand$ = defer(() => fromEvent(document.getElementById('isNew'), 'click')
     .pipe(
-      startWith(this.initState),
-      scan((s, c) => ({...s, ...c})),
-      shareReplay(1)
+      withLatestFrom(this.isNew$, (_, isNew) => isNew),
+      map((isNew: boolean) => !isNew)
+    )
+  );
+  buttonIdClicks$ = this.buttons$.pipe(
+    distinctUntilChanged(),
+    switchMap(buttonState => this.getButtonClickAsId(Object.keys(buttonState)))
+  );
+  updateButtonStateCommand$: any = this.buttonIdClicks$
+    .pipe(
+      withLatestFrom(
+        this.buttons$,
+        (id: string, buttons) => ({
+          ...buttons,
+          [id]: !buttons[id]
+        })
+      )
     );
 
-  buttonIdClicks$$ = new Subject();
+  // OBSERVABLE TESTS
+  mutualData = {value: 0};
   primitiveInterval$ = timer(0, 100).pipe(shareReplay(1));
   mutableInterval$ = this.primitiveInterval$.pipe(
     map(value => {
@@ -101,21 +127,20 @@ export class PushPipeContainerComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.buttonIdClicks$$
-      .pipe(
-        withLatestFrom(
-          this.viewState$,
-          (id: string, state) => ({
-            ...state,
-            buttons: {
-              ...state.buttons,
-              [id]: !state.buttons[id]
-            }
-          })
-        )
-      )
-      .subscribe(v => this.viewCommand$$.next(v));
-
+    this.localState
+      .dispatch$('num', interval(1000));
+    this.localState
+      .dispatch$('isNew', this.isNewCommand$);
+    this.localState
+      .dispatch$('buttons', this.updateButtonStateCommand$);
   }
+
+  getButtonClickAsId = (buttonsIds: string[]) => {
+    return from(buttonsIds).pipe(
+      map(id => fromEvent(document.getElementById(id), 'click')),
+      mergeAll(),
+      map(e => (e.target as any).id)
+    );
+  };
 
 }
