@@ -1,6 +1,7 @@
 import {ChangeDetectorRef, OnDestroy, Pipe, PipeTransform, WrappedValue, ɵisObservable, ɵisPromise, ɵlooseIdentical} from '@angular/core';
-import {from, isObservable, Observable, of, Subject} from 'rxjs';
-import {distinctUntilChanged, map, switchAll, takeUntil, tap} from 'rxjs/operators';
+import {from, isObservable, Observable, of, Subject, throwError} from 'rxjs';
+import {distinctUntilChanged, switchAll, takeUntil, tap} from 'rxjs/operators';
+
 // import {invalidPipeArgumentError} from './invalid_pipe_argument_error';
 
 @Pipe({name: 'async', pure: false})
@@ -37,14 +38,15 @@ export class AsyncPipe implements OnDestroy, PipeTransform {
   transform<T>(obj: Promise<T> | null | undefined): T | null;
   transform(obj: Observable<any> | Promise<any> | null | undefined): any {
 
-    if (ɵisObservable(obj) || ɵisPromise(obj)) {
-      obj = from(obj);
-    } else {
-      throw new Error('invalidPipeArgumentError'); // invalidPipeArgumentError(AsyncPipe, obj);
-    }
-
-    this.observablesToSubscribe$$.next(!isObservable(obj) ? of(null) : obj);
+    this.observablesToSubscribe$$.next(toObservable(obj));
     return WrappedValue.wrap(this.value);
+
+    function toObservable(obj) {
+      if (ɵisObservable(obj) || ɵisPromise(obj))
+        return from(obj);
+      else
+        throwError(new Error('invalidPipeArgumentError'));
+    }
   }
 
 }

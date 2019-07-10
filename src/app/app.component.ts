@@ -18,6 +18,9 @@ import {filter} from 'rxjs/operators';
       <li>
         <a routerLink="output">Output</a>
       </li>
+      <li>
+        <a routerLink="local-state">LocalState</a>
+      </li>
     </ul>
     <router-outlet></router-outlet>
   `,

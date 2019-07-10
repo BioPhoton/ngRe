@@ -10,8 +10,10 @@ import {OutputContainerComponent} from './components/output-container/output-con
 import {OutputComponent} from './components/output-container/output/output.component';
 import {PushPipeContainerComponent} from './components/push-pipe-container/push-pipe-container.component';
 import {PushPipeComponent} from './components/push-pipe-container/push-pipe-display/push-pipe.component';
-// import {LifeCycleHooksContainerComponent} from './components/life-cycle-hooks-container/life-cycle-hooks-container.component';
-// import {LifeCycleHooksComponent} from './components/life-cycle-hooks-container/life-cycle-hooks/life-cycle-hooks.component';
+import { LocalStateContainerComponent } from './components/local-state-container/local-state-container.component';
+import { LocalStateComponent } from './components/local-state-container/local-state/local-state.component';
+import {LifeCycleHooksContainerComponent} from './components/life-cycle-hooks-container/life-cycle-hooks-container.component';
+import {LifeCycleHooksComponent} from './components/life-cycle-hooks-container/life-cycle-hooks/life-cycle-hooks.component';
 
 @NgModule({
   declarations: [
@@ -19,12 +21,14 @@ import {PushPipeComponent} from './components/push-pipe-container/push-pipe-disp
     PushPipeContainerComponent,
     PushPipeComponent,
     PushPipe,
-   // LifeCycleHooksContainerComponent,
-   // LifeCycleHooksComponent,
+    LifeCycleHooksContainerComponent,
+    LifeCycleHooksComponent,
     OutputContainerComponent,
     OutputComponent,
     InputContainerComponent,
-    InputComponent
+    InputComponent,
+    LocalStateContainerComponent,
+    LocalStateComponent
   ],
   imports: [
     BrowserModule,
@@ -33,10 +37,10 @@ import {PushPipeComponent} from './components/push-pipe-container/push-pipe-disp
         path: 'push-pipe',
         component: PushPipeContainerComponent
       },
-     /* {
+     {
         path: 'live-cycle-hooks',
         component: LifeCycleHooksContainerComponent
-      },*/
+      },
       {
         path: 'input',
         component: InputContainerComponent
@@ -44,6 +48,10 @@ import {PushPipeComponent} from './components/push-pipe-container/push-pipe-disp
       {
         path: 'output',
         component: OutputContainerComponent
+      },
+      {
+        path: 'local-state',
+        component: LocalStateContainerComponent
       }
     ])
   ],
