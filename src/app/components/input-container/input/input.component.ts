@@ -1,4 +1,7 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Observable} from 'rxjs';
+import {hook$} from '../../../addons/decorators/hook';
+import {getChange} from '../../../addons/rxjs/operators/getChange';
 // import {Observable} from 'rxjs';
 // import {hook$} from '../../../addons/decorators/hook';
 // import {getChange} from '../../../addons/rxjs/operators/getChange';
@@ -12,18 +15,18 @@ import {AfterViewInit, ChangeDetectionStrategy, Component, Input, OnChanges, Sim
     <pre>
       state: {{state | json}}
     </pre>
-    <!--<pre>
+    <pre>
       state$: {{state$ | push | json}}
-    </pre>-->
+    </pre>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InputComponent implements OnChanges, AfterViewInit {
 
-  // @hook$('onChanges') onChanges$: Observable<SimpleChanges>;
+  @hook$('onChanges') onChanges$: Observable<SimpleChanges>;
 
   @Input() state: { value: number };
-  // state$: Observable<{ value: number }> = this.onChanges$.pipe(getChange('state'));
+  state$: Observable<{ value: number }> = this.onChanges$.pipe(getChange('state'));
 
   constructor() {
 

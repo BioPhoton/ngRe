@@ -1,7 +1,6 @@
-import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, Component} from '@angular/core';
 import {interval} from 'rxjs';
-import {map, tap} from 'rxjs/operators';
-import {detectChanges} from '../../addons/rxjs/operators/detectChanges';
+import {map} from 'rxjs/operators';
 
 @Component({
   selector: 'app-input-container',
