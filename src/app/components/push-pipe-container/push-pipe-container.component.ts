@@ -128,11 +128,11 @@ export class PushPipeContainerComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.localState
-      .dispatch$('num', interval(1000));
+      .observeSlice('num', interval(1000));
     this.localState
-      .dispatch$('isNew', this.isNewCommand$);
+      .observeSlice('isNew', this.isNewCommand$);
     this.localState
-      .dispatch$('buttons', this.updateButtonStateCommand$);
+      .observeSlice('buttons', this.updateButtonStateCommand$);
   }
 
   getButtonClickAsId = (buttonsIds: string[]) => {

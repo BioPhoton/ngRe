@@ -21,11 +21,11 @@ export class LocalState<T> {
 
   }
 
-  dispatch(command) {
+  bindSlice(command) {
     this.viewCommand$$.next(command);
   }
 
-  dispatch$(slice: string, command$: Observable<any>) {
+  observeSlice(slice: string, command$: Observable<any>) {
     const slice$ = command$.pipe(map(state => ({[slice]: state})));
     this.viewCommandObservable$
       .next(slice$);
