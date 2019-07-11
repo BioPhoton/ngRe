@@ -166,6 +166,9 @@ It is also multi casted over `shareReplay(1)` and also caches the latest value f
 This operator is used in combination with `OnChanges` as observable hook.
 It provides also a very early method of control of the forwarded values.
 
+Important to mention is that it should have some sort of cache implemented as `new ReplaySubject(1)` 
+(or maybe `.shareReplay(1)` if it returns a connected observable)  
+
 ```typescript
 @hook$('onChanges') 
 onChanges$;
