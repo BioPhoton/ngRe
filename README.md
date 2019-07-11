@@ -7,11 +7,11 @@ At the moment its just creating POC's and see where we glue is needed in angular
 Also still not fix as ivy may update a little internally.
 
 Things suggested:
-- Push Pipe (+++)
-- Observable Life Cycle Hooks (+++)
-- Observable Templates (++)
-- Multi Let Directive (++)
-- Observable Bindings (+)
+- [Push Pipe](#push-pipe) (+++)
+- [Life Cycle Hooks](#Life-Cycle-Hooks) (+++)
+- [Observable View Events](#Observable-View-Events) (++)
+- [Multi Let Directive](#Multi-Let-Directive) (++)
+- [Observable-Component-Bindings](#Observable-Component-Bindings) (+)
 - Local State Management (+)
 
 
@@ -46,7 +46,7 @@ performance issues. Unfortunately we see this a lot of applications.
 </app-color>
 ```
 
-# Observable Life Cycle Hooks
+# Life Cycle Hooks
 
 To get inputs as observables is crucial for any reactive architecture. 
 Also to render push based we need to depend on life-cycle hooks as an observable.
@@ -81,9 +81,13 @@ if(hookName === 'onChanges') {
 ``` 
 
 
-# Observable Templates
+# Observable View Events
 
-Observables direct from templates. 
+Observables direct from templates this could be:
+- DomEvents
+- WebComponent CustomEvents
+- Angular Output Events
+ 
 In best case directly over vanilla js, no output bindings from angular.  
 With web-components this is possible here no need to rely on angular specific template syntax.
 
@@ -154,11 +158,11 @@ This would help to the nested divs and the number of the subscriptions.
 </div>
 ```
 
-# Observable Bindings
+# Observable Component Bindings
 - @Input() Bindings
 - @Output() Bindings
 
-## Input Bindings
+## @Input() Bindings
 
 Operators to select a specific slice from onChanges. 
 It is also multi casted over `shareReplay(1)` and also caches the latest value for late subscribers.
@@ -201,7 +205,7 @@ export class MyComponent {
 }
 ```
 
-## Output Bindings
+## @Output() Bindings
 
 As output bindings set up inside of an component can directly forward a observable. No need for EventEmitter nor Subject.
 This anyway leads to imperative programming.
@@ -215,7 +219,7 @@ stateChange = this.state$
     );
 ```
 
-As output bindings set up outside of an component can consumed over 
+As output bindings set up outside of an component can consumed over Some primitives described in capter [Observable View Events](#Observable-View-Events).
 
 # Local State Management
 
