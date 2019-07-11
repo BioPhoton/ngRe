@@ -203,7 +203,7 @@ export class MyComponent {
 
 ## Output Bindings
 
-As output bindings we can directly forward a observable. No need for EventEmitter nor Subject.
+As output bindings set up inside of an component can directly forward a observable. No need for EventEmitter nor Subject.
 This anyway leads to imperative programming.
 
 ```typescript
@@ -215,6 +215,8 @@ stateChange = this.state$
     );
 ```
 
+As output bindings set up outside of an component can consumed over 
+
 # Local State Management
 
 A tiny logic that combines:
@@ -223,7 +225,12 @@ A tiny logic that combines:
 - state rendered to view 
 - state from a services.
 
-A flexible way to query a state slice that considers also late subscriber.
+A flexible way to query a state slice.
+It considers also late subscriber. 
+
+Handling late subscriber is especially useful when working with lifecycle hooks.
+Here values arrive over inputs and the subscription happens later in AfterViewInit. 
+We normally would loose this value. 
 
 ```typescript
 buttons$ = this.lS.state$
