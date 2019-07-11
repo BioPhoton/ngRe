@@ -191,6 +191,15 @@ export class MyComponent {
 }
 ```
 
+Another maybe too over engineered way could be 
+combining the hook as well as the `@Input()` declaration. 
+
+```typescript
+export class MyComponent {
+  @ReactiveInput()
+  state$ = this.onChanges$.pipe(getChange('state'));
+}
+```
 
 ## Output Bindings
 
