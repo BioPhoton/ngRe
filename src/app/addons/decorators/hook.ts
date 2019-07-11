@@ -32,11 +32,13 @@ export function hook$(hookName: string): Function {
   ) => {
     const subject = new Subject();
     const cDef: ComponentDef<any> = component.constructor[NG_COMPONENT_DEF];
-    console.log('hook$', hookName);
+    console.log('hook$', hookName, component, cDef);
+    // @TODO I guess this is a miss conception that ngChanes is wraped in a function.
+    // reusable anymore
     const target = hooksWrapped[hookName] ? component : cDef;
     const hook = hooksWrapped[hookName] ? getCompHookName(hookName) : hookName;
     // @TODO fix case for ngOnChanges not implemented
-    const originalHook = hooksWrapped[hookName] ? cDef[hookName] : component[hook];
+    const originalHook = hooksWrapped[hookName] ? cDef[hook] : component[hook];
 
     target[hook] = (args) => {
       subject.next(args);

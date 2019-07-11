@@ -128,11 +128,11 @@
 
     ngAfterViewInit() {
       this.localState
-        .observeSlice('num', interval(1000));
+        .connectSlice('num', interval(1000));
       this.localState
-        .observeSlice('isNew', this.isNewCommand$);
+        .connectSlice('isNew', this.isNewCommand$);
       this.localState
-        .observeSlice('buttons', this.updateButtonStateCommand$);
+        .connectSlice('buttons', this.updateButtonStateCommand$);
     }
 
     getButtonClickAsId = (buttonsIds: string[]) => {

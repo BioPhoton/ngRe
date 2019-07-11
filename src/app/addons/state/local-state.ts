@@ -1,33 +1,35 @@
 import {merge, Observable, Subject} from 'rxjs';
-import {map, mergeAll, scan, shareReplay, startWith, tap} from 'rxjs/operators';
+import {map, mergeAll, scan, shareReplay, startWith} from 'rxjs/operators';
 
 export class LocalState<T> {
 
-  private viewCommandObservable$ = new Subject();
-  private viewCommand$$ = new Subject();
-  private viewCommand$: Observable<any> = this.viewCommand$$.asObservable();
+  private commandObservable$ = new Subject();
+
+  private command$$ = new Subject();
+  private command$: Observable<any> = this.command$$.asObservable();
+
   state$: Observable<T> =
     merge(
-      this.viewCommand$,
-      this.viewCommandObservable$.pipe(mergeAll())
+      this.command$,
+      this.commandObservable$.pipe(mergeAll())
     )
-    .pipe(
-      startWith(this.initState),
-      scan((s, c) => ({...s, ...c})),
-      shareReplay(1)
-    );
+      .pipe(
+        startWith(this.initState),
+        scan((s, c) => ({...s, ...c})),
+        shareReplay(1)
+      );
 
   constructor(private initState) {
 
   }
 
-  bindSlice(command) {
-    this.viewCommand$$.next(command);
+  setSlice(command) {
+    this.command$$.next(command);
   }
 
-  observeSlice(slice: string, command$: Observable<any>) {
+  connectSlice(slice: string, command$: Observable<any>): void {
     const slice$ = command$.pipe(map(state => ({[slice]: state})));
-    this.viewCommandObservable$
+    this.commandObservable$
       .next(slice$);
   }
 }
