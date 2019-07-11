@@ -3,7 +3,7 @@ import {map, mergeAll, scan, shareReplay, startWith} from 'rxjs/operators';
 
 export class LocalState<T> {
 
-  private commandObservable$ = new Subject();
+  private commandObservable$$ = new Subject();
 
   private command$$ = new Subject();
   private command$: Observable<any> = this.command$$.asObservable();
@@ -23,13 +23,18 @@ export class LocalState<T> {
 
   }
 
+  // This breaks the functional programming style for the user.
+  // We should avoid such things. I recommend passing streams like with `connectSlice();`
   setSlice(command) {
-    this.command$$.next(command);
+    this.command$$
+      .next(command);
   }
 
+  // This should be the way to go. Functional style should be broken by the user.
+  // Not like with `this.setSlice`
   connectSlice(slice: string, command$: Observable<any>): void {
     const slice$ = command$.pipe(map(state => ({[slice]: state})));
-    this.commandObservable$
+    this.commandObservable$$
       .next(slice$);
   }
 }

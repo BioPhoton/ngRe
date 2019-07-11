@@ -1,7 +1,10 @@
 # ReactiveAddons
 
-This project is a proposal for a set of basic angular extensinos to
+This project is a proposal for a set of basic angular extensions to
 create a fully reactive Angular application without hacks and workarounds.
+
+At the moment its just creating POC's and see where we glue is needed in angular.
+Also still not fix as ivy may update a little internally.
 
 Things suggested:
 - push pipe (+++)
