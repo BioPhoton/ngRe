@@ -6,7 +6,7 @@ create a fully reactive Angular application without hacks and workarounds.
 Things suggested:
 - push pipe (+++)
 - observable life cycle hooks (+++)
-- observable templates
+- observable templates (++)
 - multi let directive (++)
 - observable input bindings (+)
 - local state management (+)
@@ -76,6 +76,43 @@ if(hookName === 'onChanges') {
     }
 }
 ``` 
+
+
+# Observable Templates
+
+Observables direct from templates. 
+In best case directly over vanilla js, no output bindings from angular.  
+With web-components this is possible here no need to rely on angular specific template syntax.
+
+```typescript
+  ngAfterContentInit() {
+    const viewElem = document.getElementById('id1');
+    
+    fromViewElem(viewElem,'output-binding')
+      .subscribe(console.log);
+  }
+```
+
+It could include view and content lifecycle hooks so we don't need to care about it.
+
+A workaround could be to create decorators or directives.
+
+[@elmd_](https://twitter.com/elmd_) already published something for angular:
+https://www.npmjs.com/package/@typebytes/ngx-template-streams
+
+```typescript
+ @Component({...
+ template: `
+ <button (*click)="clicks$">Click Me (Stream)</button>
+ `})
+ export class AppComponent {
+  @ObservableEvent()
+  clicks$: Observable<any>;
+ 
+  ngOnInit() {
+    this.clicks$.subscribe(console.log);
+  }
+```
 
 # Multi Let Structural Directive
 
@@ -161,40 +198,3 @@ constructor(private lS: LocalState<MyState>) {
     .connectSlice('buttons', this.buttons$);
 }
 ``` 
-
-
-# Observable Templates
-
-Observables direct from templates. 
-In best case directly over vanilla js, no output bindings from angular.  
-With web-components this is possible here no need to rely on angular specific template syntax.
-
-```typescript
-  ngAfterContentInit() {
-    const viewElem = document.getElementById('id1');
-    
-    fromViewElem(viewElem,'output-binding')
-      .subscribe(console.log);
-  }
-```
-
-It could include view and content lifecycle hooks so we don't need to care about it.
-
-A workaround could be to create decorators or directives.
-
-[@elmd_](https://twitter.com/elmd_) already published something for angular:
-https://www.npmjs.com/package/@typebytes/ngx-template-streams
-
-```typescript
- @Component({...
- template: `
- <button (*click)="clicks$">Click Me (Stream)</button>
- `})
- export class AppComponent {
-  @ObservableEvent()
-  clicks$: Observable<any>;
- 
-  ngOnInit() {
-    this.clicks$.subscribe(console.log);
-  }
-```
