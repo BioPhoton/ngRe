@@ -7,12 +7,12 @@ At the moment its just creating POC's and see where we glue is needed in angular
 Also still not fix as ivy may update a little internally.
 
 Things suggested:
-- push pipe (+++)
-- observable life cycle hooks (+++)
-- observable templates (++)
-- multi let directive (++)
-- observable input bindings (+)
-- local state management (+)
+- Push Pipe (+++)
+- Observable Life Cycle Hooks (+++)
+- Observable Templates (++)
+- Multi Let Directive (++)
+- Observable Bindings (+)
+- Local State Management (+)
 
 
 # Push Pipe
@@ -154,7 +154,11 @@ This would help to the nested divs and the number of the subscriptions.
 </div>
 ```
 
-# Observable Input Bindings
+# Observable Bindings
+- @Input() Bindings
+- @Output() Bindings
+
+## Input Bindings
 
 Operators to select a specific slice from onChanges. 
 It is also multi casted over `shareReplay(1)` and also caches the latest value for late subscribers.
@@ -171,6 +175,21 @@ state;
 
 state$ = this.onChanges$.pipe(selectChange('state'));
 ``` 
+
+With this primitive we can easily have observable inputs like that:
+
+```typescript
+export class MyComponent {
+  @hook$('onChanges') 
+  onChanges$: Observable<SimpleChanges>;
+
+  @Input() state;
+  state$ = this.onChanges$.pipe(getChange('state'));
+}
+```
+
+
+## Output Bindings
 
 As output bindings we can directly forward a observable. No need for EventEmitter nor Subject.
 This anyway leads to imperative programming.
