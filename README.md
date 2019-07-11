@@ -172,6 +172,18 @@ state;
 state$ = this.onChanges$.pipe(selectChange('state'));
 ``` 
 
+As output bindings we can directly forward a observable. No need for EventEmitter nor Subject.
+This anyway leads to imperative programming.
+
+```typescript
+@Output() 
+stateChange = this.state$
+    .pipe(
+      map(state => state.slice),
+      distinctUntilChanged()
+    );
+```
+
 # Local State Management
 
 A tiny logic that combines:
