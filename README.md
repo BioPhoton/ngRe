@@ -79,17 +79,8 @@ export class AppComponent  {
 
 **Reactive aproach:**
 
-```typescript
-@Component({
-  selector: 'my-app',
-  template: `
-    <button id="p1" [disabled]="disabled$ | async">Btn</button>
-  `
-})
-export class AppComponent  {
-  disabled$ = interval(1000).pipe(map(v => !!(v%2)));
-}
-```
+Angular provides a set of decorators for all standard dom attributes. 
+This this the suggested way to go and explainde in detail in the AngularComponent section.  
 
 #### Receive events over `elem.addEventListener()`
 
@@ -125,6 +116,7 @@ Goal is to list vanilla js versions as well as the angular way and list options 
 #### Receive events over `elem.addEventListener()`
 
 **Imperative aproach:**
+
 **Reactive aproach:**
 
 ### AngularComponents
@@ -328,18 +320,37 @@ In this way we can send component propertie changes.
 **Imperative approach:**
 
 ```typescript
-
+@Component({
+  selector: 'my-app',
+  template: `
+    <app-child [state]="state"></app-child>
+  `
+})
+export class AppComponent  {
+  state = 42;
+}
 ``` 
 
 **Reactive approach:**
 
+Important to say is that with this case **we can ignore the life cycle hooks as the subscription happens always right in time**.
+We cal rely trust that subscription to `state$` happens after `AfterViewInit`.
+
 ```typescript
-TBD
+@Component({
+  selector: 'my-app',
+  template: `
+    <app-child [state]="state$ | async"></app-child>
+  `
+})
+export class AppComponent  {
+  state$ = of(42);
+}
 ```
 
 
 **Needs:**
-TBD
+As we know exactly when changes happen we can trigger change detection manually. Knowing the advantaes of subscriptions over the template and lifecycle hooks the solotion should be similar to `async` pipe.
 
 
 #### Output Binding 
@@ -353,18 +364,39 @@ In this way we can reveive component events.
 **Imperative approach:**
 
 ```typescript
-
+@Component({
+  selector: 'my-app',
+  template: `
+    state: {{state}}
+    <app-child (stateChange)="onStateChange($event)"></app-child>
+  `
+})
+export class AppComponent  {
+  state;
+  onStateChange(e) {
+    this.state = e; 
+  }
+}
 ``` 
 
 **Reactive approach:**
 
 ```typescript
-TBD
+@Component({
+  selector: 'my-app',
+  template: `
+    state: {{state$ | async}}<br>
+    <app-child (stateChange)="state$.next($event)"></app-child>
+  `
+})
+export class AppComponent  {
+  state$ = new Subject();
+}
 ```
 
 
 **Needs:**
-TBD
+We need a way to abstracting away the subject initialisation and link a enelemt in the view with a components property.
 
 # Suggested Addons
 
