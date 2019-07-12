@@ -16,6 +16,8 @@ set of proposed primitive service as glue for a reactive architecture.
     - DomElement
     - WebComponent
     - AngularComponent
+  - Life Cycle Hooks
+    - 
 - Suggested Extensions
 ---
 
@@ -29,10 +31,10 @@ This should help to understand the problems and get a good overview of the optio
 Based in the collected inforamtion we can try to use the explored options to create an elegant solution for the eplored needs.
 
 Following topics are documented below:
-- Observable Component Bindings
-- Observable Life Ciyle Hooks
+- Component Bindings
+- Life Ciyle Hooks
 
-## Observable Component Bindings
+## Component Bindings
 
 As a main requirement for a reactive architecture in current component oriented 
 frameworks is handling properties and events of components.
@@ -395,15 +397,47 @@ export class AppComponent  {
 ```
 
 
-**Needs:**
+**Needs:**  
 We need a way to abstracting away the subject initialisation and link a enelemt in the view with a components property.
+
+## Life Cycle Hooks
+
+As the componentts logic can partially rely on the conponents life cycle hooks we also need to consider the in out evaluation. 
+
+Angular fires a viraety of lifecycle hooks. Some of them a single time some of them only once a compoennts lifetime.
+
+Angulars life cycle hooks are listed ere in ordere:   
+(Here the Interface name is used. The inplementd method starts with the prefix 'ng')
+- OnChanges (ongoing, transports changes)
+- OnInit (single shot)
+- DoCheck (ongoing)
+- AfterContentInit (single shot)
+- AfterContentChecked	
+- AfterViewInit	(single shot)
+- OnDestroy	(single shot)
+
+The goal here is to find a unified way to have single shot as well as ongoing life cycle hoost a sn observable.
+
+### Implement any hook
+
+**Imperative approach:**
+
+```typescript
+TBD
+``` 
+
+**Reactive approach:**
+
+```typescript
+TBD
+```
 
 # Suggested Addons
 
 Things suggested:
 - [Push Pipe](#push-pipe) (+++)
 - [Life Cycle Hooks](#Life-Cycle-Hooks) (+++)
-- [Observable View Events](#Observable-View-Events) (++)
+- [Observable Compoent Bindings](#Observable-Compoent-Bindings) (++)
 - [Multi Let Directive](#Multi-Let-Directive) (++)
 - [Observable-Component-Bindings](#Observable-Component-Bindings) (+)
 - Local State Management (+)
@@ -561,18 +595,9 @@ export class MyComponent {
 ```
 
 
-# Observable View Events
+# Observable Component Bindings
 
 Observables from templates could be from following sources:
-- Dom (DomEvents)
-- WebComponent (CustomEvents)
-- Angular Output Events
- 
-**Current Options**
-- Retrieve OutputObservables directly from ViewChild
-- A Decorator that links to a Component from the template like ngx-template-streams (works for angular components only)
-- DomEvents and CustomEvents listener (works not for angular components)
-- 
 
 The goal is to find the most generic way for the listed sources.  
 With DomEvents and CustomEvents it is already possible the exception is angular specific stuff.
