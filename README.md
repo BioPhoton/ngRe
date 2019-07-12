@@ -135,16 +135,16 @@ But we also have several other options for available to interact with components
 Goal is to list all features in angular that interfere with Component Bindings or similar and provide a imperative as well as reavtive aproach for each option.
 
 We consider following decorators:
-- @Input()
-- @Output()
-- @HostListener() 
-- @HostBinding()
+- Input Decorator
+- Output Decorator
+- HostListener Decorator 
+- HostBinding Decorator
 
 And consider following bindings:
-- [value]="value"
-- (valueChanged)="fn($event)"
+- Input Binding
+- Output Binding
 
-#### @Input()
+#### Input Decorator
 
 Inside of a compoent or directive we can connect properties with the components inpit bindings over the `@Input()` decorator.
 This enables us to access the incomings values in the component. 
@@ -186,7 +186,7 @@ export class ChildComponent  {
 **Needs:**
 TBD
 
-#### @Output()
+#### Output Decorator
 
 **_Send event over `eventEmitter.emit(42)`_**
 
@@ -238,7 +238,7 @@ export class ChildComponent  {
 **Needs:**
 TBD
 
-#### @HostListener()
+#### HostListener Decorator
 
 **_Receive event from host over `eventEmitter.emit(42)`_**
 
@@ -282,12 +282,48 @@ export class ChildComponent  {
 **Needs:**
 Get rid of the onCkick function and subject creation.
 
-#### @HostBinding()
+#### HostBinding Decorator
 
-**_Send event over `eventEmitter.emit(42)`_**
+**_Receive property changes from host over `@HostBinding('class')`_**
 
-Inside of a compoent or directive we can connect events with the components output bindings over the `@Output()` decorator.
-This enables us to emit values to it's parent component. 
+Inside of a compoent or directive we can connect DOM attribute as from the host with component property. 
+Angular automatically updates the host element over change detection.
+In this way we can retreive the hosts propertie changes.
+
+
+**Imperative approach:**
+
+```typescript
+@Component({
+  selector: 'app-child',
+  template: `<p>color: {{className}}</p>`,
+})
+export class ChildComponent  {
+  className = 'visible'
+  
+  @HostBinding('class')
+  get background() {
+   return this.className;
+  }
+}
+``` 
+
+**Reactive approach:**
+
+```typescript
+TBD
+```
+
+**Needs:**
+Provide an observable instead of a function
+
+#### Input Binding 
+
+**_Send value changes to child compoent input `[state]="state"`_**
+
+In the parent compoent we can connect component properties to child component inputs over specific template syntax, the square brackets `[state]`.
+Angular automatically updates the child component over change detection.
+In this way we can send component propertie changes.
 
 **Imperative approach:**
 
@@ -298,14 +334,37 @@ This enables us to emit values to it's parent component.
 **Reactive approach:**
 
 ```typescript
-
+TBD
 ```
+
 
 **Needs:**
 TBD
 
 
-##### Send to property over `[state]=""`
+#### Output Binding 
+
+**_Receive events from child compoent over `(stateChange)="fn($event)"`_**
+
+In the parent compoent we can receive events from child components  over specific template syntax, the round brackets `(stateChange)`.
+Angular automatically updates fires the provides function over change detection.
+In this way we can reveive component events.
+
+**Imperative approach:**
+
+```typescript
+
+``` 
+
+**Reactive approach:**
+
+```typescript
+TBD
+```
+
+
+**Needs:**
+TBD
 
 # Suggested Addons
 
