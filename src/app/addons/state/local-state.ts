@@ -4,14 +4,12 @@ import {map, mergeAll, scan, shareReplay, startWith} from 'rxjs/operators';
 export class LocalState<T> {
 
   private commandObservable$$ = new Subject();
-
   private command$$ = new Subject();
-  private command$: Observable<any> = this.command$$.asObservable();
 
   state$: Observable<T> =
     merge(
-      this.command$,
-      this.commandObservable$.pipe(mergeAll())
+      this.command$$,
+      this.commandObservable$$.pipe(mergeAll())
     )
       .pipe(
         startWith(this.initState),
@@ -32,7 +30,8 @@ export class LocalState<T> {
 
   // This should be the way to go. Functional style should be broken by the user.
   // Not like with `this.setSlice`
-  connectSlice(slice: string, command$: Observable<any>): void {
+  connectSlice<I>(config: {[key: string]: Observable<I>}): void {
+    const {slice, command$}  = Object(config).entries();
     const slice$ = command$.pipe(map(state => ({[slice]: state})));
     this.commandObservable$$
       .next(slice$);

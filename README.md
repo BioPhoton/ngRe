@@ -51,6 +51,11 @@ performance issues. Unfortunately we see this a lot of applications.
 To get inputs as observables is crucial for any reactive architecture. 
 Also to render push based we need to depend on life-cycle hooks as an observable.
 
+**Current Options**
+- Decorators
+- ViewChild
+- 
+
 The goal would be to create a generic decorator `@hooks$()` that 
 hooks into methods registered in the components constructor. 
 
@@ -83,13 +88,19 @@ if(hookName === 'onChanges') {
 
 # Observable View Events
 
-Observables direct from templates this could be:
-- DomEvents
-- WebComponent CustomEvents
+Observables from templates could be from following sources:
+- Dom (DomEvents)
+- WebComponent (CustomEvents)
 - Angular Output Events
  
-In best case directly over vanilla js, no output bindings from angular.  
-With web-components this is possible here no need to rely on angular specific template syntax.
+**Current Options**
+- Retrieve OutputObservables directly from ViewChild
+- A Decorator that links to a Component from the template like ngx-template-streams (works for angular components only)
+- DomEvents and CustomEvents listener (works not for angular components)
+- 
+
+The goal is to find the most generic way for the listed sources.  
+With DomEvents and CustomEvents it is already possible the exception is angular specific stuff.
 
 ```typescript
   ngAfterContentInit() {
@@ -159,10 +170,47 @@ This would help to the nested divs and the number of the subscriptions.
 ```
 
 # Observable Component Bindings
-- @Input() Bindings
-- @Output() Bindings
 
-## @Input() Bindings
+As a main requirement for a reactive architecture in current component oriented 
+frameworks is handling inputs and outputs.
+
+Here we discuss 3 different types we consider: 
+- DomElement (DomEvents)
+- WebComponent (CustomEvents)
+- Angular Components Events
+
+## DomElement
+**Send to property over `<elem attr=""></elem>`**
+**Receive events over `elem.addEventListener()`**
+ 
+## WebComponent 
+**Send to property over `<elem attr=""></elem>`**
+**Receive events over `elem.addEventListener()`**
+
+## Angular Components
+
+In angular we have an equivalent to properties and events, _input- and output-bindings`_.
+But we also have several other options for available to interact with components.
+
+We consider following options:
+- @Input()
+- @Output()
+- @HostListener() 
+- @HostBinding()
+
+### @Input()
+
+**Receive property from `@Input('state')`**
+
+Imperative approach:
+
+**Send to property over `[state]=""`**
+
+
+# Primitives as glue for reactive architecture
+
+
+## Operator `selectChange`
 
 Operators to select a specific slice from onChanges. 
 It is also multi casted over `shareReplay(1)` and also caches the latest value for late subscribers.
@@ -174,13 +222,13 @@ Important to mention is that it should have some sort of cache implemented as `n
 (or maybe `.shareReplay(1)` if it returns a connected observable)  
 
 ```typescript
-@hook$('onChanges') 
-onChanges$;
-
-@Input() 
-state;
-
-state$ = this.onChanges$.pipe(selectChange('state'));
+  @hook$('onChanges') 
+  onChanges$;
+  
+  @Input() 
+  state;
+  
+  state$ = this.onChanges$.pipe(selectChange('state'));
 ``` 
 
 With this primitive we can easily have observable inputs like that:
@@ -205,7 +253,11 @@ export class MyComponent {
 }
 ```
 
-## @Output() Bindings
+### @Output()
+
+**Receive events from `(stateChanged)=""`**
+
+**Send event over `@Output() stateChanged;`**
 
 As output bindings set up inside of an component can directly forward a observable. No need for EventEmitter nor Subject.
 This anyway leads to imperative programming.
@@ -221,11 +273,20 @@ stateChange = this.state$
 
 As output bindings set up outside of an component can consumed over Some primitives described in capter [Observable View Events](#Observable-View-Events).
 
+### @HostListener() 
+
+**Set host listener `@HostListener('click', [$event]) onClick() {}`**
+
+### @HostBinding()
+
+**Get host bindings from `@HostBinding('class') hostClass`**
+**Set host bindings `set hostClass(class) {}`**
+
 # Local State Management
 
 A tiny logic that combines:
 - values over input bindings
-- class internal
+- Component class internal state
 - state rendered to view 
 - state from a services.
 

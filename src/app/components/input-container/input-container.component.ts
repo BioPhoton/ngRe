@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {interval} from 'rxjs';
 import {map} from 'rxjs/operators';
 
