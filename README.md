@@ -1,10 +1,105 @@
 # ReactiveAddons
+#### 
+
 
 This project is a proposal for a set of basic angular extensions to
-create a fully reactive Angular application without hacks and workarounds.
+create a fully reactive application architicture without hacks and workarounds.
 
-At the moment its just creating POC's and see where we glue is needed in angular.
-Also still not fix as ivy may update a little internally.
+It lists current needs and possible implementations as well as a 
+set of proposed primitive service as glue for a reactive architecture.
+ 
+# Observable Component Bindings
+
+As a main requirement for a reactive architecture in current component oriented 
+frameworks is handling inputs and outputs.
+
+Here we discuss 3 different types we consider: 
+- DomElement (DomEvents)
+- WebComponent (CustomEvents)
+- Angular Components Events
+
+A major goale here would be to find a unified way of treating all of them in the same way working with angular. 
+
+## DomElement
+
+DomElements is everything you can query from `document`.
+
+Goal is to include this case into the general aproach for Observable Compoennt Bindings in Angular
+
+**Send to property over `<elem attr=""></elem>`**
+
+To set a value for an input attribute you can query the dom get the item and set the value.
+
+```typescript
+const elem = document.getElementById('elem-1');
+const elem.value = 42;        
+```
+
+This case is easy to cover in a general case as there are many 
+built in directives that enables us to set attributes on elements.
+
+```typescript
+@Component({
+  selector: 'my-app',
+  template: `
+    <button id="p1" [disabled]="disabled">Btn</button>
+  `
+})
+export class AppComponent  {
+  disabled = false;
+}
+```
+
+It's also very easy to go the reactive aproach as we can just use a pipe. 
+I.e. the `async` pipe
+
+```typescript
+@Component({
+  selector: 'my-app',
+  template: `
+    <button id="p1" [disabled]="disabled$ | async">Btn</button>
+  `
+})
+export class AppComponent  {
+  disabled$ = interval(1000).pipe(map(v => !!(v%2)));
+}
+```
+
+
+**Receive events over `elem.addEventListener()`**
+```typescript
+const elem = document.getElementById('elem-1');
+elem
+  .addEventListener('click', e => {
+    console.log('click event:', e);
+  });
+``` 
+
+## WebComponent 
+**Send to property over `<elem attr=""></elem>`**
+**Receive events over `elem.addEventListener()`**
+
+## Angular Components
+
+In angular we have an equivalent to properties and events, _input- and output-bindings`_.
+But we also have several other options for available to interact with components.
+
+We consider following options:
+- @Input()
+- @Output()
+- @HostListener() 
+- @HostBinding()
+
+### @Input()
+
+**Receive property from `@Input('state')`**
+
+Imperative approach:
+
+**Send to property over `[state]=""`**
+
+
+# Suggested Addons
 
 Things suggested:
 - [Push Pipe](#push-pipe) (+++)
@@ -85,6 +180,86 @@ if(hookName === 'onChanges') {
 }
 ``` 
 
+# Multi Let Structural Directive
+
+The multi let directive is a not tested idea of binding multiple 
+observables in the same view context. 
+
+Here multiple subscriptions in the view could lead to 
+performance issues. Unfortunately there is no other built in.
+
+```html
+<div *ngIf="(o$ | push) as o">
+  <div *ngIf="(o2$ | push) as o2">
+    <div *ngIf="(o3$ | push) as o3">
+      <app-color 
+      [color]="o.color" [shape]="o.shape" 
+      [name]="o2.name" [age]="o2.age"
+      [value]="o3">
+      </app-color>  
+     </div>
+   <div>
+</div>
+```
+
+A custom directive could probably solve it. `*multiLet="o$ | push as o; t$ | push as t;"` 
+This would help to the nested divs and the number of the subscriptions.
+
+```html
+<div *multiLet="o1$ | push as o1;
+                o2$ | push as o2;
+                o3$ | push as o3;">
+  <app-color 
+    [color]="o1.color" [shape]="o1.shape" 
+    [name]="o2.name" [age]="o2.age"
+    [value]="o3">
+  </app-color>  
+</div>
+```
+
+## Operator `selectChange`
+
+Operators to select a specific slice from onChanges. 
+It is also multi casted over `shareReplay(1)` and also caches the latest value for late subscribers.
+
+This operator is used in combination with `OnChanges` as observable hook.
+It provides also a very early method of control of the forwarded values.
+
+Important to mention is that it should have some sort of cache implemented as `new ReplaySubject(1)` 
+(or maybe `.shareReplay(1)` if it returns a connected observable)  
+
+```typescript
+  @hook$('onChanges') 
+  onChanges$;
+  
+  @Input() 
+  state;
+  
+  state$ = this.onChanges$.pipe(selectChange('state'));
+``` 
+
+With this primitive we can easily have observable inputs like that:
+
+```typescript
+export class MyComponent {
+  @hook$('onChanges') 
+  onChanges$: Observable<SimpleChanges>;
+
+  @Input() state;
+  state$ = this.onChanges$.pipe(getChange('state'));
+}
+```
+
+Another maybe too over engineered way could be 
+combining the hook as well as the `@Input()` declaration. 
+
+```typescript
+export class MyComponent {
+  @ReactiveInput()
+  state$ = this.onChanges$.pipe(getChange('state'));
+}
+```
+
 
 # Observable View Events
 
@@ -132,126 +307,7 @@ https://www.npmjs.com/package/@typebytes/ngx-template-streams
   }
 ```
 
-# Multi Let Structural Directive
 
-The multi let directive is a not tested idea of binding multiple 
-observables in the same view context. 
-
-Here multiple subscriptions in the view could lead to 
-performance issues. Unfortunately there is no other built in.
-
-```html
-<div *ngIf="(o$ | push) as o">
-  <div *ngIf="(o2$ | push) as o2">
-    <div *ngIf="(o3$ | push) as o3">
-      <app-color 
-      [color]="o.color" [shape]="o.shape" 
-      [name]="o2.name" [age]="o2.age"
-      [value]="o3">
-      </app-color>  
-     </div>
-   <div>
-</div>
-```
-
-A custom directive could probably solve it. `*multiLet="o$ | push as o; t$ | push as t;"` 
-This would help to the nested divs and the number of the subscriptions.
-
-```html
-<div *multiLet="o1$ | push as o1;
-                o2$ | push as o2;
-                o3$ | push as o3;">
-  <app-color 
-    [color]="o1.color" [shape]="o1.shape" 
-    [name]="o2.name" [age]="o2.age"
-    [value]="o3">
-  </app-color>  
-</div>
-```
-
-# Observable Component Bindings
-
-As a main requirement for a reactive architecture in current component oriented 
-frameworks is handling inputs and outputs.
-
-Here we discuss 3 different types we consider: 
-- DomElement (DomEvents)
-- WebComponent (CustomEvents)
-- Angular Components Events
-
-## DomElement
-**Send to property over `<elem attr=""></elem>`**
-**Receive events over `elem.addEventListener()`**
- 
-## WebComponent 
-**Send to property over `<elem attr=""></elem>`**
-**Receive events over `elem.addEventListener()`**
-
-## Angular Components
-
-In angular we have an equivalent to properties and events, _input- and output-bindings`_.
-But we also have several other options for available to interact with components.
-
-We consider following options:
-- @Input()
-- @Output()
-- @HostListener() 
-- @HostBinding()
-
-### @Input()
-
-**Receive property from `@Input('state')`**
-
-Imperative approach:
-
-**Send to property over `[state]=""`**
-
-
-# Primitives as glue for reactive architecture
-
-
-## Operator `selectChange`
-
-Operators to select a specific slice from onChanges. 
-It is also multi casted over `shareReplay(1)` and also caches the latest value for late subscribers.
-
-This operator is used in combination with `OnChanges` as observable hook.
-It provides also a very early method of control of the forwarded values.
-
-Important to mention is that it should have some sort of cache implemented as `new ReplaySubject(1)` 
-(or maybe `.shareReplay(1)` if it returns a connected observable)  
-
-```typescript
-  @hook$('onChanges') 
-  onChanges$;
-  
-  @Input() 
-  state;
-  
-  state$ = this.onChanges$.pipe(selectChange('state'));
-``` 
-
-With this primitive we can easily have observable inputs like that:
-
-```typescript
-export class MyComponent {
-  @hook$('onChanges') 
-  onChanges$: Observable<SimpleChanges>;
-
-  @Input() state;
-  state$ = this.onChanges$.pipe(getChange('state'));
-}
-```
-
-Another maybe too over engineered way could be 
-combining the hook as well as the `@Input()` declaration. 
-
-```typescript
-export class MyComponent {
-  @ReactiveInput()
-  state$ = this.onChanges$.pipe(getChange('state'));
-}
-```
 
 ### @Output()
 
@@ -281,6 +337,8 @@ As output bindings set up outside of an component can consumed over Some primiti
 
 **Get host bindings from `@HostBinding('class') hostClass`**
 **Set host bindings `set hostClass(class) {}`**
+
+
 
 # Local State Management
 
