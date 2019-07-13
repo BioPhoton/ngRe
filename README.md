@@ -23,13 +23,6 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
     - WebComponent
     - AngularComponent
   - Observable Life Cycle Hooks
-    - OnChanges
-    - OnInit
-    - DoCheck
-    - AfterContentInit
-    - AfterContentChecked    
-    - AfterViewInit
-    - OnDestroy
 - Suggested Extensions
 ---
 
@@ -368,6 +361,9 @@ export class AppComponent  {
 **Needs:**
 As we know exactly when changes happen we can trigger change detection manually. Knowing the advantages of subscriptions over the template and lifecycle hooks the solution should be similar to `async` pipe.
 
+One more downside here. If we use the `as` template syntax and have multiple observable present in the same div we run unto some annoiing situation:
+
+
 
 #### Output Binding 
 
@@ -427,8 +423,8 @@ Angulars life cycle hooks are listed ere in order:
 - DoCheck (ongoing)
 - AfterContentInit (single shot)
 - AfterContentChecked    
-- AfterViewInit    (single shot)
-- OnDestroy    (single shot)
+- AfterViewInit (single shot)
+- OnDestroy (single shot)
 
 The goal here is to find a unified way to have single shot, as well as ongoing life cycle hooks, and observable.
 
@@ -479,11 +475,11 @@ export class ChildComponent implements OnChanges {
 
 Things suggested:
 - [Push Pipe](#push-pipe) (+++)
-- [Life Cycle Hooks](#Life-Cycle-Hooks) (+++)
-- [Observable Compoent Bindings](#Observable-Compoent-Bindings) (++)
 - [Multi Let Directive](#Multi-Let-Directive) (++)
-- [Observable-Component-Bindings](#Observable-Component-Bindings) (+)
-- Local State Management (+)
+- [Life Cycle Hooks](#Life-Cycle-Hooks) (+++)
+  - [Observable Imput Bindings](#Observable-Input-Bindings) (++)
+  - [selectChange Operator](#selectChange-Operator) (++)
+- [Local State Management](Local-State-Management) (+)
 
 ## Push Pipe
 
@@ -523,11 +519,11 @@ The multi-let directive is a not tested idea of binding multiple observables in 
 Here multiple subscriptions in the view could lead to performance issues. Unfortunately, there is no other built-in.
 
 ```html
-<div *ngIf="(o$ | push) as o">
+<div *ngIf="(o1$ | push) as o1">
   <div *ngIf="(o2$ | push) as o2">
     <div *ngIf="(o3$ | push) as o3">
       <app-color 
-      [color]="o.color" [shape]="o.shape" 
+      [color]="o1.color" [shape]="o1.shape" 
       [name]="o2.name" [age]="o2.age"
       [value]="o3">
       </app-color>  
@@ -550,6 +546,8 @@ This would help the nested divs and the number of subscriptions.
   </app-color>  
 </div>
 ```
+
+
 
 # DRAFT 
 
@@ -589,7 +587,6 @@ if(hookName === 'onChanges') {
     }
 }
 ``` 
-
 ## Operator `selectChange`
 
 Operators to select a specific slice from onChanges. 
@@ -631,6 +628,7 @@ export class MyComponent {
   state$ = this.onChanges$.pipe(getChange('state'));
 }
 ```
+
 
 
 # Observable Component Bindings
