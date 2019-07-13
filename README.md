@@ -1,4 +1,4 @@
-# Proposal for a fully reactive architecture in Angular
+# Proposal for a fully reactive/zone-less architecture in Angular
 #### 
 
 This document is a proposal for a fully reactive architecture in Angular.
@@ -23,6 +23,7 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
     - [WebComponent](#WebComponent)
     - [AngularComponent](#AngularComponent)
   - [Life Cycle Hooks](#Life-Cycle-Hooks)
+- [Sections Important For Running Zone Less](#Sections-Important-For-Running-Zone-Less)
 - [Suggested Extensions](#Suggested-Extensions)
   - [Push Pipe](#Push-Pipe)
   - [Multi Let Structural Directive](#Multi-Let-Structural-Directive)
@@ -488,6 +489,9 @@ export class ChildComponent implements OnChanges {
   }
 }
 ```
+
+# Sections Important For Running Zone Less
+TBD
 
 # Suggested Extensions
 
