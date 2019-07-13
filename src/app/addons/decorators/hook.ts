@@ -24,7 +24,7 @@ const hooksWrapped: { [x in keyof Hooks]: boolean } = {
 };
 
 // @TODO get proper typing  => MethodDecorator || PropertyDecorator ?
-export function hook$(hookName: string): Function {
+export function Hook$(hookName: string): Function {
   return (
     component: any,
     propertyKey: string,

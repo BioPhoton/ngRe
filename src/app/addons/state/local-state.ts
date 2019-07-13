@@ -31,9 +31,10 @@ export class LocalState<T> {
   // This should be the way to go. Functional style should be broken by the user.
   // Not like with `this.setSlice`
   connectSlice<I>(config: {[key: string]: Observable<I>}): void {
-    const {slice, command$}  = Object(config).entries();
-    const slice$ = command$.pipe(map(state => ({[slice]: state})));
-    this.commandObservable$$
-      .next(slice$);
+    console.log('config: ', Object(config).entries());
+    // const {slice, command$}  = Object(config).entries();
+    // const slice$ = command$.pipe(map(state => ({[slice]: state})));
+    // this.commandObservable$$
+    //  .next(slice$);
   }
 }

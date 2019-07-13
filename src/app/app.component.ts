@@ -1,10 +1,16 @@
-import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone} from '@angular/core';
 import {NavigationEnd, Router} from '@angular/router';
 import {filter} from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   template: `
+    <div class="zone" [ngClass]="{noop : runningZoneLess}">
+      {{runningZoneLess ? 'Zone-Less' : 'Zone-Full'}}
+    </div>
+    <div class="panel zone-less" *ngIf="runningZoneLess">
+      <button>Detect Change</button>
+    </div>
     <ul>
       <li>
         <a routerLink="push-pipe">PushPipe</a>
@@ -12,12 +18,13 @@ import {filter} from 'rxjs/operators';
       <li>
         <a routerLink="live-cycle-hooks">LifeCycleHooks</a>
       </li>
-      <li>
+      <!-- <li>
         <a routerLink="input">Input</a>
       </li>
+      
       <li>
         <a routerLink="output">Output</a>
-      </li>
+      </li> -->
       <li>
         <a routerLink="local-state">LocalState</a>
       </li>
@@ -28,14 +35,10 @@ import {filter} from 'rxjs/operators';
 })
 export class AppComponent implements AfterViewInit {
 
-  constructor(private cd: ChangeDetectorRef, private router: Router) {
+  runningZoneLess: boolean;
 
-    router.events
-      .pipe(
-        filter(e => e instanceof NavigationEnd),
-        // tap(_ => detectChanges(this.cd))
-      )
-      .subscribe(console.log);
+  constructor(z: NgZone, private cd: ChangeDetectorRef, private router: Router) {
+    this.runningZoneLess = z.constructor.name === 'NoopNgZone';
   }
 
   ngAfterViewInit(): void {

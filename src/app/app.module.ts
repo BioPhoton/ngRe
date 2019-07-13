@@ -7,6 +7,7 @@ import {AppComponent} from './app.component';
 import {InputContainerComponent} from './components/input-container/input-container.component';
 import {InputComponent} from './components/input-container/input/input.component';
 import {OptionsComponent} from './components/local-state-container/components/options.component';
+import {PipeTestsPanelComponent} from './components/local-state-container/components/pipe-tests-panel.component';
 import {OutputContainerComponent} from './components/output-container/output-container.component';
 import {OutputComponent} from './components/output-container/output/output.component';
 import {PushPipeContainerComponent} from './components/push-pipe-container/push-pipe-container.component';
@@ -30,7 +31,8 @@ import {LifeCycleHooksComponent} from './components/life-cycle-hooks-container/l
     InputComponent,
     LocalStateContainerComponent,
     LocalStateComponent,
-    OptionsComponent
+    OptionsComponent,
+    PipeTestsPanelComponent
   ],
   imports: [
     BrowserModule,

@@ -109,7 +109,6 @@ Things suggested:
 - [Observable-Component-Bindings](#Observable-Component-Bindings) (+)
 - Local State Management (+)
 
-
 # Push Pipe
 
 An angular pipe similar to the `async` pipe but triggers `detectChanges` instead of `markForCheck`.

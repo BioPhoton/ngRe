@@ -1,11 +1,11 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
-import {defer, from, fromEvent, interval, Observable, timer} from 'rxjs';
-import {distinctUntilChanged, map, mergeAll, shareReplay, switchMap, withLatestFrom} from 'rxjs/operators';
+import {defer, fromEvent, Observable, Subject} from 'rxjs';
+import {map, withLatestFrom} from 'rxjs/operators';
 import {LocalState} from '../../addons/state/local-state';
-import {OptionsStateInterface} from './components/options-state.interface';
-import {NgRxStoreService} from './services/ng-rx-store.service';
 
 interface ButtonState {
+  [key: string]: boolean;
+
   async: boolean;
   primitive: boolean;
   mutable: boolean;
@@ -24,7 +24,10 @@ interface ViewState {
 @Component({
   selector: 'app-local-state-container',
   template: `
-    <div *ngIf="viewState$ | push as state">
+    <button (click)="isNewClick$$.next($event)">
+      onlyNewRefs
+    </button>
+    <!--<div *ngIf="viewState$ | push as state">
       <pre>{{state | json}}</pre>
       <button
         *ngFor="let v of state.buttons | keyvalue"
@@ -33,43 +36,24 @@ interface ViewState {
         {{v.key}}
       </button>
       <br>
-      <button id="isNew">
-        onlyNewRefs: {{state.isNew}}
-      </button>
-      <br>
+      
+      <hr/>
+
       <app-options [state]="optionState$ | async">
       </app-options>
-      <div *ngIf="state.buttons as buttons">
-        <div *ngIf="buttons.async">
-          async-pipe: {{primitiveInterval$ | async}}
-        </div>
-        <div *ngIf="buttons.primitive">
-          primitiveInterval$ | push: {{primitiveInterval$ | push}}
-        </div>
-        <div *ngIf="buttons.mutable">
-          mutableInterval$ | push: {{(mutableInterval$ | push)?.value}}
-        </div>
-        <div *ngIf="buttons.mutableArgs">
-          mutableInterval$ | push:forwardOnlyNewRefs: {{(mutableInterval$ | push:isNew)?.value}}
-        </div>
-        <div *ngIf="buttons.immutable">
-          immutableInterval$ | push: {{(immutableInterval$ | push)?.value}}
-        </div>
-        <div *ngIf="buttons.input">
-          <h1 style="color: red">
-            Why is it not passing the input boundary??
-          </h1>
-          <app-display
-            [value]="primitiveInterval$ | push">
-          </app-display>
-        </div>
-      </div>
-    </div>
+
+      <app-pipe-tests-panel [state]="buttons$ | async">
+      </app-pipe-tests-panel>
+    </div>-->
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LocalStateContainerComponent implements OnInit, AfterViewInit {
+  // VIEW Bindings
+  isNewClick$$ = new Subject();
+
   // STATE
+  /**/
   initState: ViewState = {
     // global state
     ngRxStore: '',
@@ -86,16 +70,24 @@ export class LocalStateContainerComponent implements OnInit, AfterViewInit {
       input: false
     }
   };
+
   localState = new LocalState<ViewState>(this.initState);
 
   // VIEW QUERIES
-  viewState$: Observable<ViewState> = this.localState.state$;
-  buttons$: Observable<any> = this.localState.state$
-    .pipe(map(s => s.buttons as any));
+  // viewState$: Observable<ViewState> = this.localState.state$;
 
-  optionState$: Observable<OptionsStateInterface> = this.localState.state$
-    .pipe(map(s => ({state: s.buttons, config: Object.keys(s.buttons)})));
+  /*
+  buttons$ = this.localState.state$
+    .pipe(map((s: ViewState) => s.buttons));
 
+  optionState$ = this.localState.state$
+    .pipe(
+      map((s: ViewState): OptionsState => ({
+        state: s.buttons,
+        config: Object.keys(s.buttons) as string[]
+      }))
+    );
+ */
   // state slices
   isNew$: Observable<boolean> = this.localState.state$
     .pipe(map(s => s.isNew));
@@ -109,10 +101,13 @@ export class LocalStateContainerComponent implements OnInit, AfterViewInit {
       map((isNew: boolean) => !isNew)
     )
   );
+
+  /*
   buttonIdClicks$ = this.buttons$.pipe(
     distinctUntilChanged(),
     switchMap(buttonState => this.getButtonClickAsId(Object.keys(buttonState)))
   );
+
   updateButtonStateCommand$: any = this.buttonIdClicks$
     .pipe(
       withLatestFrom(
@@ -120,45 +115,40 @@ export class LocalStateContainerComponent implements OnInit, AfterViewInit {
         (id: string, buttons) => ({...buttons, [id]: !buttons[id]})
       )
     );
-
-  // OBSERVABLE TESTS
-  mutualData = {value: 0};
-  primitiveInterval$ = timer(0, 100).pipe(shareReplay(1));
-  mutableInterval$ = this.primitiveInterval$.pipe(
-    map(value => {
-      this.mutualData.value = value;
-      return this.mutualData;
-    })
-  );
-  immutableInterval$ = this.primitiveInterval$.pipe(
-    map(value => ({value}))
-  );
-
-  constructor(private store: NgRxStoreService) {
+*/
+  constructor(/*private store: NgRxStoreService*/) {
     // state over ngRxStore
-    this.localState
-      .connectSlice({ngRxStore: this.store.storeState$});
+    /*this.localState
+      .connectSlice({ngRxStore: this.store.storeState$});*/
+
+    this.isNewCommand$.subscribe(console.log);
   }
 
   ngOnInit() {
+    /*
     // input binding state
     this.localState
       .connectSlice<string[]>({buttons: this.updateButtonStateCommand$});
     // component internal state
     this.localState
       .connectSlice({progress: interval(1000).pipe(map(v => 'prg' + v))});
+  */
   }
 
   ngAfterViewInit() {
     // state over UI
+    /*
     this.localState
       .connectSlice({isNew: this.isNewCommand$});
+      */
   }
 
-  getButtonClickAsId = (buttonsIds: string[]) => from(buttonsIds).pipe(
-    map(id => fromEvent(document.getElementById(id), 'click')),
-    mergeAll(),
-    map(e => (e.target as any).id)
-  );
+  /*
+    getButtonClickAsId = (buttonsIds: string[]) => from(buttonsIds).pipe(
+      map(id => fromEvent(document.getElementById(id), 'click')),
+      mergeAll(),
+      map(e => (e.target as any).id)
+    );
+  */
 
 }

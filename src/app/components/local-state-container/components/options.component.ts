@@ -3,7 +3,7 @@ import {FormBuilder, FormGroup} from '@angular/forms';
 import {combineLatest, Observable, ReplaySubject} from 'rxjs';
 import {map, shareReplay, switchMap} from 'rxjs/operators';
 import {selectSlice} from '../../../addons/rxjs/operators/selectStateSlice';
-import {OptionsStateInterface} from './options-state.interface';
+import {OptionsState} from './options.state';
 
 @Component({
   selector: 'app-options',
@@ -30,10 +30,10 @@ import {OptionsStateInterface} from './options-state.interface';
 })
 export class OptionsComponent {
 
-  localState$$ = new ReplaySubject<OptionsStateInterface>(1);
+  localState$$ = new ReplaySubject<OptionsState>(1);
 
   @Input()
-  set state(state: OptionsStateInterface) {
+  set state(state: OptionsState) {
     this.localState$$.next(state);
   }
 

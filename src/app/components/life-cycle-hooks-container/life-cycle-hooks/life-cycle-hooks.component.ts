@@ -13,7 +13,7 @@ import {
   SimpleChanges
 } from '@angular/core';
 import {Observable} from 'rxjs';
-import {hook$} from '../../../addons/decorators/hook';
+import {Hook$} from '../../../addons/decorators/hook';
 
 @Component({
   selector: 'app-reactive-lifecycle-hooks',
@@ -26,14 +26,14 @@ import {hook$} from '../../../addons/decorators/hook';
 export class LifeCycleHooksComponent implements OnChanges, DoCheck, OnInit, AfterViewInit,
   AfterViewChecked, AfterContentInit, AfterContentChecked, OnDestroy {
 
-  @hook$('doCheck') doCheck$: Observable<void>;
-  @hook$('onChanges') onChanges$: Observable<SimpleChanges>;
-  @hook$('onInit') onInit$: Observable<void>;
-  @hook$('afterContentChecked') afterContentChecked$: Observable<void>;
-  @hook$('afterContentInit') afterContentInit$: Observable<void>;
-  @hook$('afterViewChecked') afterViewChecked$: Observable<void>;
-  @hook$('afterViewInit') afterViewInit$: Observable<void>;
-  @hook$('onDestroy') onDestroy$: Observable<void>;
+  @Hook$('doCheck') doCheck$: Observable<void>;
+  @Hook$('onChanges') onChanges$: Observable<SimpleChanges>;
+  @Hook$('onInit') onInit$: Observable<void>;
+  @Hook$('afterContentChecked') afterContentChecked$: Observable<void>;
+  @Hook$('afterContentInit') afterContentInit$: Observable<void>;
+  @Hook$('afterViewChecked') afterViewChecked$: Observable<void>;
+  @Hook$('afterViewInit') afterViewInit$: Observable<void>;
+  @Hook$('onDestroy') onDestroy$: Observable<void>;
 
   @Input() state;
 
