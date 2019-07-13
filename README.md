@@ -20,17 +20,17 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
 - [Sections Important For Reactive Architecture](#Sections-Important-For-Reactive-Architecture)
   - [Component Bindings](#Component-Bindings)
     - [DomElement](#DomElement)
-    - [WebComponent](#WebComponent]
-    - [AngularComponent](#AngularComponent]
-  - Observable Life Cycle Hooks
-- Suggested Extensions
-  - Push Pipe
-  - Multi Let Structural Directive
-  - Observable Life Cycle Hooks
-    - Helper Operator
-  - Observable Output Bindings
-  - Local State Management
-    - Helper Operator
+    - [WebComponent](#WebComponent)
+    - [AngularComponent](#AngularComponent)
+  - [Life Cycle Hooks](#Life-Cycle-Hooks)
+- [Suggested Extensions](#Suggested-Extensions)
+  - [Push Pipe](#Push-Pipe)
+  - [Multi Let Structural Directive](#Multi-Let-Structural-Directive)
+  - [Observable Life Cycle Hooks](#Observable-Life-Cycle-Hooks)
+    - [selectChange RxJS Operator](#selectChange-RxJS-Operator)
+  - [Observable Output Bindings](#Observable-Output-Bindings)
+  - [Local State Management](#Local-State-Management)
+    - [selectSlice RxJS Operator](#selectSlice-RxJS-Operator)
 ---
 
 # Sections Important For Reactive Architecture
@@ -580,9 +580,9 @@ Following things are done under the hood:
 - The property i.e. `onInit$` gets an observable assigned, not a subject.
 - Single shot life cycle hooks complete after the first notification similar to http requests from `HttpClient`
 
-### Helper Operator
+### selectChange RxJS Operator
 
-**`selectChange`**
+**``**
 
 An operators `selectChange` to select a specific slice from `SimpleChange`. 
 This operator can used in combination with `onChanges$`.
@@ -653,9 +653,7 @@ constructor(private lS: LocalState<MyState>) {
 }
 ```
 
-### Helper Operator
-
-**`selectSlice`**
+### selectSlice RxJS Operator
 
 A flexible way to query a state slice.
 It considers also a late subscriber. 
