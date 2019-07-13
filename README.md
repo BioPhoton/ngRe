@@ -91,18 +91,6 @@ export class AppComponent  {
 Angular provides a set of decorators for all standard dom attributes. 
 This the suggested way to go and explained in detail in the AngularComponent section.  
 
-#### Receive events over `elem.addEventListener()`
-
-**Imperative approach:**
-
-```typescript
-const elem = document.getElementById('elem-1');
-elem
-  .addEventListener('click', e => {
-    console.log('click event:', e);
-  });
-``` 
-
 **Reactive approach:**
 
 ```typescript
@@ -113,20 +101,42 @@ fromEvent(elem, 'click')
   });
 ``` 
 
+**Needs:**
+As Angular covered this already this section can be ignored for the suggested extensions.
+
 ### WebComponent 
 
 The goal is to list vanilla js versions as well as the angular way and list options on how to make property values and events working with angular.
 
 #### Send to property over `<elem attr=""></elem>`  
 
-**Imperative aproach:**
-**Reactive aproach:**
+**Imperative approach:**
+```typescript
+TBD
+```
+
+**Reactive approach:**
+```typescript
+TBD
+```
+
+**Needs:**
+TBD
 
 #### Receive events over `elem.addEventListener()`
 
 **Imperative approach:**
+```typescript
+TBD
+```
 
 **Reactive approach:**
+```typescript
+TBD
+```
+
+**Needs:**
+TBD
 
 ### AngularComponents
 
@@ -185,7 +195,7 @@ export class ChildComponent  {
 ``` 
 
 **Needs:**
-TBD
+Some decorator that abstracts settings up the sunject and connection it with the properts. Here `ReplaySubject` is critical because of the lefe cycle hooks.
 
 #### Output Decorator
 
@@ -237,7 +247,7 @@ export class ChildComponent  {
 ```
 
 **Needs:**
-TBD
+As we can directly connect an observable with the output binding there is no need foe an extension.
 
 #### HostListener Decorator
 
@@ -281,7 +291,8 @@ export class ChildComponent  {
 ```
 
 **Needs:**
-Get rid of the onClick function and subject creation.
+We would need a dacorator that abstracts away the Subject creation and connect it with the property. 
+Here a configuration method similar to the one from [publish](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34) would be nice.
 
 #### HostBinding Decorator
 
@@ -471,9 +482,11 @@ export class ChildComponent implements OnChanges {
 }
 ```
 
-# Suggested Addons
+# Suggested Extensions
 
-Things suggested:
+Based on the above listing and thier needs we suggest a set of Angular extensions that should make it easier to setup a fully reactive architecture.
+
+Extensions suggested:
 - [Push Pipe](#push-pipe) (+++)
 - [Multi Let Directive](#Multi-Let-Directive) (++)
 - [Life Cycle Hooks](#Life-Cycle-Hooks) (+++)
@@ -486,7 +499,9 @@ Things suggested:
 An angular pipe similar to the `async` pipe but triggers `detectChanges` instead of `markForCheck`.
 This is required to run zone-less. We render on every pushed message.
 
-The pipe should work on as template binding `{{thing$ | push}}` 
+
+
+The pipe should work as template binding `{{thing$ | push}}` 
 as well as input binding `[color]="thing$ | push"`
 
 ```html
