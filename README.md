@@ -17,13 +17,20 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
 ---
 ## Table of content
 ---
-- Sections Important For Reactive Architecture
-  - Observable Component Bindings
-    - DomElement
-    - WebComponent
-    - AngularComponent
+- [Sections Important For Reactive Architecture](#Sections-Important-For-Reactive-Architecture)
+  - [Component Bindings](#Component-Bindings)
+    - [DomElement](#DomElement)
+    - [WebComponent](#WebComponent]
+    - [AngularComponent](#AngularComponent]
   - Observable Life Cycle Hooks
 - Suggested Extensions
+  - Push Pipe
+  - Multi Let Structural Directive
+  - Observable Life Cycle Hooks
+    - Helper Operator
+  - Observable Output Bindings
+  - Local State Management
+    - Helper Operator
 ---
 
 # Sections Important For Reactive Architecture
@@ -487,12 +494,13 @@ export class ChildComponent implements OnChanges {
 Based on the above listing and thier needs we suggest a set of Angular extensions that should make it easier to setup a fully reactive architecture.
 
 Extensions suggested:
-- [Push Pipe](#push-pipe) (+++)
-- [Multi Let Directive](#Multi-Let-Directive) (++)
-- [Life Cycle Hooks](#Life-Cycle-Hooks) (+++)
-  - [Observable Input Bindings](#Observable-Input-Bindings) (++)
-  - [selectChange Operator](#selectChange-Operator) (++)
-- [Local State Management](Local-State-Management) (+)
+- Push Pipe
+- Multi Let Structural Directive
+- Observable Life Cycle Hooks
+  - Helper Operator
+- Observable Output Bindings
+- Local State Management
+  - Helper Operator
 
 ## Push Pipe
 
@@ -632,20 +640,6 @@ A tiny logic that combines:
 - state rendered to view 
 - state from services.
 
-A flexible way to query a state slice.
-It considers also a late subscriber. 
-
-Handling late subscriber is especially useful when working with lifecycle hooks.
-Here values arrive over inputs and the subscription happens later in AfterViewInit. 
-We normally would lose this value. 
-
-```typescript
-buttons$ = this.lS.state$
-      .pipe(
-        selectChange('buttons')
-      );
-```
-
 A way to connect events from the view and component as observable.
 
 ```typescript
@@ -657,4 +651,25 @@ constructor(private lS: LocalState<MyState>) {
   this.lS
     .connectSlice('buttons', this.buttons$);
 }
-``` 
+```
+
+### Helper Operator
+
+**`selectSlice`**
+
+A flexible way to query a state slice.
+It considers also a late subscriber. 
+
+An operators `selectSlice` to select a specific slice from the managed state. 
+This operator can be used to get slices from `this.lS$`.
+
+```typescript
+buttons$ = this.lS.state$
+  .pipe(
+    selectChange(['state', 'substate'])
+  );
+```
+
+Following things are done under the hood:
+- it handles late subscribers with `shareReplay(1)` 
+- it forwards only distinct values
