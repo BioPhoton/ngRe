@@ -24,6 +24,10 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
     - [AngularComponent](#AngularComponent)
   - [Life Cycle Hooks](#Life-Cycle-Hooks)
 - [Sections Important For Running Zone Less](#Sections-Important-For-Running-Zone-Less)
+- [Needs Overview](#Needs-Overview)
+  - [Automoate boilerplate](#Automoate-Boilerplate)
+  - [Intuitive Way To Handle Timing Issues](#Intuitiv-Way-To-Handle-Timing-Issues)
+  - [Convenient Way To Wire Things Together](#Convenient-Way-To-Wire-Things-Together)
 - [Suggested Extensions](#Suggested-Extensions)
   - [Push Pipe](#Push-Pipe)
   - [Multi Let Structural Directive](#Multi-Let-Structural-Directive)
@@ -497,7 +501,7 @@ TBD
 
 # Needs Overview
 
-## Automoate boilerplate
+## Automoate Boilerplate
 
 Automate boilerplate of setting up a subject and connecting it to producer
 
@@ -511,7 +515,7 @@ Here we think one or many component property/method decorator can help.
 - setter accepts observables as values i.e. connecting a reactive radio group directly to a style property 
 ---
 
-## Intuitive way to handle timing issues
+## Intuitive Way To Handle Timing Issues
 
 As timing and multicasting is anyway a complex topic we should make it easy for the consumer of these extensions to use them. 
 
@@ -541,7 +545,7 @@ In this way, it is easy to have a simplified public API but flexibility internal
 ---
 
 
-## Convenient way to wire things together
+## Convenient Way To Wire Things Together
 As discussed in [Automoate boilerplate](#Automoate-boilerplate) a lot of things that are related to angular can be solved by the right decorator. But there are other areas where we need to provide some solutions. A more general one than just life cycle hooks of a single component. 
 
 The problem of connecting all component bindings, global state, locally provided services, view events and 
