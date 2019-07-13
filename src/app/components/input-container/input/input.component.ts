@@ -1,44 +1,23 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {Observable} from 'rxjs';
-import {Hook$} from '../../../addons/decorators/hook';
-import {getChange} from '../../../addons/rxjs/operators/getChange';
-// import {Observable} from 'rxjs';
-// import {hook$} from '../../../addons/decorators/hook';
-// import {getChange} from '../../../addons/rxjs/operators/getChange';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {of} from 'rxjs';
 
 @Component({
   selector: 'app-input',
   template: `
-    <p>
-      input works!
-    </p>
     <pre>
-      state: {{state | json}}
-    </pre>
-    <pre>
-      state$: {{state$ | push | json}}
+      state$: {{state$ | async | json}}
     </pre>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InputComponent implements OnChanges, AfterViewInit {
+export class InputComponent {
 
-  @Hook$('onChanges') onChanges$: Observable<SimpleChanges>;
-
-  @Input() state: { value: number };
-  state$: Observable<{ value: number }> = this.onChanges$.pipe(getChange('state'));
+  @Input()
+  state;
+  state$ = of(null);
 
   constructor() {
 
-  }
-
-  // @TODO remove after fixed reactive hooks
-  ngOnChanges(changes: SimpleChanges): void {
-
-  }
-
-  ngAfterViewInit(): void {
-    console.log('InputComponent ngAfterViewInit');
   }
 
 }

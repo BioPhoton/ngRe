@@ -1,27 +1,26 @@
 import {AfterContentInit, ChangeDetectionStrategy, Component} from '@angular/core';
-import {defer, fromEvent} from 'rxjs';
+import {ObservableEvent as Event$} from '@typebytes/ngx-template-streams';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-output-container',
   template: `
-    <button id="btn">Click Me!</button>
+    <button (*click)="clicks$">Click Me!</button>
     <br>
-    <app-output
-      (out)="fn($event)"
-      id="app-from-view-1">
-    </app-output>
+    <app-output></app-output>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OutputContainerComponent implements AfterContentInit {
 
+  @Event$()
+  clicks$: Observable<any>;
+
   constructor() {
 
   }
 
-  elem = () => document.getElementById('app-from-view-1');
-
   ngAfterContentInit() {
-    // this.valueFromButtonClick$.subscribe(console.log);
+    this.clicks$.subscribe(console.log);
   }
 }

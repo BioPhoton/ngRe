@@ -1,6 +1,5 @@
 import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, NgZone} from '@angular/core';
-import {NavigationEnd, Router} from '@angular/router';
-import {filter} from 'rxjs/operators';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -17,16 +16,25 @@ import {filter} from 'rxjs/operators';
       </li>
       <li>
         <a routerLink="live-cycle-hooks">LifeCycleHooks</a>
+        <ul>
+          <li>
+            <a [routerLink]="['live-cycle-hooks', {selectChange: true}]">SelectChange RxJS Operator</a>
+          </li>
+        </ul>
       </li>
-      <!-- <li>
+      <li>
         <a routerLink="input">Input</a>
       </li>
-      
       <li>
         <a routerLink="output">Output</a>
-      </li> -->
+      </li>
       <li>
         <a routerLink="local-state">LocalState</a>
+        <ul>
+          <li>
+            <a [routerLink]="['late-subscribers']">Late Subscribers</a>
+          </li>
+        </ul>
       </li>
     </ul>
     <router-outlet></router-outlet>

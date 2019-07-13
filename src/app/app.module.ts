@@ -8,14 +8,16 @@ import {InputContainerComponent} from './components/input-container/input-contai
 import {InputComponent} from './components/input-container/input/input.component';
 import {OptionsComponent} from './components/local-state-container/components/options.component';
 import {PipeTestsPanelComponent} from './components/local-state-container/components/pipe-tests-panel.component';
+import {LateSubscribersContainerComponent} from './components/local-state-container/late-subscribers/late-subscribers-container.component';
 import {OutputContainerComponent} from './components/output-container/output-container.component';
 import {OutputComponent} from './components/output-container/output/output.component';
 import {PushPipeContainerComponent} from './components/push-pipe-container/push-pipe-container.component';
 import {PushPipeComponent} from './components/push-pipe-container/push-pipe-display/push-pipe.component';
 import { LocalStateContainerComponent } from './components/local-state-container/local-state-container.component';
 import { LocalStateComponent } from './components/local-state-container/local-state.component';
-import {LifeCycleHooksContainerComponent} from './components/life-cycle-hooks-container/life-cycle-hooks-container.component';
-import {LifeCycleHooksComponent} from './components/life-cycle-hooks-container/life-cycle-hooks/life-cycle-hooks.component';
+// import {LifeCycleHooksContainerComponent} from './components/life-cycle-hooks-container/life-cycle-hooks-container.component';
+// import {LifeCycleHooksComponent} from './components/life-cycle-hooks-container/life-cycle-hooks.component';
+// import {SelectChangeComponent} from './components/life-cycle-hooks-container/select-change.component';
 
 @NgModule({
   declarations: [
@@ -23,8 +25,9 @@ import {LifeCycleHooksComponent} from './components/life-cycle-hooks-container/l
     PushPipeContainerComponent,
     PushPipeComponent,
     PushPipe,
-    LifeCycleHooksContainerComponent,
-    LifeCycleHooksComponent,
+    // LifeCycleHooksContainerComponent,
+    // LifeCycleHooksComponent,
+    // SelectChangeComponent,
     OutputContainerComponent,
     OutputComponent,
     InputContainerComponent,
@@ -32,7 +35,8 @@ import {LifeCycleHooksComponent} from './components/life-cycle-hooks-container/l
     LocalStateContainerComponent,
     LocalStateComponent,
     OptionsComponent,
-    PipeTestsPanelComponent
+    PipeTestsPanelComponent,
+    LateSubscribersContainerComponent
   ],
   imports: [
     BrowserModule,
@@ -41,10 +45,14 @@ import {LifeCycleHooksComponent} from './components/life-cycle-hooks-container/l
         path: 'push-pipe',
         component: PushPipeContainerComponent
       },
-     {
-        path: 'live-cycle-hooks',
-        component: LifeCycleHooksContainerComponent
-      },
+      /*  {
+         path: 'live-cycle-hooks',
+         component: LifeCycleHooksContainerComponent
+       },
+      {
+         path: 'select-change',
+         component: SelectChangeComponent
+       },*/
       {
         path: 'input',
         component: InputContainerComponent
@@ -56,6 +64,10 @@ import {LifeCycleHooksComponent} from './components/life-cycle-hooks-container/l
       {
         path: 'local-state',
         component: LocalStateContainerComponent
+      },
+      {
+        path: 'late-subscribers',
+        component: LateSubscribersContainerComponent
       }
     ])
   ],

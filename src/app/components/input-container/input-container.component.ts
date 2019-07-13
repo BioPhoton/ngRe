@@ -16,7 +16,7 @@ import {map} from 'rxjs/operators';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InputContainerComponent implements AfterViewInit {
+export class InputContainerComponent {
 
   state$ = interval(1000)
     .pipe(
@@ -27,7 +27,4 @@ export class InputContainerComponent implements AfterViewInit {
 
   }
 
-  ngAfterViewInit(): void {
-    console.log('InputContainerComponent ngAfterViewInit');
-  }
 }

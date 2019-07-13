@@ -8,8 +8,11 @@ import {map} from 'rxjs/operators';
     <p>
       reactive-lifecycle-hooks-container works!
     </p>
-    {{state$ | push | json}}
-    <app-reactive-lifecycle-hooks [state]="state$ | async"></app-reactive-lifecycle-hooks>
+    state$: {{state$ | async | json}}
+    <app-reactive-lifecycle-hooks [state]="state$ | async">
+    </app-reactive-lifecycle-hooks>
+    <app-select-change [value]="state$ | async">
+    </app-select-change>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -27,8 +30,5 @@ export class LifeCycleHooksContainerComponent {
         value: v
       }))
     );
-
-  constructor() {
-  }
 
 }

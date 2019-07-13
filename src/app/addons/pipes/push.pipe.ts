@@ -15,7 +15,8 @@ import {distinctUntilChanged, switchAll, takeUntil} from 'rxjs/operators';
  * it'S clean it's pure :)
  *
  */
-@Pipe({name: 'push'})
+// @TODO remove `pure: false` and experiment without zone
+@Pipe({name: 'push', pure: false})
 export class PushPipe implements PipeTransform, OnDestroy {
   private value: any = null;
 
@@ -23,23 +24,18 @@ export class PushPipe implements PipeTransform, OnDestroy {
 
   // @TODO fix any types
   observablesToSubscribe$$ = new Subject<Observable<any>>();
-  observablesToSubscribe$ = this.observablesToSubscribe$$
-    .pipe(
-      // only forward new references (avoids holding a local reference to the previous observable => this.currentObs !== obs)
-      distinctUntilChanged()
-    );
-
-  handleChangesSideEffect$ = this.observablesToSubscribe$
-    .pipe(
-      // unsubscribe from previous observables
-      // then flatten the latest internal observables into the output
-      switchAll()
-    );
 
   constructor(private cdRef: ChangeDetectorRef) {
-    this.handleChangesSideEffect$
-    // unsubscribe if component gets destroyed
-      .pipe(takeUntil(this.ngOnDestroy$$))
+    this.observablesToSubscribe$$
+      .pipe(
+        // only forward new references (avoids holding a local reference to the previous observable => this.currentObs !== obs)
+        distinctUntilChanged(),
+        // unsubscribe from previous observables
+        // then flatten the latest internal observables into the output
+        switchAll(),
+        // unsubscribe if component gets destroyed
+        takeUntil(this.ngOnDestroy$$)
+      )
       .subscribe(value => {
         // assign value that will get returned from the transform function on the next change detection
         this.value = value;
@@ -53,11 +49,10 @@ export class PushPipe implements PipeTransform, OnDestroy {
     this.ngOnDestroy$$.next(true);
   }
 
-  transform<T>(obs: null | undefined, forwardOnlyNewReferences: boolean): null;
-  transform<T>(obs: Observable<T>, forwardOnlyNewReferences: boolean): T;
-  transform<T>(obs: Observable<T> | null | undefined, forwardOnlyNewReferences = true): T | null {
-    console.log('');
-    this.observablesToSubscribe$$.next(!isObservable(obs) ? of(null) : obs);
+  transform<T>(obj: null | undefined, forwardOnlyNewReferences: boolean): null;
+  transform<T>(obj: Observable<T>, forwardOnlyNewReferences: boolean): T;
+  transform<T>(obj: Observable<T> | null | undefined, forwardOnlyNewReferences = true): T | null {
+    this.observablesToSubscribe$$.next(!isObservable(obj) ? of(null) : obj);
     return this.value;
   }
 }

@@ -13,7 +13,7 @@ import {
   SimpleChanges
 } from '@angular/core';
 import {Observable} from 'rxjs';
-import {Hook$} from '../../../addons/decorators/hook';
+import {Hook$} from '../../addons/decorators/hook';
 
 @Component({
   selector: 'app-reactive-lifecycle-hooks',

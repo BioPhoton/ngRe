@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, Input, Output} from '@angular/core';
 import {FormBuilder, FormGroup} from '@angular/forms';
 import {combineLatest, Observable, ReplaySubject} from 'rxjs';
 import {map, shareReplay, switchMap} from 'rxjs/operators';
-import {selectSlice} from '../../../addons/rxjs/operators/selectStateSlice';
+import {selectSlice} from '../../../addons/rxjs/operators/selectSlice';
 import {OptionsState} from './options.state';
 
 @Component({

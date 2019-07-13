@@ -1,7 +1,8 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {defer, fromEvent, Observable, Subject} from 'rxjs';
 import {map, withLatestFrom} from 'rxjs/operators';
-import {LocalState} from '../../addons/state/local-state';
+import {selectSlice} from '../../addons/rxjs/operators/selectSlice';
+import {LocalStateService} from '../../addons/state/local-state';
 
 interface ButtonState {
   [key: string]: boolean;
@@ -27,7 +28,8 @@ interface ViewState {
     <button (click)="isNewClick$$.next($event)">
       onlyNewRefs
     </button>
-    <!--<div *ngIf="viewState$ | push as state">
+    <!--
+    <div *ngIf="viewState$ | push as state">
       <pre>{{state | json}}</pre>
       <button
         *ngFor="let v of state.buttons | keyvalue"
@@ -36,9 +38,7 @@ interface ViewState {
         {{v.key}}
       </button>
       <br>
-      
       <hr/>
-
       <app-options [state]="optionState$ | async">
       </app-options>
 
@@ -46,7 +46,10 @@ interface ViewState {
       </app-pipe-tests-panel>
     </div>-->
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    LocalStateService
+  ]
 })
 export class LocalStateContainerComponent implements OnInit, AfterViewInit {
   // VIEW Bindings
@@ -71,8 +74,6 @@ export class LocalStateContainerComponent implements OnInit, AfterViewInit {
     }
   };
 
-  localState = new LocalState<ViewState>(this.initState);
-
   // VIEW QUERIES
   // viewState$: Observable<ViewState> = this.localState.state$;
 
@@ -90,17 +91,15 @@ export class LocalStateContainerComponent implements OnInit, AfterViewInit {
  */
   // state slices
   isNew$: Observable<boolean> = this.localState.state$
-    .pipe(map(s => s.isNew));
-
+    .pipe(selectSlice(s => s.isNew));
 
   // COMMANDS
   // @TODO why defer here?
-  isNewCommand$ = defer(() => fromEvent(document.getElementById('isNew'), 'click')
+  isNewCommand$ = this.isNewClick$$
     .pipe(
       withLatestFrom(this.isNew$, (_, isNew) => isNew),
       map((isNew: boolean) => !isNew)
-    )
-  );
+    );
 
   /*
   buttonIdClicks$ = this.buttons$.pipe(
@@ -116,10 +115,13 @@ export class LocalStateContainerComponent implements OnInit, AfterViewInit {
       )
     );
 */
-  constructor(/*private store: NgRxStoreService*/) {
+  constructor(private localState: LocalStateService/*private store: NgRxStoreService*/) {
+    this.localState.setSlice(this.initState);
     // state over ngRxStore
-    /*this.localState
-      .connectSlice({ngRxStore: this.store.storeState$});*/
+    /*
+    this.localState
+      .connectSlice({ngRxStore: this.store.storeState$});
+    */
 
     this.isNewCommand$.subscribe(console.log);
   }
