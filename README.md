@@ -247,7 +247,7 @@ export class ChildComponent  {
 ```
 
 **Needs:**
-As we can directly connect an observable with the output binding there is no need foe an extension.
+As we can directly connect an observable with the output binding there is **no need** foe an extension.
 
 #### HostListener Decorator
 
@@ -490,7 +490,7 @@ Extensions suggested:
 - [Push Pipe](#push-pipe) (+++)
 - [Multi Let Directive](#Multi-Let-Directive) (++)
 - [Life Cycle Hooks](#Life-Cycle-Hooks) (+++)
-  - [Observable Imput Bindings](#Observable-Input-Bindings) (++)
+  - [Observable Input Bindings](#Observable-Input-Bindings) (++)
   - [selectChange Operator](#selectChange-Operator) (++)
 - [Local State Management](Local-State-Management) (+)
 
@@ -499,10 +499,8 @@ Extensions suggested:
 An angular pipe similar to the `async` pipe but triggers `detectChanges` instead of `markForCheck`.
 This is required to run zone-less. We render on every pushed message.
 
-
-
 The pipe should work as template binding `{{thing$ | push}}` 
-as well as input binding `[color]="thing$ | push"`
+as well as input binding `[color]="thing$ | push"` and trigger the changes of the host component.
 
 ```html
 <div *ngIf="(thing$ | push) as thing">
@@ -511,19 +509,6 @@ as well as input binding `[color]="thing$ | push"`
 <div>
 
 <app-color [color]="(thing$ | push).color">
-</app-color>
-```
-
-Here multiple subscriptions in the view could lead to performance issues. Unfortunately, we see this a lot of applications.
-
-```html
-<div>
-  color: {{(thing$ | push).color}}
-  shape: {{(thing$ | push).shape}}
-<div>
-
-<app-color [color]="(thing$ | push).color">
-  {{(thing$ | push).shape}}
 </app-color>
 ```
 
@@ -562,26 +547,18 @@ This would help the nested divs and the number of subscriptions.
 </div>
 ```
 
+## Observable Life Cycle Hooks
 
+A property decorator which turnes a lifecycle method into an observable and assingnes it to the related property.
 
-# DRAFT 
-
-# Life Cycle Hooks
-
-To get inputs as observables are crucial for any reactive architecture. 
-Also to render push-based we need to depend on life-cycle hooks as an observable.
-
-**Current Options**
-- Decorators
-- ViewChild
-
-The goal would be to create a generic decorator `@hooks$()` that hooks into methods registered in the component's constructor. 
+The decorator should work as aproxy for all life cycle hooks ` @hook$('onInit') onInit$;` 
+as well as forward passed values i.e. `changes` in from the `OnChanges` hook.
 
 ```typescript
   @hook$('onInit') onInit$;
   @hook$('onDestroy') onDestroy$;
 
-  time$: this.onInit$
+  this.onInit$
     .pipe(
       switchMapTo(interval(1000)),
       map(_ => Date.now()),
@@ -590,40 +567,19 @@ The goal would be to create a generic decorator `@hooks$()` that hooks into meth
     .subscribe();
 ```
 
-Unfortunately, the `onChanges` feature is different than the rest and it is not possible to extend it in a normal way.
-The onChanges feature is created over [wrapOnChanges](https://github.com/angular/angular/blob/e688e02ee442658c754d813e84a9908baf874520/packages/core/src/render3/features/ng_onchanges_feature.ts#L58) that encapsulates the `this`
+Following things are done under the hood:
+- It uses a caching method like `ReplaySubject` does to handle late subscribers.
+- The property i.e. `onInit$` gets an observable assigned, not a subject.
+- Single shot life cycle hooks complete after the first notification similar to http requests from `HttpClient`
 
-```typescript
-if(hookName === 'onChanges') {
-    const originalHook = component['ngOnChanges'];
-    component['onChanges'] = function() {
-      subject.next(args);
-      original && original.call(component, args);
-    }
-}
-``` 
-## Operator `selectChange`
+### Helper Operator
 
-Operators to select a specific slice from onChanges. 
-It is also multicasted over `shareReplay(1)` and also caches the latest value for late subscribers.
+**`selectChange`**
 
-This operator is used in combination with `OnChanges` as an observable hook.
-It provides also a very early method of control of the forwarded values.
+An operators `selectChange` to select a specific slice from `SimpleChange`. 
+This operator can used in combination with `onChanges$`.
 
-Important to mention is that it should have some sort of cache implemented as `new ReplaySubject(1)` 
-(or maybe `.shareReplay(1)` if it returns a connected observable)  
-
-```typescript
-  @hook$('onChanges') 
-  onChanges$;
-  
-  @Input() 
-  state;
-  
-  state$ = this.onChanges$.pipe(selectChange('state'));
-``` 
-
-With this primitive we can easily have observable inputs like that:
+It also provides a very early option to control the forwarded values.
 
 ```typescript
 export class MyComponent {
@@ -635,79 +591,40 @@ export class MyComponent {
 }
 ```
 
-Another may be too over-engineered way could be combining the hook as well as the `@Input()` declaration. 
+Following things are done under the hood:
+- pull out `currentValue` from `SimpleChanges` object
+- optional it could have a prama for a custom comparison function
+
+
+## Observable Output Bindings
+
+A property decorator which turnes a view event into an observable and assingnes it to the related property.
+
+The solution should work do most of his work in the component it self. 
+Only a small piece in the template should be needed to link the view with the component property.
 
 ```typescript
-export class MyComponent {
-  @ReactiveInput()
-  state$ = this.onChanges$.pipe(getChange('state'));
+@Component({
+  selector: 'app-child',
+  template: `<button #elem">clicks: {{count$ | async}}</button>`,
+})
+export class ChildComponent  {
+  @FromView$('#elem', 'click')
+  click$;
+  
+  count$ = this.click$.pipe(scan(a => ++a, 0));
 }
 ```
 
+Following things are done under the hood:
+- It makes it possible to subscribe to the property even before the view is renderen 
+- It is multicasted to avoid multiple subscriptions
+- It works with DomElements, WebComponents and AngularComponents
 
-
-# Observable Component Bindings
-
-Observables from templates could be from the following sources:
-
-The goal is to find the most generic way for the listed sources.  
-With DomEvents and CustomEvents it is already possible the exception is angular specific stuff.
-
-```typescript
-  ngAfterContentInit() {
-    const viewElem = document.getElementById('id1');
-    
-    fromViewElem(viewElem,'output-binding')
-      .subscribe(console.log);
-  }
-```
-
-It could include view and content lifecycle hooks so we don't need to care about it.
-
-A workaround could be to create decorators or directives.
-
-[@elmd_](https://twitter.com/elmd_) already published something for angular:
+Here a link to a similar anlready existing idesa from [@elmd_](https://twitter.com/elmd_):
 https://www.npmjs.com/package/@typebytes/ngx-template-streams
 
-```typescript
- @Component({...
- template: `
- <button (*click)="clicks$">Click Me (Stream)</button>
- `})
- export class AppComponent {
-  @ObservableEvent()
-  clicks$: Observable<any>;
- 
-  ngOnInit() {
-    this.clicks$.subscribe(console.log);
-  }
-```
-
-
-
-### @Output()
-
-**Receive events from `(stateChanged)=""`**
-
-**Send event over `@Output() stateChanged;`**
-
-As output bindings set up inside of a component can directly forward an observable. No need for EventEmitter nor Subject.
-This anyway leads to imperative programming.
-
-```typescript
-@Output() 
-stateChange = this.state$
-    .pipe(
-      map(state => state.slice),
-      distinctUntilChanged()
-    );
-```
-
-As output bindings set up outside of a component can consume over Some primitives described in chapter [Observable View Events](#Observable-View-Events).
-
-
-
-# Local State Management
+## Local State Management
 
 A tiny logic that combines:
 - values over input bindings
