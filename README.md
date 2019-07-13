@@ -1,34 +1,48 @@
-# ReactiveAddons
+# Proposal for a fully reactive architecture in Angular
 #### 
 
+This document is a proposal for a fully reactive architecture in Angular.
+It's main goal is to serve as the glue between your reactive code and the framework.
+  
+Parts of Angular like the `ReactiveFromsModule`, `RouterModule`, `HttpClientModule` ect. are already reactive.
+for those who prefere imperative code it's little effort to restrict it to a simple subscription.
 
-This project is a proposal for a set of basic angular extensions to
-create a fully reactive application architicture without hacks and workarounds.
+On the other hand for those who prefere reactive code it's not that easy. 
+A lot of convinenc is missing, and beside the `async` pipe there is pretty much nothing there to take away the manual mapping to observables. Furthermore an increasing number of packages start to be fully observable based. A very popular and widely used example is `ngRx`. It anables us to maintain a global pushbased state management based on observables.
 
-It lists current needs and possible implementations as well as a 
-set of proposed primitive service as glue for a reactive architecture.
+This creates even more interest and need for reactive primitives like the `aysnc` and other template syntax and decorators.
+ 
+Goal would be to **give an overiew** of the needs and a **suggested set of extensions** to make it more convinient to **work in a reactive architecture**.
 
 ---
 ## Table of content
 ---
-- Requriements
+- Sections Important For Reactive Architecture
   - Observable Component Bindings
     - DomElement
     - WebComponent
     - AngularComponent
-  - Life Cycle Hooks
-    - 
+  - Observable Life Cycle Hooks
+    - OnChanges
+    - OnInit
+    - DoCheck
+    - AfterContentInit
+    - AfterContentChecked	
+    - AfterViewInit
+    - OnDestroy
 - Suggested Extensions
 ---
 
-# Requirements
-Here we list all requirements to create a fully reactive architecture in angular.
-In the following we list all areas which are considered as important for this goal.
+# Sections Important For Reactive Architecture
+
+Here we will try to list all areas in angular where such helper primitives would be needed. 
+The first step is to list all possible situations and a very simple solution for a reactive approach.
+Each area may have different requirements to be more convenient to use in an reactive way. 
 
 Every section explains the current _imperative_ aproach as well as the _reactive_ aproach in a simple way.
-This should help to understand the problems and get a good overview of the optios and needs in a reactive architecture in angular.
+This should help to understand the problems and get a good overview of the optios and needs for a reactive architecture in angular.
 
-Based in the collected inforamtion we can try to use the explored options to create an elegant solution for the eplored needs.
+Based on the collected inforamtion we can try to use the explored options to create an elegant solution for the eplored needs.
 
 Following topics are documented below:
 - Component Bindings
@@ -211,7 +225,7 @@ We usr a `Subject` to retreive the button click event and we
 **provide an observable instead of an EventEmitter for @Output()**.
 
 Important to know it that the `EventEmitters` part of forwarding the values is not the `Observer` part (next or emit), 
-its the implementation of `Subscription`. This enables us to use an Observable ans stay fully `declarative`
+it's the implementation of `Subscription`. This enables us to use an Observable ans stay fully `declarative`
 
 ```typescript
 @Component({
@@ -423,13 +437,42 @@ The goal here is to find a unified way to have single shot as well as ongoing li
 **Imperative approach:**
 
 ```typescript
-TBD
-``` 
+@Component({
+  selector: 'app-child',
+  template: `<p>change: {{changes | json}}</p>`
+})
+export class ChildComponent implements OnChanges {
+   @Input()
+   state;
+
+   changes;
+
+  ngOnChanges(changes) {
+    this.changes= changes;
+  }
+}``` 
 
 **Reactive approach:**
+As above mentioned in section Input Decorator we **us a `ReplaySubject` to avoid timing issues** realted to life cycle hooks.
+Therefor `changes$` which is 
 
 ```typescript
-TBD
+@Component({
+  selector: 'app-child',
+  template: `<p>change: {{changes$ | async | json}}</p>`
+})
+export class ChildComponent implements OnChanges {
+  @Input() state;
+   
+  onChanges$ = new ReplaySubject(1);
+   
+  changes$ = this.onChanges$
+      .pipe(map(changes => changes));
+
+  ngOnChanges(changes) {
+    this.onChanges$.next(changes);
+  }
+}
 ```
 
 # Suggested Addons
