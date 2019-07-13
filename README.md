@@ -204,7 +204,7 @@ export class ChildComponent  {
 ``` 
 
 **Needs:**
-Some decorator that abstracts settings up the sunject and connection it with the properts. Here `ReplaySubject` is critical because of the lefe cycle hooks.
+Some decorator that **automates the boilerplate** of settings up the sunject and connection it with the properts. Here `ReplaySubject` is critical because of the lefe cycle hooks.
 
 #### Output Decorator
 
@@ -300,8 +300,8 @@ export class ChildComponent  {
 ```
 
 **Needs:**
-We would need a dacorator that abstracts away the Subject creation and connect it with the property. 
-Here a configuration method similar to the one from [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34) would be nice.
+We would need a dacorator **automates the boilerplate** of the Subject creation and connect it with the property. 
+Here a configuration method for the type of `Subject` similar to the one from [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34) would be nice.
 
 #### HostBinding Decorator
 
@@ -320,7 +320,7 @@ In this way, we can retrieve the host's properties changes.
   template: `<p>color: {{className}}</p>`,
 })
 export class ChildComponent  {
-  className = 'visible'
+  className = 'visible';
   
   @HostBinding('class')
   get background() {
@@ -336,13 +336,14 @@ TBD
 ```
 
 **Needs:**
-Provide an observable instead of a function
+**Provide an observable** instead of a function.
 
 #### Input Binding 
 
 **_Send value changes to child compoent input `[state]="state"`_**
 
-In the parent component, we can connect component properties to child component inputs over specific template syntax, the square brackets `[state]`.
+In the parent component, we can connect component properties to child
+component inputs over specific template syntax, the square brackets `[state]`.
 Angular automatically updates the child component over change detection.
 In this way, we can send component properties changes.
 
@@ -492,6 +493,60 @@ export class ChildComponent implements OnChanges {
 ```
 
 # Sections Important For Running Zone Less
+TBD
+
+# Needs Overview
+
+## Automoate boilerplate
+
+Automoate boilerplate of setting up a subject and connecting it to producer
+
+In a majority of the cases there was a need of abstractiong away the boilerplate of setting up a subject and connectiong it to the producer. A normal `Subject` was used in most of the cases. Some cases used a `ReplaySunject` or `BeHaviorSubject` to initialize the value. This was used to provide the latest vaue for new subscriber. 
+
+Here we think one or many component property/method decorator can help. 
+
+**Decoraotrs that:**
+- automatically use the right caching strategy i.e. replay
+- getter are hot by after the decoretor fires i.e. subscription possible without considering life cycle hooks
+- setter accept observbles as values i.e. connecting a reactive radio group directly to a style property 
+---
+
+## Intuitive way to handle timing issues
+
+As timing and muulticasting is anyway a complex topic we should make it easy for the consumer of these extensions to use them. 
+
+There are two problems:
+- Late Subscriber Problem
+- Early Subscriber Problem
+
+_Late Subscriber Problem:_
+Incommings values arrive before the has happened subscription. 
+
+For example state over input bindings arrives before the view gets renderd and a used pipe could recieved the value.
+We call this situation late subsciber problem. In this case the view is a late subscribe to the values from '@Input()' properties.
+
+_Early Subscriber Problem:_
+The subscription happenes before any value can arrive.
+
+For example subscriptions to view elements the constructor happen before they ever exist.
+We call this situation early subsciber problem. In this case the component constructor is a early subscribe to the events from '(click)' bindings. 
+
+All above decorators should rely on a generic way of wrapping a function or property as well as a way
+to configure the used Subjecjt for multicasting similar to [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34)
+
+In this way it is easy to have a simplified public API but a flexibility internally.
+
+**Decoraotrs that:**
+- rely on a configurable multicasting similar to `multicast` operator
+---
+
+
+## Convenient way to wiere things together
+As discussed in [Automoate boilerplate](#Automoate-boilerplate) a lot of things that are related to angular can be solved by the right decorator. But there are other areas where we need to provide some solutions. A more general one than just life cycle hooks of a singel component. 
+
+The problem of connecting all component bindings, global state, local provided services, view events and 
+The main reason here is getting the values over View elements that are instantiates later.
+
 TBD
 
 # Suggested Extensions
@@ -658,6 +713,8 @@ Here a link to a similar anlready existing idesa from [@elmd_](https://twitter.c
 https://www.npmjs.com/package/@typebytes/ngx-template-streams
 
 ## Local State Management
+
+This extension is maybe the most interesting one. While we can 
 
 A tiny logic that combines:
 - values over input bindings
