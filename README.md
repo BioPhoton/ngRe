@@ -29,6 +29,7 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
   - [Multi Let Structural Directive](#Multi-Let-Structural-Directive)
   - [Observable Life Cycle Hooks](#Observable-Life-Cycle-Hooks)
     - [selectChange RxJS Operator](#selectChange-RxJS-Operator)
+  - [Observable Input Bindings](#Observable-Input-Bindings)
   - [Observable Output Bindings](#Observable-Output-Bindings)
   - [Local State Management](#Local-State-Management)
     - [selectSlice RxJS Operator](#selectSlice-RxJS-Operator)
@@ -300,7 +301,7 @@ export class ChildComponent  {
 
 **Needs:**
 We would need a dacorator that abstracts away the Subject creation and connect it with the property. 
-Here a configuration method similar to the one from [publish](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34) would be nice.
+Here a configuration method similar to the one from [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34) would be nice.
 
 #### HostBinding Decorator
 
@@ -502,6 +503,7 @@ Extensions suggested:
 - Multi Let Structural Directive
 - Observable Life Cycle Hooks
   - Helper Operator
+- Observable Input Bindings
 - Observable Output Bindings
 - Local State Management
   - Helper Operator
@@ -607,6 +609,25 @@ Following things are done under the hood:
 - pull out `currentValue` from `SimpleChanges` object
 - optional it could have a prama for a custom comparison function
 
+## Observable Input Bindings
+
+A property decorator which turnes component or directive input binding into an observable and assingnes it to the related property.
+
+```typescript
+@Component({
+  selector: 'app-child',
+  template: `<p>input: {{input$ | async}}</p>`,
+})
+export class ChildComponent  {
+  @Input$()
+  input$;
+}
+```
+
+Following things are done under the hood:
+- It caches to consider late subscribers (life cycle hook related) 
+- It is multicasted to avoid multiple subscriptions
+- It works with WebComponents and AngularComponents
 
 ## Observable Output Bindings
 
