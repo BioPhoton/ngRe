@@ -32,19 +32,32 @@ export function Hook$(hookName: string): Function {
   ) => {
     const subject = new Subject();
     const cDef: ComponentDef<any> = component.constructor[NG_COMPONENT_DEF];
-    console.log('hook$', hookName, component, cDef);
-    // @TODO I guess this is a miss conception that ngChanes is wraped in a function.
-    // reusable anymore
-    const target = hooksWrapped[hookName] ? component : cDef;
-    const hook = hooksWrapped[hookName] ? getCompHookName(hookName) : hookName;
-    // @TODO fix case for ngOnChanges not implemented
-    const originalHook = hooksWrapped[hookName] ? cDef[hook] : component[hook];
+
+    let target;
+    let hook;
+    let originalHook;
+
+
+    if (cDef === undefined) {
+      target = component;
+      hook = getCompHookName(hookName);
+      originalHook = target[hook];
+    } else {
+
+      // @TODO I guess this is a miss conception that ngChanes is wraped in a function.
+      target = hooksWrapped[hookName] ? component : cDef;
+      hook = hooksWrapped[hookName] ? getCompHookName(hookName) : hookName;
+      // @TODO fix case for ngOnChanges not implemented
+      originalHook = hooksWrapped[hookName] ? cDef[hook] : component[hook];
+    }
 
     target[hook] = (args) => {
       subject.next(args);
       // tslint:disable-next-line:no-unused-expression
       originalHook && originalHook.call(component, args);
     };
+
+
     component[propertyKey] = subject.asObservable();
     return component[propertyKey];
   };

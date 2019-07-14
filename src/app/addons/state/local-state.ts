@@ -1,8 +1,9 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {ConnectableObservable, merge, Observable, Subject} from 'rxjs';
-import {endWith, map, mergeAll, publishReplay, scan, tap} from 'rxjs/operators';
+import {Injectable} from '@angular/core';
+import {ConnectableObservable, interval, merge, Observable, Subject} from 'rxjs';
+import {endWith, map, mergeAll, publishReplay, scan, takeUntil, tap} from 'rxjs/operators';
 import {Hook$} from '../decorators/hook';
 
+@Injectable()
 export class LocalStateService {
 
   @Hook$('onDestroy')
@@ -13,6 +14,7 @@ export class LocalStateService {
 
   state$: Observable<any> =
     merge(
+      interval(1000).pipe(map(v => ({ttt: v}))),
       this.command$$,
       this.commandObservable$$.pipe(tap(v => console.log('c$$: ', v)), mergeAll())
     )
@@ -20,27 +22,25 @@ export class LocalStateService {
         scan((s, c) => {
           const [keyToDelete, value]: [string, any] = Object.entries(c)[0];
           const isKeyToDeletePresent = keyToDelete in s;
-
+          // The key you want to delete is not stored :)
           if (!isKeyToDeletePresent && value === undefined) {
-            console.log('The c$$ key you want to delete is not stored', c);
             return s;
           }
-
+          // Delete slice
           if (value === undefined) {
             const {[keyToDelete]: v, ...newS} = s as any;
             return newS;
           }
-
+          // update state
           return ({...s, ...c});
         }, {}),
+        takeUntil(this.onDestroy$),
         publishReplay(1)
       );
 
   constructor() {
     // the local state service should be hot on instantiation
     (this.state$ as ConnectableObservable<any>).connect();
-
-    this.onDestroy$.subscribe((_) => console.log('DESTROY'));
   }
 
   // This breaks the functional programming style for the user.
@@ -61,4 +61,5 @@ export class LocalStateService {
     );
     this.commandObservable$$.next(slice$);
   }
+
 }
