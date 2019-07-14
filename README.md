@@ -471,7 +471,8 @@ export class ChildComponent implements OnChanges {
   ngOnChanges(changes) {
     this.changes= changes;
   }
-}``` 
+}
+``` 
 
 **Reactive approach:**
 As above mentioned in section Input Decorator we **us a `ReplaySubject` to avoid timing issues** related to life cycle hooks.
@@ -495,6 +496,10 @@ export class ChildComponent implements OnChanges {
   }
 }
 ```
+
+### Services And Life Cycle Hooks
+
+TBD
 
 # Sections Important For Running Zone Less
 TBD
