@@ -1,6 +1,6 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {Hook$} from '../../addons/decorators/hook';
-import {selectChange} from '../../addons/rxjs/operators/selectChange';
+import {Hook$} from '../../addons/hook$-decorator/hook';
+import {selectChange} from '../../addons/hook$-decorator/operators/selectChange';
 
 @Component({
   selector: 'app-select-change',
@@ -23,11 +23,9 @@ export class SelectChangeComponent implements OnChanges, AfterViewInit {
 
   // @TODO remove after fixed reactive hooks
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('changes', changes);
   }
 
   ngAfterViewInit(): void {
-    console.log('InputComponent ngAfterViewInit');
   }
 
 }

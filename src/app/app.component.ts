@@ -51,7 +51,6 @@ export class AppComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      console.log('AppComponent ngAfterViewInit');
       // this.cd.detectChanges();
     }, 1000);
   }

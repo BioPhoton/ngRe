@@ -6,10 +6,10 @@ import {shareReplay} from 'rxjs/operators';
 @Component({
   selector: 'app-push-pipe-container',
   template: `
-    primitiveInterval$ | push: {{primitiveInterval$ | push}}
+    primitiveInterval$ | push: {{primitiveInterval$ | push$}}
     <br>
     <app-push-pipe
-      [value]="primitiveInterval$ | push">
+      [value]="primitiveInterval$ | push$">
     </app-push-pipe>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush

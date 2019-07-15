@@ -1,6 +1,7 @@
 import {ChangeDetectorRef, OnDestroy, Pipe, PipeTransform} from '@angular/core';
 import {isObservable, Observable, of, Subject} from 'rxjs';
 import {distinctUntilChanged, switchAll, takeUntil} from 'rxjs/operators';
+import {STATE_DEFAULT} from '../core/state-default';
 
 /**
  * @description
@@ -16,9 +17,9 @@ import {distinctUntilChanged, switchAll, takeUntil} from 'rxjs/operators';
  *
  */
 // @TODO remove `pure: false` and experiment without zone
-@Pipe({name: 'push', pure: false})
+@Pipe({name: 'push$', pure: false})
 export class PushPipe implements PipeTransform, OnDestroy {
-  private value: any = null;
+  private value: any = STATE_DEFAULT;
 
   ngOnDestroy$$ = new Subject<boolean>();
 
@@ -52,7 +53,7 @@ export class PushPipe implements PipeTransform, OnDestroy {
   transform<T>(obj: null | undefined, forwardOnlyNewReferences: boolean): null;
   transform<T>(obj: Observable<T>, forwardOnlyNewReferences: boolean): T;
   transform<T>(obj: Observable<T> | null | undefined, forwardOnlyNewReferences = true): T | null {
-    this.observablesToSubscribe$$.next(!isObservable(obj) ? of(null) : obj);
+    this.observablesToSubscribe$$.next(!isObservable(obj) ? of(STATE_DEFAULT) : obj);
     return this.value;
   }
 }

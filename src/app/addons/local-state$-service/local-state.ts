@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
-import {ConnectableObservable, interval, merge, Observable, Subject} from 'rxjs';
+import {ConnectableObservable, merge, Observable, Subject} from 'rxjs';
 import {endWith, map, mergeAll, publishReplay, scan, takeUntil, tap} from 'rxjs/operators';
-import {Hook$} from '../decorators/hook';
+import {Hook$} from '../hook$-decorator/hook';
 
 @Injectable()
 export class LocalStateService {
@@ -11,12 +11,10 @@ export class LocalStateService {
 
   private commandObservable$$ = new Subject();
   private command$$ = new Subject();
-
   state$: Observable<any> =
     merge(
-      interval(1000).pipe(map(v => ({ttt: v}))),
       this.command$$,
-      this.commandObservable$$.pipe(tap(v => console.log('c$$: ', v)), mergeAll())
+      this.commandObservable$$.pipe(mergeAll())
     )
       .pipe(
         scan((s, c) => {
@@ -44,7 +42,7 @@ export class LocalStateService {
   }
 
   // This breaks the functional programming style for the user.
-  // We should avoid such things. I recommend passing streams like with `connectSlice();`
+  // We should avoid such things. It's recommended passing streams like with `connectSlice();`
   /** @deprecated This is invitation for imperative  client code */
   setSlice(command) {
     this.command$$.next(command);

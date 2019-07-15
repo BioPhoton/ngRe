@@ -31,7 +31,6 @@ export function Input$() {
     descriptor: PropertyDescriptor
   ) => {
     const subject = new Subject();
-    console.log('Input$', component, propertyKey);
     // @TODO I guess this is a miss conception that ngChanes is wraped in a function.
 
     component[propertyKey] = subject.asObservable();

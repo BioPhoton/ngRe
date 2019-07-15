@@ -1,8 +1,8 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {interval} from 'rxjs';
 import {take} from 'rxjs/operators';
-import {selectSlice} from '../../../addons/rxjs/operators/selectSlice';
-import {LocalStateService} from '../../../addons/state/local-state';
+import {selectSlice} from '../../../addons/local-state$-service/operators/selectSlice';
+import {LocalStateService} from '../../../addons/local-state$-service/local-state';
 
 @Component({
   selector: 'app-late-subscribers-container',
@@ -10,7 +10,7 @@ import {LocalStateService} from '../../../addons/state/local-state';
     <button (click)="setNum()">setNum</button>
     <button (click)="deleteNum()">deleteNum</button>
     <button (click)="setRandomState()">setRandomState</button>
-    <pre>state$: {{localState.state$ | push | json}}</pre>
+    <pre>state$: {{localState.state$ | push$ | json}}</pre>
     <pre>num$: {{num$ | async | json}}</pre>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

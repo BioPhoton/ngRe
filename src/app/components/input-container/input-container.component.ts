@@ -9,7 +9,7 @@ import {map} from 'rxjs/operators';
       input-container works!
     </p>
     <pre>
-      {{state$ | push | json}}
+      {{state$ | push$ | json}}
     </pre>
     <!-- switch to push pipe after ivy fix -->
     <app-input [state]="state$ | async"></app-input>
