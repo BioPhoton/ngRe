@@ -18,10 +18,10 @@ export class NgRxStoreService {
   }
 
   updateAttendees() {
-    this.store.setSlice({attendees: getRandomAttendees(10)});
+    this.store.setSlice({attendees: getRandomAttendees(30)});
   }
 
   updateCities() {
-    this.store.setSlice({cities: getRandomCity(3)});
+    this.store.setSlice({cities: getRandomCity(5)});
   }
 }

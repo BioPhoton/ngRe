@@ -1,10 +1,10 @@
 import * as faker from 'faker';
 
-export function getRandomAttendees(num) {
+export function getRandomAttendees(num, range?) {
   return Array.from({length: num})
     .map((_, index) => (
       {
-        id: faker.random.number(num),
+        id: faker.random.number(range || num),
         cid: faker.random.number(5),
         name: faker.name.findName(),
         specialMember: Math.random() < 0.5

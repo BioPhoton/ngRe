@@ -41,7 +41,7 @@ export class PushPipe implements PipeTransform, OnDestroy {
         // assign value that will get returned from the transform function on the next change detection
         this.value = value;
         // trigger change detection for the to get the newly assigned value rendered
-        this.cdRef.detectChanges();
+        this.cdRef.markForCheck();
       });
   }
 

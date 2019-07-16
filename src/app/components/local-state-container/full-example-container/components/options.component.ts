@@ -2,6 +2,7 @@ import {ChangeDetectionStrategy, Component, Input, Output} from '@angular/core';
 import {FormBuilder, FormGroup} from '@angular/forms';
 import {combineLatest, Observable, ReplaySubject} from 'rxjs';
 import {filter, map, shareReplay, switchMap} from 'rxjs/operators';
+import {Input$} from '../../../../addons/input$-decorator/input$';
 import {selectSlice} from '../../../../addons/local-state$-service/operators/selectSlice';
 import {OptionsState} from './options-state';
 
@@ -10,10 +11,10 @@ import {OptionsState} from './options-state';
   template: `
     <ng-content></ng-content>
     <form
-      *ngIf="(formGroup$ | async) as form"
+      *ngIf="(formGroup$ | push$) as form"
       [formGroup]="form">
       <label [for]="option"
-        *ngFor="let option of config$ | async">
+        *ngFor="let option of config$ | push$">
         {{option}}
         <input
           [id]="option"
@@ -25,12 +26,12 @@ import {OptionsState} from './options-state';
 })
 export class OptionsComponent {
 
-  localState$$ = new ReplaySubject<OptionsState>(1);
+  // localState$$ = new ReplaySubject<OptionsState>(1);
 
   @Input()
-  set state(state: OptionsState) {
-    this.localState$$.next(state);
-  }
+  state;
+  @Input$('state')
+  localState$$;
 
   config$ = this.localState$$.pipe(selectSlice(v => v.config));
   state$ = this.localState$$.pipe(selectSlice(v => v.state));

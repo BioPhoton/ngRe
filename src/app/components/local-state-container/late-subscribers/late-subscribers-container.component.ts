@@ -11,7 +11,7 @@ import {LocalStateService} from '../../../addons/local-state$-service/local-stat
     <button (click)="deleteNum()">deleteNum</button>
     <button (click)="setRandomState()">setRandomState</button>
     <pre>state$: {{localState.state$ | push$ | json}}</pre>
-    <pre>num$: {{num$ | async | json}}</pre>
+    <pre>num$: {{num$ | push$ | json}}</pre>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [

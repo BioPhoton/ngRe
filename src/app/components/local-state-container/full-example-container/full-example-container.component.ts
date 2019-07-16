@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Subject} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {map, share} from 'rxjs/operators';
 import {LocalStateService} from '../../../addons/local-state$-service/local-state';
 import {getRandomAttendees} from './random';
 
@@ -21,7 +21,7 @@ import {getRandomAttendees} from './random';
     </app-table>
     <app-local-state-container
       style="float: left; width:45%"
-      [selectedAttendeesIds]="selectedAttendeesIds$ | async">
+      [selectedAttendeesIds]="selectedAttendeesIds$ | push$">
     </app-local-state-container>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,7 +33,11 @@ export class FullExampleContainerComponent {
   updateSelectedAttendees$ = new Subject();
 
   selectedAttendees$ = this.updateSelectedAttendees$
-    .pipe(map(_ => getRandomAttendees(4)));
+    .pipe(
+      map(_ => getRandomAttendees(4, 30)),
+      // share the same reference of items
+      share()
+    );
 
   selectedAttendeesIds$ = this.selectedAttendees$
     .pipe(map(a => a.map(i => i.id)));

@@ -3,22 +3,22 @@ import {Subject} from 'rxjs';
 
 
 // @TODO get proper typing  => MethodDecorator || PropertyDecorator ?
-export function HostListener$(hookName: string): Function {
+export function HostListener$(eventName): Function {
   return (
     component: any,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) => {
     const subject = new Subject();
-    const cDef: ComponentDef<any> = component.constructor[NG_COMPONENT_DEF];
-    const originalHook = cDef[hookName] ;
+    const originalHook = component[propertyKey] ;
 
-    component[hookName] = (args) => {
+    console.log(propertyKey);
+    component[propertyKey] = (...args) => {
       subject.next(args);
+      console.log('args, component', args, component);
       // tslint:disable-next-line:no-unused-expression
-      originalHook && originalHook.call(component, args);
+      originalHook && originalHook.apply(component, args);
     };
-    component[propertyKey] = subject.asObservable();
-    return component[propertyKey];
+    // return component[propertyKey];
   };
 }

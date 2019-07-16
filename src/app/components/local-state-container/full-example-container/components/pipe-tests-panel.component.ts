@@ -1,13 +1,14 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {ReplaySubject} from 'rxjs';
+import {Observable} from 'rxjs';
+import {Input$} from '../../../../addons/input$-decorator/input$';
 import {OptionsState} from './options-state';
 
 @Component({
   selector: 'app-pipe-tests-panel',
   template: `
-    <div *ngIf="state$$ | async as state">
+    <div *ngIf="state$$ | push$ as state">
       <div *ngIf="state.async">
-        async-pipe: {{primitiveInterval$ | async}}
+        async-pipe: {{primitiveInterval$ | push$}}
       </div>
       <div *ngIf="state.primitive">
         primitiveInterval$ | push: {{primitiveInterval$ | push$}}
@@ -34,12 +35,9 @@ import {OptionsState} from './options-state';
 })
 export class PipeTestsPanelComponent {
 
-  state$$ = new ReplaySubject(1);
-
   @Input()
-  set state(state: OptionsState) {
-    this.state$$.next(state);
-  }
+  @Input$('state')
+  state$$: Observable<OptionsState>;
 
   constructor() {
   }

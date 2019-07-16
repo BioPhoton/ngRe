@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {ReplaySubject} from 'rxjs';
+import {Observable, ReplaySubject, Subject} from 'rxjs';
 import {map} from 'rxjs/operators';
+import {Input$} from '../../../../addons/input$-decorator/input$';
 import {OptionsState} from './options-state';
 
 @Component({
@@ -8,16 +9,16 @@ import {OptionsState} from './options-state';
   template: `
     <ng-content></ng-content>
     <table>
-      <thead *ngIf="headings$ | push$ as headings">
-      <th *ngFor="let heading of headings">
+      <thead>
+      <th *ngFor="let heading of headings$ | push$">
         {{heading}}
       </th>
       </thead>
-      <tbody>
+      <tbody *ngIf="headings$| push$ as headings">
       <tr [ngStyle]="{background: row.selected ? '#f00' : 'none'}"
-        *ngFor="let row of state$$ | async">
-        <td *ngFor="let col of row | keyvalue">
-          {{col.value}}
+        *ngFor="let row of state$ | push$">
+        <td *ngFor="let key of headings">
+          {{row[key]}}
         </td>
       </tr>
       </tbody>
@@ -26,15 +27,13 @@ import {OptionsState} from './options-state';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableComponent {
-
-  state$$ = new ReplaySubject<OptionsState>(1);
-
+  state$ = new ReplaySubject(1);
   @Input()
-  set state(state: OptionsState) {
-    this.state$$.next(state);
+  set state(v) {
+    this.state$.next(v);
   }
 
-  headings$ = this.state$$.pipe(
-    map(a => a ? Object.keys(a[0]) : null)
+  headings$ = this.state$.pipe(
+    map(a => a ? Object.keys(a[0]) : [])
   );
 }

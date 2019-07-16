@@ -55,6 +55,7 @@ export class LocalStateService {
     const [slice, state$] = Object.entries(config)[0];
     const slice$ = state$.pipe(
       map(state => ({[slice]: state})),
+      tap(_ => console.log('update slice', slice)),
       endWith({[slice]: undefined})
     );
     this.commandObservable$$.next(slice$);

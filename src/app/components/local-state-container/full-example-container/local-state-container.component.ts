@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {combineLatest, Observable, pipe, ReplaySubject, Subject} from 'rxjs';
-import {map, tap, withLatestFrom} from 'rxjs/operators';
+import {combineLatest, pipe, ReplaySubject, Subject} from 'rxjs';
+import {map, startWith, withLatestFrom} from 'rxjs/operators';
 import {LocalStateService} from '../../../addons/local-state$-service/local-state';
 import {selectSlice} from '../../../addons/local-state$-service/operators/selectSlice';
 import {LocalStateComponentFacade} from './services/local-state-component.facade';
@@ -9,18 +9,26 @@ import {LocalStateComponentFacade} from './services/local-state-component.facade
   selector: 'app-local-state-container',
   template: `
     <h2>Manage Attendees</h2>
-    <button (click)="showAllClick$$.next($event)">
-      {{(showAllSlice$ | push$) ? 'Show All' : 'Hide Some'}}
+    <button (click)="refresh$$.next($event)">
+      refresh
     </button>
-    {{filtersSlice$ | push$ | json}}
-    <br>
-    <app-options
-      [state]="optionComponentState$ | push$"
+    <app-options *ngIf="optionComponentState$ | push$ as optionComponentState"
+      [state]="optionComponentState"
       (stateChange)="filtersComponentStateChange$$.next($event)">
+
       <h3>Hide entries with properties false</h3>
+
+      <button
+        style="float: left; margin-right: 10px;"
+        (click)="showAllClick$$.next($event)">
+        {{(showAllSlice$ | push$) ? 'First 10' : 'Show All'}}
+      </button>
+
     </app-options>
+
     <app-table
       [state]="attendeesWithSelectionFiltered$ | push$">
+      <h3>Filtered and joined attendees</h3>
     </app-table>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,43 +38,44 @@ import {LocalStateComponentFacade} from './services/local-state-component.facade
 })
 export class LocalStateContainerComponent {
   // INCOMING ==========================
-
   // INPUT DATA
-  selectedAttendeesIds$ = new ReplaySubject(1);
-
+  selectedAttendeesIdsFromInput$ = new ReplaySubject(1);
   @Input()
   set selectedAttendeesIds(v) {
-    this.selectedAttendeesIds$.next(v);
+    this.selectedAttendeesIdsFromInput$.next(v);
   }
-
-  // GLOBAL STATE MANAGEMENT
-  // State from ngRx store derived over a selector
-  // attendeesWithCity$ = this.ngRxFacade.attendeesWithCity$;
 
   // VIEW EVENTS
   showAllClick$$ = new Subject();
+  refresh$$ = new Subject();
   filtersComponentStateChange$$ = new Subject();
 
   // STATE ==========================
   // STATE SLICES
   filtersSlice$ = this.localState.state$
     .pipe(selectSlice(s => s.filters));
-  showAllSlice$: Observable<boolean> = this.localState.state$
+  showAllSlice$ = this.localState.state$
     .pipe(selectSlice(s => s.showAll));
-  attendeesWithSelectionFiltered$: Observable<boolean> = this.localState.state$
-    .pipe(
-      selectSlice(s => s.attendeesWithSelectionFiltered),
-      tap(v => console.log('attendeesWithSelectionFiltered$', v ? v.length : v))
-    );
+  attendeesWithCitySlice$ = this.localState.state$
+    .pipe(selectSlice(s => s.attendeesWithCity));
+  selectedAttendeesIdsSlice$ = this.localState.state$
+    .pipe(selectSlice(s => s.selectedAttendeesIds));
 
   // RENDERED STATE
   optionComponentState$ = this.filtersSlice$
     .pipe(
-      map(s => ({
-        state: s,
-        config: Object.keys(s)
-      }))
+      map(s => (!s ? null : {state: s, config: Object.keys(s)}))
     );
+  attendeesWithSelectionFiltered$ = combineLatest(
+    this.attendeesWithCitySlice$,
+    this.selectedAttendeesIdsSlice$.pipe(map(v => v ? v : [])),
+    this.showAllSlice$.pipe(startWith(true)),
+    this.filtersSlice$
+  )
+    .pipe(
+      this.mapToAttendeesWithSelectionFiltered()
+    );
+
 
   // COMMANDS =================================
   showAllCommand$ = this.showAllClick$$
@@ -75,53 +84,47 @@ export class LocalStateContainerComponent {
       // toggle showAll state
       map((isNew: boolean) => !isNew)
     );
-  attendeesWithSelectionFilteredCommands$ = combineLatest(
-    this.ngRxFacade.attendeesWithCity$,
-    this.selectedAttendeesIds$,
-    this.filtersSlice$
-  )
-    .pipe(
-      this.mapToAttendeesWithSelectionFiltered()
-    );
 
   constructor(
     private localState: LocalStateService,
     public ngRxFacade: LocalStateComponentFacade
   ) {
-    this.localState.setSlice({
-      filters: {
-        paymentDone: false,
-        specialMember: false
-      }
-    });
+    this.ngRxFacade.connectUpdateAttendees$(this.refresh$$);
 
-    this.localState.connectSlice({showAll: this.showAllCommand$});
+    this.localState.setSlice({filters: {paymentDone: false, specialMember: false}});
     this.localState.connectSlice({filters: this.filtersComponentStateChange$$});
-    this.localState.connectSlice({attendeesWithSelectionFiltered: this.attendeesWithSelectionFilteredCommands$});
+    this.localState.connectSlice({showAll: this.showAllCommand$});
+    this.localState.connectSlice({attendeesWithCity: this.ngRxFacade.attendeesWithCity$});
+    this.localState.connectSlice({selectedAttendeesIds: this.selectedAttendeesIdsFromInput$});
   }
 
   mapToAttendeesWithSelectionFiltered() {
     return pipe(
-      map(([all, ids, filters]) => {
-        if (all === null || ids === null) {
-          return null;
+      map(([all, ids, showAll, filters]) => {
+
+        if (!(all && ids)) {
+          return undefined;
         }
 
         let withSelectedState = all
           .map(a => ({...a, selected: ids.includes(a.id)}));
 
-        const filterKeysSet = Object.keys(filters).filter(filterProp => filters[filterProp] === true);
+        const filterKeysSet = Object.keys(filters)
+          .filter(filterProp => filters[filterProp] === true);
+
         if (filterKeysSet.length) {
           withSelectedState = withSelectedState.filter(
             i => {
-              const isItemPropFalse = filterKeysSet.some(filterProp => i[filterProp] === false);
+              const isItemPropFalse = filterKeysSet
+                .some(filterProp => i[filterProp] === false);
               return !isItemPropFalse;
             }
           );
         }
-        console.log('filterKeysSet', filterKeysSet);
-        console.log('filteredWithSelectedState', withSelectedState.length);
-        return withSelectedState;
+
+        const visibleItems = showAll ? withSelectedState : withSelectedState.slice(0, 10);
+
+        return visibleItems;
       })
     );
   }

@@ -26,6 +26,9 @@ import {Router} from '@angular/router';
         <a routerLink="input">Input</a>
       </li>
       <li>
+        <a routerLink="host-listener">Host Listener</a>
+      </li>
+      <li>
         <a routerLink="output">Output</a>
       </li>
       <li>
