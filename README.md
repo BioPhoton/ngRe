@@ -54,7 +54,7 @@ Following topics are documented below:
 - Component Bindings
 - Life Cycle Hooks
 
-## Component Bindings
+## Component/Directive Bindings
 
 As the main requirement for a reactive architecture in current component-oriented 
 frameworks are handling properties and events of components.
@@ -192,6 +192,8 @@ export class ChildComponent  {
 Here we have to consider to cache the latest value from state-input binding.
 As changes fires before AfterViewInit, we normally would lose the first value sent. Using some caching mechanism prevents this.
 Furthermore and most importantly **this makes it independent from the lifecycle hooks**.
+
+> NOTE: It is important to mention the inconsistant handling of undefined variables and observables that didnt send a value yet. 
 
 ```typescript
 @Component({
