@@ -12,11 +12,11 @@ export function getRandomAttendees(num, range?) {
     );
 }
 
-export function getRandomCity(num) {
+export function getRandomCity(num, range?) {
   return Array.from({length: num})
     .map((_, index) => (
       {
-        id: faker.random.number(num),
+        id: faker.random.number(range || num),
         name: faker.address.city()
       })
     );

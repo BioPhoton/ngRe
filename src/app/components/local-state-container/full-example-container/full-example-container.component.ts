@@ -1,8 +1,9 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Subject} from 'rxjs';
-import {map, share} from 'rxjs/operators';
+import {map, share, switchMapTo} from 'rxjs/operators';
 import {LocalStateService} from '../../../addons/local-state$-service/local-state';
-import {getRandomAttendees} from './random';
+import {selectSlice} from '../../../addons/local-state$-service/operators/selectSlice';
+import {NgRxStoreService} from './services/ng-rx-store.service';
 
 @Component({
   selector: 'app-full-example-container',
@@ -34,12 +35,20 @@ export class FullExampleContainerComponent {
 
   selectedAttendees$ = this.updateSelectedAttendees$
     .pipe(
-      map(_ => getRandomAttendees(4, 30)),
+      switchMapTo(this.store.storeState$.pipe(selectSlice((s) => s.attendees))),
+      map((a: any[]) => {
+        const items = Array.from({length: 4}).map(_ => a[Math.floor(Math.random() * a.length)]);
+        return items;
+      }),
       // share the same reference of items
       share()
     );
 
   selectedAttendeesIds$ = this.selectedAttendees$
     .pipe(map(a => a.map(i => i.id)));
+
+  constructor(private store: NgRxStoreService) {
+
+  }
 
 }

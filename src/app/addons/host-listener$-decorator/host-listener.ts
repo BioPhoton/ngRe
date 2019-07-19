@@ -1,24 +1,26 @@
 import {ɵComponentDef as ComponentDef, ɵNG_COMPONENT_DEF as NG_COMPONENT_DEF} from '@angular/core';
-import {Subject} from 'rxjs';
+import {fromEvent, Subject} from 'rxjs';
 
 
 // @TODO get proper typing  => MethodDecorator || PropertyDecorator ?
-export function HostListener$(eventName): Function {
+export function HostListener$(eventName: string): Function {
   return (
     component: any,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) => {
-    const subject = new Subject();
-    const originalHook = component[propertyKey] ;
+    const innerSB = new Subject();
+    const retour = innerSB.asObservable();
+    const original = component[propertyKey];
 
-    console.log(propertyKey);
-    component[propertyKey] = (...args) => {
-      subject.next(args);
-      console.log('args, component', args, component);
-      // tslint:disable-next-line:no-unused-expression
-      originalHook && originalHook.apply(component, args);
-    };
-    // return component[propertyKey];
+    console.log(component);
+    // component[propertyKey];
+    /*Object.defineProperty(component, propertyKey, {
+      set: newValue => innerSB.next(newValue),
+      get: () => retour,
+      enumerable: true,
+      configurable: true
+    });*/
+    return retour;
   };
 }
