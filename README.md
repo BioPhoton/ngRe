@@ -10,7 +10,7 @@ for those who prefer imperative code, it's little effort to restrict it to a sim
 On the other hand for those who prefer reactive code, it's not that easy. 
 A lot of conveniences is missing, and beside the `async` pipe there is pretty much nothing there to take away the manual mapping to observables. Furthermore, an increasing number of packages start to be fully observable based. A very popular and widely used example is `ngRx`. It enables us to maintain global push-based state management based on observables.
 
-This creates even more interest and needs for reactive primitives like the `async` and other template syntax and decorators.
+This creates even more interest and for reactive primitives like the `async` and other template syntax and decorators.
  
 The goal would be to **give an overview** of the needs and a **suggested a set of extensions** to make it more convenient to **work in a reactive architecture**.
 
@@ -114,7 +114,7 @@ fromEvent(elem, 'click')
   });
 ``` 
 
-**Needs:**
+**Needs:**   
 As Angular covered this already this section can be ignored for the suggested extensions.
 
 ### WebComponent 
@@ -133,7 +133,7 @@ TBD
 TBD
 ```
 
-**Needs:**
+**Needs:**   
 TBD
 
 #### Receive events over `elem.addEventListener()`
@@ -148,7 +148,7 @@ TBD
 TBD
 ```
 
-**Needs:**
+**Needs:**   
 TBD
 
 ### AngularComponents
@@ -209,20 +209,22 @@ export class ChildComponent  {
 }
 ``` 
 
-**Needs:**
+**Needs:**   
+
 Some decorator that **automates the boilerplate** of settings up the subject and connection it with the property.   
 Here `ReplaySubject` is critical because of the life cycle hooks. 
 `@Input` is fired first on `OnChange` where the first moment where the view is ready would be `AfterViewInit`
 
-> **NOTE: Boilerplate Automation**
+> **NOTE: Boilerplate Automation**   
 > For every binding following steps could be automated:
 > - setting up a `Subject`
 > - hooking into the `setter` of the input binding and `.next()` the incoming value
 
-> **NOTE: Early Producer**
+> **NOTE: Early Producer**   
 > All input bindings are so called "early producer". A cache mechanism is needed as followed:
 > - Use a `ReplaySubject` with `bufferSize` of `1` to emmit notifications
 
+--- 
 
 #### Output Decorator
 
@@ -270,11 +272,14 @@ export class ChildComponent  {
 }
 ```
 
-**Needs:**
+**Needs:**   
 No need for an extension.
 
-> **NOTE: No need for custom extensions
+> **NOTE: No need for custom extensions   
 >  Due to the fact that we can also provide an `Observable` as `EventEmitters` there is no need for as extension
+
+
+---   
 
 
 #### HostListener Decorator
@@ -318,9 +323,12 @@ export class ChildComponent  {
 }
 ```
 
-**Needs:**
+**Needs:**   
+
 We would need a decorator **automates the boilerplate** of the Subject creation and connect it with the property. 
 Here a configuration method for the type of `Subject` similar to the one from [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34) would be nice.
+
+---   
 
 #### HostBinding Decorator
 
@@ -354,8 +362,12 @@ export class ChildComponent  {
 TBD
 ```
 
-**Needs:**
+**Needs:**   
+
 **Provide an observable** instead of a function.
+
+---   
+
 
 #### Input Binding 
 
@@ -398,12 +410,12 @@ export class AppComponent  {
 ```
 
 
-**Needs:**
+**Needs:**   
 As we know exactly when changes happen we can trigger change detection manually. Knowing the advantages of subscriptions over the template and lifecycle hooks the solution should be similar to `async` pipe.
 
 One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run unto some annoying situation:
 
-
+---   
 
 #### Output Binding 
 
@@ -447,8 +459,10 @@ export class AppComponent  {
 ```
 
 
-**Needs:**  
+**Needs:**   
 We need a way to abstracting away the subject initialization and link an element in the view with a components property.
+
+---   
 
 ## Life Cycle Hooks
 
@@ -511,6 +525,10 @@ export class ChildComponent implements OnChanges {
   }
 }
 ```
+
+**Needs**   
+
+---   
 
 ### Services And Life Cycle Hooks
 
