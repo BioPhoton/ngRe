@@ -518,8 +518,9 @@ Angulars life cycle hooks are listed ere in order:
 - OnInit (single shot)
 - DoCheck (ongoing)
 - AfterContentInit (single shot)
-- AfterContentChecked    
+- AfterContentChecked (ongoing)
 - AfterViewInit (single shot)
+- AfterViewChecked (ongoing)
 - OnDestroy (single shot)
 
 The goal here is to find a unified way to have single shot, as well as ongoing life cycle hooks, and observable.
@@ -569,6 +570,28 @@ export class ChildComponent implements OnChanges {
 ```
 
 **Needs**   
+We need a decorator to **automates the boilerplate** of the `Subject` creation and connect it with the property away. 
+
+Also `subscriptions` can occour earlier than the `Host` could send a value we speak about "early supscribers". 
+This problem can be solved as the subject is created in with instance construction.
+
+> **Boilerplate Automation**   
+> For every binding following steps could be automated:
+> - setting up a `Subject`
+> - hooking into the `setter` of the input binding and `.next()` the incoming value
+
+> **Late Supscribers**   
+> - As subscriptions could happen before values are present (subscribing to `OnInit` in constructor) 
+>   we have to make sure the Subject is creates early enough in time
+
+> **Early Producer**   
+> - As subscriptions could happen later in time we could lose values (subscribing to `OnChanges` in `OnInit`)
+>   A cache mechanism which uses `ReplaySubject` with `bufferSize` of `1` is needed for following hooks:
+> - OnChanges
+> - DoCheck
+> - OnInit
+> - AfterContentChecked
+> - AfterViewChecked
 
 ---   
 
