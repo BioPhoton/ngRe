@@ -19,6 +19,7 @@ export class NgRxStoreService {
   }
 
   updateAttendees() {
+    //  https://my-json-server.typicode.com/<your-username>/<your-repo>
     /*this.http.get('https://swapi.co/api/people/')
       .pipe(
         expand((r: any) => 'next' in r ? this.http.get(r.next) : EMPTY),
