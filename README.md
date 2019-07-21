@@ -193,9 +193,6 @@ Here we have to consider to cache the latest value from state-input binding.
 As changes fires before AfterViewInit, we normally would lose the first value sent. Using some caching mechanism prevents this.
 Furthermore and most importantly **this makes it independent from the lifecycle hooks**.
 
-> **Inconsistent handling of undefined variables**   
-> It is important to mention the inconsistant handling of undefined variables and observables that didnt send a value yet. 
-
 ```typescript
 @Component({
   selector: 'app-child',
@@ -224,16 +221,6 @@ Here `ReplaySubject` is critical because of the life cycle hooks.
 > **Early Producer**   
 > All input bindings are so called "early producer". A cache mechanism is needed as followed:
 > - Use a `ReplaySubject` with `bufferSize` of `1` to emmit notifications
-
-> **Implement strick and consistent handling ov undefined**   
-> The `async` should act as following:
-> - when initially passed `undefined` the pipe should forward undefined as value as on value ever was emitted
-> - when initially passed `null` the pipe should forward undefined as value as on value ever was emitted
-> - when initially passed `of(undefined)` the pipe should forward undefined as value as `undefined` was emitted
-> - when initially passed `of(null)` the pipe should forward undefined as value as `null` was emitted
-> - when initially passed `EMPTY` the pipe should forward undefined as value as on value ever was emitted
-> - when initially passed `NEVER` the pipe should forward undefined as value as on value ever was emitted
-> - when reassigned a new `Observable` the pipe should forward undefined as value as on value was emitted from the new `Observable`
 
 --- 
 
@@ -430,6 +417,15 @@ export class AppComponent  {
 Important to say is that with this case **we can ignore the life cycle hooks as the subscription happens always right in time**.
 We cal rely on trust that subscription to `state$` happens after `AfterViewInit`.
 
+
+> **Inconsistent handling of undefined variables**   
+> It is important to mention the inconsistant handling of undefined variables and observables that didnt send a value yet. 
+
+> **Nested Template Scopes**   
+> One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some   
+> annoying situation where we have to nest multiple divs to have a context per bound vairable.
+
+
 ```typescript
 @Component({
   selector: 'my-app',
@@ -446,8 +442,18 @@ export class AppComponent  {
 **Needs:**   
 As we know exactly when changes happen we can trigger change detection manually. Knowing the advantages of subscriptions over the template and lifecycle hooks the solution should be similar to `async` pipe.
 
-One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some annoying situation where we have to nest multiple divs to have a context per bound vairable.
+> **NgZone could be detached**   
+> As all changes can get detected we could detache the pipe from the `ChangeDetection` and trigger it on every value change
 
+> **Implement strick and consistent handling of undefined for pipes**   
+> A pipe similar to `async` that should act as following:
+> - when initially passed `undefined` the pipe should forward undefined as value as on value ever was emitted
+> - when initially passed `null` the pipe should forward undefined as value as on value ever was emitted
+> - when initially passed `of(undefined)` the pipe should forward undefined as value as `undefined` was emitted
+> - when initially passed `of(null)` the pipe should forward undefined as value as `null` was emitted
+> - when initially passed `EMPTY` the pipe should forward undefined as value as on value ever was emitted
+> - when initially passed `NEVER` the pipe should forward undefined as value as on value ever was emitted
+> - when reassigned a new `Observable` the pipe should forward undefined as value as on value was emitted from the new `Observable`
 
 ---   
 
@@ -492,9 +498,11 @@ export class AppComponent  {
 }
 ```
 
+**Needs:**    
+As it is minimal overhead we can stick with creating a `Subject` on our own.
 
-**Needs:**   
-We need a way to abstracting away the subject initialization and link an element in the view with a components property.
+> **No need for custom extensions**   
+>  Due to the fact of the minimal overhrad and the resources of creating a custom `Decorator` for it there **no need for as extension**
 
 ---   
 
@@ -518,7 +526,7 @@ The goal here is to find a unified way to have single shot, as well as ongoing l
 
 ### Implement any hook
 
-**Imperative approach:**
+**Imperative approach:**   
 
 ```typescript
 @Component({
@@ -537,7 +545,7 @@ export class ChildComponent implements OnChanges {
 }
 ``` 
 
-**Reactive approach:**
+**Reactive approach:**   
 As above mentioned in section Input Decorator we **us a `ReplaySubject` to avoid timing issues** related to life cycle hooks.
 Therefor `changes$` which is 
 
