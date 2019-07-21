@@ -23,6 +23,8 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
     - [WebComponent](#WebComponent)
     - [AngularComponent](#AngularComponent)
   - [Life Cycle Hooks](#Life-Cycle-Hooks)
+    - [Component And Directive Life Cycle Hooks](Component-And-Directive-Life-Cycle-Hooks)
+    - [Service Life Cycle Hooks](Service-Life-Cycle-Hooks)
 - [Sections Important For Running Zone Less](#Sections-Important-For-Running-Zone-Less)
 - [Needs Overview](#Needs-Overview)
   - [Automoate boilerplate](#Automoate-Boilerplate)
@@ -525,7 +527,7 @@ Angulars life cycle hooks are listed ere in order:
 
 The goal here is to find a unified way to have single shot, as well as ongoing life cycle hooks, and observable.
 
-### Implement any hook
+### Component And Directive Life Cycle Hooks
 
 **Imperative approach:**   
 
@@ -595,7 +597,7 @@ This problem can be solved as the subject is created in with instance constructi
 
 ---   
 
-### Services And Life Cycle Hooks
+### Service Life Cycle Hooks
 
 In general services are global or even when lazy loaded the are not unregistered at some point in time.
 The only exception are Services in the `Components` `providers` and ´viewProviders´ section.
@@ -667,9 +669,13 @@ We need a decorator to **automates the boilerplate** of the `Subject` creation a
 
 ---   
 
+## State Composition
+
+TBD
+
+
 
 # Sections Important For Running Zone Less
-TBD
 
 # Needs Overview
 
@@ -716,7 +722,8 @@ to configure the used Subject for multicasting similar to [multicast](https://gi
 In this way, it is easy to have a simplified public API but flexibility internally.
 
 **Decorators that:**
-- rely on configurable multicasting similar to `multicast` operator
+- rely on configurable multicasting similar to `multicast` operator.
+  this provides a generic configurable way for all cases 
 ---
 
 
