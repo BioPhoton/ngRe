@@ -659,6 +659,7 @@ Extensions suggested:
 
 An angular pipe similar to the `async` pipe but triggers `detectChanges` instead of `markForCheck`.
 This is required to run zone-less. We render on every pushed message.
+(currenty there in an [isssue](https://github.com/angular/angular/issues/31438) with the `ChangeDetectorRef` in ivy so we have to wait for the fix=
 
 The pipe should work as template binding `{{thing$ | push}}` 
 as well as input binding `[color]="thing$ | push"` and trigger the changes of the host component.
