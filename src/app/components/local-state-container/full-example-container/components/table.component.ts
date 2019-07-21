@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Observable, ReplaySubject, Subject} from 'rxjs';
 import {map} from 'rxjs/operators';
+import {Input$} from '../../../../addons/input$-decorator/input$';
 // import {Input$} from '../../../../addons/input$-decorator/input$';
 import {OptionsState} from './options-state';
 
@@ -27,16 +28,13 @@ import {OptionsState} from './options-state';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableComponent {
-  // state$ = new ReplaySubject(1);
   @Input()
   state;
-  /*set state(v) {
-    this.state$.next(v);
-  }*/
-  // @Input$('state')
-  state$; // = new ReplaySubject(1);
+  @Input$<any>('state')
+  state$;
 
   headings$ = this.state$.pipe(
     map(a => a ? Object.keys(a[0]) : [])
   );
+
 }

@@ -24,6 +24,7 @@ export class LateSubscribersContainerComponent {
     .pipe(selectSlice(s => s.num));
 
   constructor(public localState: LocalStateService) {
+    this.localState.setSlice({num: 777});
     // this.localState.connectSlice({num: interval(1000)});
   }
 

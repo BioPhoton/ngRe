@@ -1,6 +1,6 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {combineLatest, Subject} from 'rxjs';
-import {map, mergeAll, takeUntil} from 'rxjs/operators';
+import {Injectable} from '@angular/core';
+import {combineLatest, merge, Subject} from 'rxjs';
+import {filter, map, mergeAll, takeUntil, tap} from 'rxjs/operators';
 import {Hook$} from '../../../../addons/hook$-decorator/hook';
 import {selectSlice} from '../../../../addons/local-state$-service/operators/selectSlice';
 import {NgRxStoreService} from './ng-rx-store.service';
@@ -19,8 +19,8 @@ export class LocalStateComponentFacade {
     .pipe(selectSlice(s => s.attendees));
 
   attendeesWithCity$ = combineLatest(
-    this.attendees$,
-    this.cities$
+    this.attendees$.pipe(filter(v => !!v)),
+    this.cities$.pipe(filter(v => !!v))
   )
     .pipe(
       map(([attendees, cities]) => {
@@ -39,18 +39,24 @@ export class LocalStateComponentFacade {
     );
 
   triggerUpdateAttendees$ = new Subject();
+  triggerUpdateCities$ = new Subject();
 
   constructor(private ngRxStore: NgRxStoreService) {
-    this.triggerUpdateAttendees$
-      .pipe(
-        mergeAll(),
-        takeUntil(this.onDestroy$)
-      )
-      .subscribe(_ => this.ngRxStore.updateAttendees());
+    merge(
+      this.triggerUpdateAttendees$.pipe(mergeAll(), tap(_ => this.ngRxStore.updateAttendees())),
+      this.triggerUpdateCities$.pipe(mergeAll(), tap(_ => this.ngRxStore.updateCities())),
+    ).pipe(
+      takeUntil(this.onDestroy$)
+    )
+      .subscribe();
   }
 
   connectUpdateAttendees$(t) {
     this.triggerUpdateAttendees$.next(t);
+  }
+
+  connectUpdateCities$(t) {
+    this.triggerUpdateCities$.next(t);
   }
 
 }

@@ -3,6 +3,7 @@ import {NgModule} from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {BrowserModule} from '@angular/platform-browser';
 import {RouterModule} from '@angular/router';
+import {LetDirective} from './addons/let-directive/let.directive';
 import {PushPipe} from './addons/push$-pipe/push.pipe';
 
 import {AppComponent} from './app.component';
@@ -11,27 +12,32 @@ import {HostListenerComponent} from './components/host-listener-container/host-l
 import {InputContainerComponent} from './components/input-container/input-container.component';
 import {InputComponent} from './components/input-container/input.component';
 import {Input2Component} from './components/input-container/input2.component';
+import {LetDirectiveContainerComponent} from './components/let-directive-container/let-directive-container.component';
+import {LifeCycleHooksContainerComponent} from './components/life-cycle-hooks-container/life-cycle-hooks-container.component';
+import {SelectChangeComponent} from './components/life-cycle-hooks-container/select-change.component';
 import {OptionsComponent} from './components/local-state-container/full-example-container/components/options.component';
 import {PipeTestsPanelComponent} from './components/local-state-container/full-example-container/components/pipe-tests-panel.component';
 import {TableComponent} from './components/local-state-container/full-example-container/components/table.component';
 import {FullExampleContainerComponent} from './components/local-state-container/full-example-container/full-example-container.component';
+import {LocalStateContainerComponent} from './components/local-state-container/full-example-container/local-state-container.component';
 import {LocalStateContainer2Component} from './components/local-state-container/full-example-container/local-state-container2.component';
 import {LateSubscribersContainerComponent} from './components/local-state-container/late-subscribers/late-subscribers-container.component';
 import {OutputContainerComponent} from './components/output-container/output-container.component';
 import {OutputComponent} from './components/output-container/output.component';
 import {PushPipeContainerComponent} from './components/push-pipe-container/push-pipe-container.component';
 import {PushPipeComponent} from './components/push-pipe-container/push-pipe.component';
-import { LocalStateContainerComponent } from './components/local-state-container/full-example-container/local-state-container.component';
 // import {LifeCycleHooksContainerComponent} from './components/life-cycle-hooks-container/life-cycle-hooks-container.component';
 // import {LifeCycleHooksComponent} from './components/life-cycle-hooks-container/life-cycle-hooks.component';
 // import {SelectChangeComponent} from './components/life-cycle-hooks-container/select-change.component';
 
 @NgModule({
   declarations: [
+    PushPipe,
+    LetDirective,
+    // ===================
     AppComponent,
     PushPipeContainerComponent,
     PushPipeComponent,
-    PushPipe,
     // LifeCycleHooksContainerComponent,
     // LifeCycleHooksComponent,
     // SelectChangeComponent,
@@ -48,7 +54,8 @@ import { LocalStateContainerComponent } from './components/local-state-container
     PipeTestsPanelComponent,
     LateSubscribersContainerComponent,
     FullExampleContainerComponent,
-    TableComponent
+    TableComponent,
+    LetDirectiveContainerComponent
   ],
   imports: [
     BrowserModule,
@@ -59,14 +66,14 @@ import { LocalStateContainerComponent } from './components/local-state-container
         path: 'push-pipe',
         component: PushPipeContainerComponent
       },
-      /*  {
+      {
          path: 'live-cycle-hooks',
          component: LifeCycleHooksContainerComponent
        },
       {
          path: 'select-change',
          component: SelectChangeComponent
-       },*/
+       },
       {
         path: 'host-listener',
         component: HostListenerContainerComponent
@@ -86,10 +93,13 @@ import { LocalStateContainerComponent } from './components/local-state-container
       {
         path: 'late-subscribers',
         component: LateSubscribersContainerComponent
+      },
+      {
+        path: 'let-directive',
+        component: LetDirectiveContainerComponent
       }
     ])
   ],
-  providers: [],
   bootstrap: [AppComponent],
   exports: [PushPipe]
 })

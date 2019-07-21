@@ -1,14 +1,13 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {combineLatest, ReplaySubject, Subject} from 'rxjs';
 import {map, startWith, withLatestFrom} from 'rxjs/operators';
-import {Input$} from '../../../addons/input$-decorator/input$';
 import {LocalStateService} from '../../../addons/local-state$-service/local-state';
 import {selectSlice} from '../../../addons/local-state$-service/operators/selectSlice';
 import {mapToAttendeesWithSelectionFiltered} from './map-to-Attendees-with-selection-filtered';
 import {LocalStateComponentFacade} from './services/local-state-component.facade';
 
 @Component({
-  selector: 'app-local-state-container',
+  selector: 'app-local-state-container2',
   template: `
     <h2>Manage Attendees</h2>
     <button (click)="refreshAttendeesClick$$.next($event)">
@@ -20,17 +19,17 @@ import {LocalStateComponentFacade} from './services/local-state-component.facade
     <button
       style="float: left; margin-right: 10px;"
       (click)="showAllClick$$.next($event)">
-      {{(showAllSlice$ | async) ? 'First 10' : 'Show All'}}
+      {{(showAllSlice$ | push$) ? 'First 10' : 'Show All'}}
     </button>
 
-    <app-options *ngIf="optionComponentState$ | async as optionComponentState"
+    <app-options *ngIf="optionComponentState$ | push$ as optionComponentState"
       [state]="optionComponentState"
       (stateChange)="filtersComponentStateChange$$.next($event)">
       <h3>Hide entries with properties false</h3>
     </app-options>
 
     <app-table
-      [state]="attendeesWithSelectionFiltered$ | async">
+      [state]="attendeesWithSelectionFiltered$ | push$">
       <h3>Filtered and joined attendees</h3>
     </app-table>
   `,
@@ -39,14 +38,15 @@ import {LocalStateComponentFacade} from './services/local-state-component.facade
     LocalStateService
   ]
 })
-export class LocalStateContainerComponent {
+export class LocalStateContainer2Component {
   // INCOMING ==========================
   // INPUT DATA
+  selectedAttendeesIdsFromInput$ = new ReplaySubject(1);
 
   @Input()
-  selectedAttendeesIds;
-  @Input$('selectedAttendeesIds')
-  selectedAttendeesIdsFromInput$;
+  set selectedAttendeesIds(v) {
+    this.selectedAttendeesIdsFromInput$.next(v);
+  }
 
   // VIEW EVENTS
   showAllClick$$ = new Subject();

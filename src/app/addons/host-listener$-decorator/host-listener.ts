@@ -1,26 +1,20 @@
-import {ɵComponentDef as ComponentDef, ɵNG_COMPONENT_DEF as NG_COMPONENT_DEF} from '@angular/core';
-import {fromEvent, Subject} from 'rxjs';
+import {ElementRef} from '@angular/core';
+import {fromEvent} from 'rxjs';
 
 
 // @TODO get proper typing  => MethodDecorator || PropertyDecorator ?
-export function HostListener$(eventName: string): Function {
+export function HostListener$<T>(eventName: string): PropertyDecorator {
   return (
-    component: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
+    // tslint:disable-next-line
+    target: Object,
+    propertyKey: string | symbol
   ) => {
-    const innerSB = new Subject();
-    const retour = innerSB.asObservable();
-    const original = component[propertyKey];
-
-    console.log(component);
-    // component[propertyKey];
-    /*Object.defineProperty(component, propertyKey, {
-      set: newValue => innerSB.next(newValue),
-      get: () => retour,
-      enumerable: true,
-      configurable: true
-    });*/
-    return retour;
+    Object.defineProperty(target, propertyKey, {
+      get() {
+        // @TODO investigate @ViewChild for usage
+        const elementRef = this.injector.get(ElementRef);
+        return fromEvent(elementRef.nativeElement, eventName);
+      }
+    });
   };
 }

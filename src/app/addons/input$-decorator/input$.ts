@@ -1,78 +1,39 @@
-import {ɵComponentDef as ComponentDef, ɵNG_COMPONENT_DEF as NG_COMPONENT_DEF} from '@angular/core';
 import {Observable, ReplaySubject, Subject} from 'rxjs';
+import {getPropertySubject} from '../core/get-property-subject';
 // https://github.com/kevinphelps/ngx-utilities/tree/master/projects
 
-// @TODO get proper typing  => PropertyDecorator ?
-export function Input$(inputName: string): Function {
+
+export function Input$<T>(propKeyToObserve: string): PropertyDecorator {
+
   return (
-    component: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
+    // @TODO get better typing
+    // tslint:disable-next-line
+    component: Object,
+    propertyKey: PropertyKey
   ) => {
-    // Replay is important for late subscriber
-    const subject = new ReplaySubject(1);
+    const keyUniquePerPrototype = Symbol('@ngRe-Input$');
+    const subjectFactory = (): Subject<T> => new ReplaySubject<T>(1);
 
-    Object.defineProperty(component, inputName, {
-      set: newValue => {
-        subject.next(newValue);
+    const propertyKeyDescriptor: TypedPropertyDescriptor<Observable<T>> = {
+      get() {
+        // @TODO: Get type of property instead of any
+        return getPropertySubject<T>(this, keyUniquePerPrototype, subjectFactory).asObservable();
       },
-      get: () => {
-        return subject.asObservable();
+      // @TODO implement the rest of the property definition
+    };
+
+    Object.defineProperty(component, propertyKey, propertyKeyDescriptor);
+
+    const propKeyToObserveDescriptor: TypedPropertyDescriptor<Observable<T>> = {
+      set(newValue) {
+        // @TODO: Get type of property instead of any
+        getPropertySubject<any>(this, keyUniquePerPrototype, subjectFactory).next(newValue);
       }
-    });
-    component[propertyKey] = subject.asObservable();
-    return component[propertyKey];
-  };
-}
+      // @TODO implement the rest of the property definition
+    };
+    Object.defineProperty(component, propKeyToObserve, propKeyToObserveDescriptor);
 
-export function ObserveProperty<T>(observedPropertyKey: keyof T) {
-  const propertySymbol = Symbol();
-
-  return (target: T, propertyKey: PropertyKey) => {
-    Object.defineProperty(target, propertyKey, { get: getChangesObservable });
-    Object.defineProperty(target, observedPropertyKey, { get: getValue, set: setValue });
   };
 
-  interface Property {
-    hasValue?: boolean;
-    currentValue?: any;
-    changesObservable?: Observable<any>;
-    changesSubject?: ReplaySubject<any>;
-  }
-
-  function getProperty(instance: { [propertySymbol]: Property }) {
-    const property = instance[propertySymbol] || (instance[propertySymbol] = {});
-
-    if (property.hasValue === undefined) {
-      property.hasValue = false;
-    }
-
-    if (property.changesSubject === undefined) {
-      property.changesSubject = new ReplaySubject(1);
-      property.changesObservable = property.changesSubject.asObservable();
-    }
-
-    return property;
-  }
-
-  function getChangesObservable(this: any) {
-    return getProperty(this).changesObservable;
-  }
-
-  function getValue(this: any) {
-    return getProperty(this).currentValue;
-  }
-
-  function setValue(this: any, value: any) {
-    const property = getProperty(this);
-    const oldValue = property.currentValue;
-    const firstChange = !property.hasValue;
-
-    property.hasValue = true;
-    property.currentValue = value;
-
-    if (firstChange || value !== oldValue) {
-      property.changesSubject.next(value);
-    }
-  }
 }
+

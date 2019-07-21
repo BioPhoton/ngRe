@@ -32,6 +32,9 @@ import {Router} from '@angular/router';
         <a routerLink="output">Output</a>
       </li>
       <li>
+        <a routerLink="let-directive">Let Directive</a>
+      </li>
+      <li>
         <a routerLink="local-state">LocalState</a>
         <ul>
           <li>

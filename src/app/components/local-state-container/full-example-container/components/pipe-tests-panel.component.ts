@@ -36,7 +36,7 @@ import {OptionsState} from './options-state';
 export class PipeTestsPanelComponent {
 
   @Input()
-  // @Input$('state')
+  @Input$('state')
   state$$: Observable<OptionsState>;
 
   constructor() {

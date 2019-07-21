@@ -26,8 +26,9 @@ const hooksWrapped: { [x in keyof Hooks]: boolean } = {
 // @TODO get proper typing  => MethodDecorator || PropertyDecorator ?
 export function Hook$(hookName: string): Function {
   return (
-    component: any,
-    propertyKey: string,
+    // tslint:disable-next-line
+    component: Object,
+    propertyKey: PropertyKey,
     descriptor: PropertyDescriptor
   ) => {
     const subject = new Subject();
@@ -56,7 +57,6 @@ export function Hook$(hookName: string): Function {
       // tslint:disable-next-line:no-unused-expression
       originalHook && originalHook.call(component, args);
     };
-
 
     component[propertyKey] = subject.asObservable();
     return component[propertyKey];

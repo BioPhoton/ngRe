@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostListener} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, HostListener, Inject, Injector} from '@angular/core';
 import {Subject} from 'rxjs';
 import {scan} from 'rxjs/operators';
 import {HostListener$} from '../../addons/host-listener$-decorator/host-listener';
@@ -16,17 +16,19 @@ import {HostListener$} from '../../addons/host-listener$-decorator/host-listener
 export class HostListenerComponent {
 
   onClick$ = new Subject();
-
   numClicks$ = this.onClick$.pipe(scan(a => ++a, 0));
 
-  constructor() {
+  @HostListener$('click')
+  hostClick$;
+
+  constructor(public injector: Injector) {
+    console.log(this.hostClick$);
   }
 
   @HostListener('click', ['$event'])
   onClick(e) {
     this.onClick$.next(e);
   }
-
 
 
 }
