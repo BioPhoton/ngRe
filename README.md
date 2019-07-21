@@ -251,11 +251,8 @@ export class ChildComponent  {
 **Reactive approach:**
 
 Here we change 2 things.
-We use a `Subject` to retrieve the button click event and us 
+We use a `Subject` to retrieve the button click event and 
 **provide an observable instead of an EventEmitter for @Output()**.
-
-Important to know is that the `EventEmitters` part of forwarding the values is not the `Observer` part (next or emit), 
-it's the implementation of `Subscription`. This enables us to use an Observable and stay fully `declarative`
 
 ```typescript
 @Component({
@@ -274,7 +271,11 @@ export class ChildComponent  {
 ```
 
 **Needs:**
-As we can directly connect an observable with the output binding there is **no need** foe an extension.
+No need for an extension.
+
+> **NOTE: No need for custom extensions
+>  Due to the fact that we can also provide an `Observable` as `EventEmitters` there is no need for as extension
+
 
 #### HostListener Decorator
 
