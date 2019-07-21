@@ -193,7 +193,8 @@ Here we have to consider to cache the latest value from state-input binding.
 As changes fires before AfterViewInit, we normally would lose the first value sent. Using some caching mechanism prevents this.
 Furthermore and most importantly **this makes it independent from the lifecycle hooks**.
 
-> NOTE: It is important to mention the inconsistant handling of undefined variables and observables that didnt send a value yet. 
+> **Inconsistent handling of undefined variables**   
+> It is important to mention the inconsistant handling of undefined variables and observables that didnt send a value yet. 
 
 ```typescript
 @Component({
@@ -215,14 +216,24 @@ Some decorator that **automates the boilerplate** of settings up the subject and
 Here `ReplaySubject` is critical because of the life cycle hooks. 
 `@Input` is fired first on `OnChange` where the first moment where the view is ready would be `AfterViewInit`
 
-> **NOTE: Boilerplate Automation**   
+> **Boilerplate Automation**   
 > For every binding following steps could be automated:
 > - setting up a `Subject`
 > - hooking into the `setter` of the input binding and `.next()` the incoming value
 
-> **NOTE: Early Producer**   
+> **Early Producer**   
 > All input bindings are so called "early producer". A cache mechanism is needed as followed:
 > - Use a `ReplaySubject` with `bufferSize` of `1` to emmit notifications
+
+> **Implement strick and consistent handling ov undefined**   
+> The `async` should act as following:
+> - when initially passed `undefined` the pipe should forward undefined as value as on value ever was emitted
+> - when initially passed `null` the pipe should forward undefined as value as on value ever was emitted
+> - when initially passed `of(undefined)` the pipe should forward undefined as value as `undefined` was emitted
+> - when initially passed `of(null)` the pipe should forward undefined as value as `null` was emitted
+> - when initially passed `EMPTY` the pipe should forward undefined as value as on value ever was emitted
+> - when initially passed `NEVER` the pipe should forward undefined as value as on value ever was emitted
+> - when reassigned a new `Observable` the pipe should forward undefined as value as on value was emitted from the new `Observable`
 
 --- 
 
@@ -275,8 +286,8 @@ export class ChildComponent  {
 **Needs:**   
 No need for an extension.
 
-> **NOTE: No need for custom extensions   
->  Due to the fact that we can also provide an `Observable` as `EventEmitters` there is no need for as extension
+> **No need for custom extensions**   
+>  Due to the fact that we can also provide an `Observable` as `EventEmitters` there is **no need for as extension**
 
 
 ---   
@@ -325,8 +336,17 @@ export class ChildComponent  {
 
 **Needs:**   
 
-We would need a decorator **automates the boilerplate** of the Subject creation and connect it with the property. 
-Here a configuration method for the type of `Subject` similar to the one from [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34) would be nice.
+We would need a decorator **automates the boilerplate** of the `Subject` creation and connect it with the property. 
+As `subscriptions` can occour earlier than the `Host` could send a value we speak about "early supscribers". 
+This problem can be solved as the subject is created in with instance construction.
+
+> **Boilerplate Automation**   
+> For every binding following steps could be automated:
+> - setting up a `Subject`
+> - hooking into the `setter` of the input binding and `.next()` the incoming value
+
+> **Early Supscribers**   
+> Make sure the created `Subject` it present early enough in time
 
 ---   
 
@@ -365,6 +385,19 @@ TBD
 **Needs:**   
 
 **Provide an observable** instead of a function.
+
+Here again we would need a decorator that **automates** the `Subject` creation and connection. 
+As subscriptions can occour earlier than the `Host` could be ready we speak about "early supscribers". 
+This problem can be solved as the subject is created in with instance construction.
+
+> **Boilerplate Automation**   
+> For every binding following steps could be automated:
+> - setting up a `Subject`
+> - hooking into the `setter` of the input binding and `.next()` the incoming value
+
+> **Early Supscribers**   
+> Make sure the created `Subject` it present early enough in time
+
 
 ---   
 
@@ -413,7 +446,8 @@ export class AppComponent  {
 **Needs:**   
 As we know exactly when changes happen we can trigger change detection manually. Knowing the advantages of subscriptions over the template and lifecycle hooks the solution should be similar to `async` pipe.
 
-One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run unto some annoying situation:
+One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some annoying situation where we have to nest multiple divs to have a context per bound vairable.
+
 
 ---   
 
@@ -541,7 +575,15 @@ TBD
 
 ## Automoate Boilerplate
 
-Automate boilerplate of setting up a subject and connecting it to producer
+Automate boilerplate of setting up a subject and connecting it to producer.
+
+
+
+Here a configuration method for the type of `Subject` similar to the one from [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34) would be nice.
+
+
+
+
 
 In a majority of the cases, there was a need for abstracting away the boilerplate of setting up a subject and connecting it to the producer. A normal `Subject` was used in most of the cases. Some cases used a `ReplaySunject` or `BeHaviorSubject` to initialize the value. This was used to provide the latest value for a new subscriber. 
 
