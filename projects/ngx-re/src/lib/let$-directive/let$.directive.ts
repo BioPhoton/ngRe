@@ -22,7 +22,6 @@ export class Let$Directive implements OnInit {
 
   @Input()
   set reLet(o: { [key: string]: Observable<any> }) {
-    console.log('reLet', o);
     if (isObservable(o)) {
       this.lS.connectSlices({reLet: o});
     }
@@ -47,7 +46,7 @@ export class Let$Directive implements OnInit {
   updateContext = (v) => {
       this.context.$implicit = v;
       this.context.reLet = v;
-      // this.cd.detectChanges();s
+      this.cd.detectChanges();
   }
 
   ngOnInit() {

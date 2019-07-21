@@ -210,7 +210,19 @@ export class ChildComponent  {
 ``` 
 
 **Needs:**
-Some decorator that **automates the boilerplate** of settings up the subject and connection it with the property. Here `ReplaySubject` is critical because of the life cycle hooks.
+Some decorator that **automates the boilerplate** of settings up the subject and connection it with the property.   
+Here `ReplaySubject` is critical because of the life cycle hooks. 
+`@Input` is fired first on `OnChange` where the first moment where the view is ready would be `AfterViewInit`
+
+> **NOTE: Boilerplate Automation**
+> For every binding following steps could be automated:
+> - setting up a `Subject`
+> - hooking into the `setter` of the input binding and `.next()` the incoming value
+
+> **NOTE: Early Producer**
+> All input bindings are so called "early producer". A cache mechanism is needed as followed:
+> - Use a `ReplaySubject` with `bufferSize` of `1` to emmit notifications
+
 
 #### Output Decorator
 

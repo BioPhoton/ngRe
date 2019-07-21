@@ -14,6 +14,7 @@ import {INPUT$_DECLARATIONS} from './components/input-container';
 import {LET_DECLARATIONS} from './components/let-directive-container';
 import {LOCAL_STATE_DECLARATIONS} from './components/local-state-container';
 import {PUSH$_DECLARATIONS} from './components/push-pipe-container';
+import {ReadmeComponent} from './readme.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import {PUSH$_DECLARATIONS} from './components/push-pipe-container';
     Let$Directive,
     // ===================
     AppComponent,
+    ReadmeComponent,
     PUSH$_DECLARATIONS,
     HOOK_DECLARATIONS,
     HOST_LISTENER$_DECLARATIONS,
