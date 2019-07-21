@@ -2,11 +2,15 @@ import {AfterViewInit, ChangeDetectionStrategy, Component, Input, OnChanges, Sim
 import {Hook$, selectChange} from '@ngx-re';
 
 @Component({
-  selector: 'app-select-change',
-  template: `state$: {{state$ |async | json}}    `,
+  selector: 'app-select-change-container',
+  template: `
+    <h2>selectChange Container</h2>
+    <app-select-change>
+    </app-select-change>
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SelectChangeComponent implements OnChanges, AfterViewInit {
+export class SelectChangeContainerComponent implements OnChanges, AfterViewInit {
 
   public state = 0;
   @Hook$('onChanges')

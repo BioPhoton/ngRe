@@ -1,4 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {Input$} from '@ngx-re';
 import {Observable} from 'rxjs';
 import {OptionsState} from './options-state';
 

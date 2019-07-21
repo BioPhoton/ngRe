@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {LocalStateService} from '@ngx-re';
+import {LocalStateService, selectSlice} from '@ngx-re';
 import {Subject} from 'rxjs';
 import {map, share, switchMapTo} from 'rxjs/operators';
 import {NgRxStoreService} from './services/ng-rx-store.service';
@@ -19,10 +19,10 @@ import {NgRxStoreService} from './services/ng-rx-store.service';
       [state]="selectedAttendees$ | push$">
       <h2>Selected Attendees</h2>
     </app-table>
-    <app-local-state-container
+    <app-child-local-state-container
       style="float: left; width:45%"
       [selectedAttendeesIds]="selectedAttendeesIds$ | push$">
-    </app-local-state-container>
+    </app-child-local-state-container>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [

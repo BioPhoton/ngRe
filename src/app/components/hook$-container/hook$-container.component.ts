@@ -5,18 +5,24 @@ import {map} from 'rxjs/operators';
 @Component({
   selector: 'app-reactive-life-cycle-hooks-container',
   template: `
-    <p>
-      reactive-lifecycle-hooks-container works!
-    </p>
-    state$: {{state$ | async | json}}
-    <app-reactive-lifecycle-hooks [state]="state$ | async">
-    </app-reactive-lifecycle-hooks>
-    <app-select-change [value]="state$ | async">
-    </app-select-change>
+    <h1>Hook$(hookName) Container</h1>
+    <ul class="top-menu">
+      <li>
+        <a [routerLink]="['./full-example']">
+          Hooks$() Full example
+        </a>
+      </li>
+      <li>
+        <a [routerLink]="['./select-change']">
+          SelectChange RxJS Operator
+        </a>
+      </li>
+    </ul>
+    <router-outlet></router-outlet>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LifeCycleHooksContainerComponent {
+export class HookContainerComponent {
 
   initialState = {
     value: 0,

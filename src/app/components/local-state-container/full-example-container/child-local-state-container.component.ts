@@ -1,12 +1,12 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {combineLatest, Subject} from 'rxjs';
 import {map, startWith, withLatestFrom} from 'rxjs/operators';
-import {InputDecorator, LocalStateService, selectSlice} from '@ngx-re';
+import {Input$, LocalStateService, selectSlice} from '@ngx-re';
 import {mapToAttendeesWithSelectionFiltered} from './map-to-Attendees-with-selection-filtered';
 import {LocalStateComponentFacade} from './services/local-state-component.facade';
 
 @Component({
-  selector: 'app-local-state-container',
+  selector: 'app-child-local-state-container',
   template: `
     <h2>Manage Attendees</h2>
     <button (click)="refreshAttendeesClick$$.next($event)">
@@ -36,13 +36,13 @@ import {LocalStateComponentFacade} from './services/local-state-component.facade
   providers: [LocalStateService
   ]
 })
-export class LocalStateContainerComponent {
+export class ChildLocalStateContainerComponent {
   // INCOMING ==========================
   // INPUT DATA
 
   @Input()
   selectedAttendeesIds;
-  @InputDecorator('selectedAttendeesIds')
+  @Input$('selectedAttendeesIds')
   selectedAttendeesIdsFromInput$;
 
   // VIEW EVENTS

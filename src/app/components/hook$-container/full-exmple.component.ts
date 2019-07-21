@@ -16,14 +16,15 @@ import {Hook$} from '@ngx-re';
 import {Observable} from 'rxjs';
 
 @Component({
-  selector: 'app-reactive-lifecycle-hooks',
+  selector: 'app-full-example',
   template: `
-    <p>reactive-lifecycle-hooks works!</p>
-    {{state | json}}
+    <h2>FullExample</h2>
+    <p><b>state: </b></p>
+    <pre>{{state | json}}</pre>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LifeCycleHooksComponent implements OnChanges, DoCheck, OnInit, AfterViewInit,
+export class FullExampleComponent implements OnChanges, DoCheck, OnInit, AfterViewInit,
   AfterViewChecked, AfterContentInit, AfterContentChecked, OnDestroy {
 
   @Hook$('doCheck') doCheck$: Observable<void>;

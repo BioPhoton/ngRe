@@ -24,7 +24,6 @@ export class LateSubscribersContainerComponent {
 
   constructor(public localState: LocalStateService) {
     this.localState.setSlice({num: 777});
-    // this.localState.connectSlice({num: interval(1000)});
   }
 
   setNum() {

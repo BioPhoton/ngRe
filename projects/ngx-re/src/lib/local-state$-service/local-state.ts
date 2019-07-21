@@ -1,4 +1,5 @@
 import {Injectable} from '@angular/core';
+import {Hook$} from '../hook$-decorator/hook$.decorator';
 import {ConnectableObservable, merge, Observable, Subject} from 'rxjs';
 import {endWith, map, mergeAll, publishReplay, scan, takeUntil, tap} from 'rxjs/operators';
 

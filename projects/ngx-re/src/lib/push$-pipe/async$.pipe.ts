@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, OnDestroy, Pipe, PipeTransform, WrappedValue, ɵisObservable, ɵisPromise, ɵlooseIdentical} from '@angular/core';
-import {from, isObservable, Observable, of, Subject, throwError} from 'rxjs';
+import {from, Observable, Subject, throwError} from 'rxjs';
 import {distinctUntilChanged, switchAll, takeUntil, tap} from 'rxjs/operators';
 
 // import {invalidPipeArgumentError} from './invalid_pipe_argument_error';

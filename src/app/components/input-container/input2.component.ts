@@ -5,7 +5,7 @@ import {Input$} from '@ngx-re';
 @Component({
   selector: 'app-input2',
   template: `
-    <h2>Input child component</h2>
+    <h2>Input$ Child2</h2>
     <pre>
       state$: {{state$ | async | json}}<br>
       state2$: {{state2$ | async | json}}

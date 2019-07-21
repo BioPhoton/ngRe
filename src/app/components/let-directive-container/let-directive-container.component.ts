@@ -5,9 +5,7 @@ import {take} from 'rxjs/operators';
 @Component({
   selector: 'app-let-directive-container',
   template: `
-    <p>
-      let-directive-container works!
-    </p>
+    <h1>*reLet Container</h1>
 
     <div *ngIf="test$ as o">
       {{o | json}}

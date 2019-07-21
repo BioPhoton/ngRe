@@ -7,43 +7,39 @@ import {Router} from '@angular/router';
     <div class="zone" [ngClass]="{noop : runningZoneLess}">
       {{runningZoneLess ? 'Zone-Less' : 'Zone-Full'}}
     </div>
-    <div class="panel zone-less" *ngIf="runningZoneLess">
-      <button>Detect Change</button>
+    <div class="page">
+      <div class="sidebar">
+        <div class="panel zone-less" *ngIf="runningZoneLess">
+          <button>Detect Change</button>
+        </div>
+        <ul>
+          <li>
+            <a routerLink="push-pipe">entity$ | push$ as entity</a>
+          </li>
+          <li>
+            <a routerLink="hook">@Hook$(hookName)</a>
+          </li>
+          <li>
+            <a routerLink="input">Input</a>
+          </li>
+          <li>
+            <a routerLink="host-listener">HostListener$(eventName)</a>
+          </li>
+          <li>
+            <a routerLink="from-view-event">FromViewEvent$(eventName)</a>
+          </li>
+          <li>
+            <a routerLink="let-directive">[*reLet]="observables | push$ as o"</a>
+          </li>
+          <li>
+            <a routerLink="local-state">LocalState</a>
+          </li>
+        </ul>
+      </div>
+      <div class="content">
+        <router-outlet></router-outlet>
+      </div>
     </div>
-    <ul>
-      <li>
-        <a routerLink="push-pipe">PushPipe</a>
-      </li>
-      <li>
-        <a routerLink="live-cycle-hooks">LifeCycleHooks</a>
-        <ul>
-          <li>
-            <a [routerLink]="['live-cycle-hooks', {selectChange: true}]">SelectChange RxJS Operator</a>
-          </li>
-        </ul>
-      </li>
-      <li>
-        <a routerLink="input">Input</a>
-      </li>
-      <li>
-        <a routerLink="host-listener">Host Listener</a>
-      </li>
-      <li>
-        <a routerLink="output">Output</a>
-      </li>
-      <li>
-        <a routerLink="let-directive">Let Directive</a>
-      </li>
-      <li>
-        <a routerLink="local-state">LocalState</a>
-        <ul>
-          <li>
-            <a [routerLink]="['late-subscribers']">Late Subscribers</a>
-          </li>
-        </ul>
-      </li>
-    </ul>
-    <router-outlet></router-outlet>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })

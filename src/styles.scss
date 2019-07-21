@@ -35,3 +35,22 @@
   }
 
 }
+
+.page {
+  width: 100%;
+  display: flex;
+}
+
+.sidebar {
+  width: 25%;
+  padding: 10px;
+}
+.content {
+  width: 75%;
+  padding: 10px;
+}
+
+.top-menu {
+  display: flex;
+  flex-direction: column;
+}

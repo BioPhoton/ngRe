@@ -5,15 +5,19 @@ import {scan} from 'rxjs/operators';
 @Component({
   selector: 'app-host-listener',
   template: `
-    <h2>Host-Listener child component</h2>
+    <h2>HostListener$ Child
+      <small style="color: red">Click me!</small>
+    </h2>
+    <p>
+      <b>Num clicks:</b>
+    </p>
     <pre>
-      num clicks: {{numClicks$ | async | json}}
+      {{numClicks$ | async | json}}
     </pre>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HostListenerComponent {
-
 
   @HostListener$('click')
   hostClick$;

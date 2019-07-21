@@ -1,10 +1,10 @@
 import {NgModule} from '@angular/core';
 import {Async$Pipe} from './push$-pipe/async$.pipe';
 import {Push$Pipe} from './push$-pipe/push$.pipe';
-import {LetContext} from './let$-directive/let$.directive';
+import {Let$Directive} from './let$-directive/let$.directive';
 
 const DECLARATIONS = [
-  LetContext,
+  Let$Directive,
   Push$Pipe,
   Async$Pipe
 ];
