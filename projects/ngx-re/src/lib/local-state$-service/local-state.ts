@@ -1,9 +1,10 @@
 import {Injectable} from '@angular/core';
 import {ConnectableObservable, merge, Observable, Subject} from 'rxjs';
 import {endWith, map, mergeAll, publishReplay, scan, takeUntil, tap} from 'rxjs/operators';
-import {Hook$} from '../hook$-decorator/hook';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class LocalStateService {
 
   @Hook$('onDestroy')
@@ -39,6 +40,7 @@ export class LocalStateService {
   constructor() {
     // the local state service should be hot on instantiation
     (this.state$ as ConnectableObservable<any>).connect();
+    // @TODO destroy state$ on ngOnDestroy
   }
 
   // This breaks the functional programming style for the user.
@@ -50,15 +52,15 @@ export class LocalStateService {
 
   // This should be the way to go. Functional style should be broken by the user.
   // Not like with `this.setSlice`
-  connectSlice(config: { [key: string]: Observable<any> }): void {
+  connectSlices(config: { [key: string]: Observable<any> }): void {
     // @TODO validation / typing params
-    const [slice, state$] = Object.entries(config)[0];
-    const slice$ = state$.pipe(
-      map(state => ({[slice]: state})),
-      tap(_ => console.log('update slice', slice)),
-      endWith({[slice]: undefined})
-    );
-    this.commandObservable$$.next(slice$);
+    Object.entries(config).map(([slice, state$]) => {
+      const slice$ = state$.pipe(
+        map(state => ({[slice]: state})),
+        endWith({[slice]: undefined})
+      );
+      this.commandObservable$$.next(slice$);
+    });
   }
 
 }

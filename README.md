@@ -266,7 +266,7 @@ As we can directly connect an observable with the output binding there is **no n
 
 #### HostListener Decorator
 
-**_Receive event from the host over `eventEmitter.emit(42)`_**
+**_Receive event from the host over `@HostListener('click', ['$event'])`_**
 
 Inside of a component or directive, we can connect host events with a component method over the `@HostListener()` decorator.
 This enables us to retrieve the host's events. 
@@ -295,7 +295,7 @@ export class ChildComponent  {
   template: `<p>Num: {{num$ | async}}</p>`
 })
 export class ChildComponent  {
-  numSubj = new BehaviorSubject(0);
+  numSubj = new Subject();
   num$ = this.numSubj.pipe(scan(a => ++a));
 
   @HostListener('click', ['$event'])

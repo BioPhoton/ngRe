@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, Injector} from '@angular/core';
+import {HostListener$} from '@ngx-re';
 import {scan} from 'rxjs/operators';
-import {HostListener$} from '../../addons/host-listener$-decorator/host-listener';
 
 @Component({
   selector: 'app-host-listener',

@@ -4,8 +4,8 @@ import {distinctUntilChanged, switchAll, takeUntil, tap} from 'rxjs/operators';
 
 // import {invalidPipeArgumentError} from './invalid_pipe_argument_error';
 
-@Pipe({name: 'async', pure: false})
-export class AsyncPipe implements OnDestroy, PipeTransform {
+@Pipe({name: 'async$', pure: false})
+export class Async$Pipe implements OnDestroy, PipeTransform {
   private value: any = null;
 
   ngOnDestroy$$ = new Subject<boolean>();

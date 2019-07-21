@@ -1,8 +1,7 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {LocalStateService, selectSlice} from '@ngx-re';
 import {interval} from 'rxjs';
 import {take} from 'rxjs/operators';
-import {selectSlice} from '../../../addons/local-state$-service/operators/selectSlice';
-import {LocalStateService} from '../../../addons/local-state$-service/local-state';
 
 @Component({
   selector: 'app-late-subscribers-container',
@@ -38,7 +37,7 @@ export class LateSubscribersContainerComponent {
 
   setRandomState() {
     this.localState
-      .connectSlice({['num' + Math.random()]: interval(500).pipe(take(10))});
+      .connectSlices({['num' + Math.random()]: interval(500).pipe(take(10))});
   }
 
 }

@@ -1,8 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {LocalStateService, selectSlice} from '@ngx-re';
 import {combineLatest, ReplaySubject, Subject} from 'rxjs';
 import {map, startWith, withLatestFrom} from 'rxjs/operators';
-import {LocalStateService} from '../../../addons/local-state$-service/local-state';
-import {selectSlice} from '../../../addons/local-state$-service/operators/selectSlice';
 import {mapToAttendeesWithSelectionFiltered} from './map-to-Attendees-with-selection-filtered';
 import {LocalStateComponentFacade} from './services/local-state-component.facade';
 
@@ -93,10 +92,10 @@ export class LocalStateContainer2Component {
     this.ngRxFacade.connectUpdateCities$(this.refreshCitiesClick$$);
 
     this.localState.setSlice({filters: {paymentDone: false, specialMember: false}});
-    this.localState.connectSlice({filters: this.filtersComponentStateChange$$});
-    this.localState.connectSlice({showAll: this.showAllCommand$});
-    this.localState.connectSlice({attendeesWithCity: this.ngRxFacade.attendeesWithCity$});
-    this.localState.connectSlice({selectedAttendeesIds: this.selectedAttendeesIdsFromInput$});
+    this.localState.connectSlices({filters: this.filtersComponentStateChange$$});
+    this.localState.connectSlices({showAll: this.showAllCommand$});
+    this.localState.connectSlices({attendeesWithCity: this.ngRxFacade.attendeesWithCity$});
+    this.localState.connectSlices({selectedAttendeesIds: this.selectedAttendeesIdsFromInput$});
   }
 
 }

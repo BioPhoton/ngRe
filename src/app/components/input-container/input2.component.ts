@@ -1,5 +1,6 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {Input$} from '../../addons/input$-decorator/input$';
+import {Input$} from '@ngx-re';
+
 
 @Component({
   selector: 'app-input2',

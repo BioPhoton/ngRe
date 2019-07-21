@@ -1,9 +1,6 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {Observable, ReplaySubject, Subject} from 'rxjs';
+import {Input$} from '@ngx-re';
 import {map} from 'rxjs/operators';
-import {Input$} from '../../../../addons/input$-decorator/input$';
-// import {Input$} from '../../../../addons/input$-decorator/input$';
-import {OptionsState} from './options-state';
 
 @Component({
   selector: 'app-table',
@@ -30,7 +27,7 @@ import {OptionsState} from './options-state';
 export class TableComponent {
   @Input()
   state;
-  @Input$<any>('state')
+  @Input$('state')
   state$;
 
   headings$ = this.state$.pipe(

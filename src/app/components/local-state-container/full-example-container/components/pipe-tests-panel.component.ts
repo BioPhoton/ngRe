@@ -1,6 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Observable} from 'rxjs';
-import {Input$} from '../../../../addons/input$-decorator/input$';
 import {OptionsState} from './options-state';
 
 @Component({

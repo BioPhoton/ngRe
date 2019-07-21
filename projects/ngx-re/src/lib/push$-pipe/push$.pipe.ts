@@ -18,7 +18,7 @@ import {STATE_DEFAULT} from '../core/state-default';
  */
 // @TODO remove `pure: false` and experiment without zone
 @Pipe({name: 'push$', pure: false})
-export class PushPipe implements PipeTransform, OnDestroy {
+export class Push$Pipe implements PipeTransform, OnDestroy {
   private value: any = STATE_DEFAULT;
 
   ngOnDestroy$$ = new Subject<boolean>();

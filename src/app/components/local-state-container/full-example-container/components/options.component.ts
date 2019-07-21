@@ -1,10 +1,8 @@
 import {ChangeDetectionStrategy, Component, Input, Output} from '@angular/core';
 import {FormBuilder, FormGroup} from '@angular/forms';
-import {combineLatest, Observable, ReplaySubject} from 'rxjs';
+import {Input$, selectSlice} from '@ngx-re';
+import {combineLatest, Observable} from 'rxjs';
 import {filter, map, shareReplay, switchMap} from 'rxjs/operators';
-import {Input$} from '../../../../addons/input$-decorator/input$';
-import {selectSlice} from '../../../../addons/local-state$-service/operators/selectSlice';
-import {OptionsState} from './options-state';
 
 @Component({
   selector: 'app-options',

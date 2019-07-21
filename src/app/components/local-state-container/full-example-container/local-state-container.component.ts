@@ -1,9 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {combineLatest, ReplaySubject, Subject} from 'rxjs';
+import {combineLatest, Subject} from 'rxjs';
 import {map, startWith, withLatestFrom} from 'rxjs/operators';
-import {Input$} from '../../../addons/input$-decorator/input$';
-import {LocalStateService} from '../../../addons/local-state$-service/local-state';
-import {selectSlice} from '../../../addons/local-state$-service/operators/selectSlice';
+import {InputDecorator, LocalStateService, selectSlice} from '@ngx-re';
 import {mapToAttendeesWithSelectionFiltered} from './map-to-Attendees-with-selection-filtered';
 import {LocalStateComponentFacade} from './services/local-state-component.facade';
 
@@ -35,8 +33,7 @@ import {LocalStateComponentFacade} from './services/local-state-component.facade
     </app-table>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    LocalStateService
+  providers: [LocalStateService
   ]
 })
 export class LocalStateContainerComponent {
@@ -45,7 +42,7 @@ export class LocalStateContainerComponent {
 
   @Input()
   selectedAttendeesIds;
-  @Input$('selectedAttendeesIds')
+  @InputDecorator('selectedAttendeesIds')
   selectedAttendeesIdsFromInput$;
 
   // VIEW EVENTS
@@ -93,10 +90,13 @@ export class LocalStateContainerComponent {
     this.ngRxFacade.connectUpdateCities$(this.refreshCitiesClick$$);
 
     this.localState.setSlice({filters: {paymentDone: false, specialMember: false}});
-    this.localState.connectSlice({filters: this.filtersComponentStateChange$$});
-    this.localState.connectSlice({showAll: this.showAllCommand$});
-    this.localState.connectSlice({attendeesWithCity: this.ngRxFacade.attendeesWithCity$});
-    this.localState.connectSlice({selectedAttendeesIds: this.selectedAttendeesIdsFromInput$});
+    this.localState.connectSlices(
+      {
+        filters: this.filtersComponentStateChange$$,
+        showAll: this.showAllCommand$,
+        attendeesWithCity: this.ngRxFacade.attendeesWithCity$,
+        selectedAttendeesIds: this.selectedAttendeesIdsFromInput$
+      });
   }
 
 }

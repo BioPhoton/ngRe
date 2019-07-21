@@ -18,6 +18,16 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "@ngx-re": [
+        "projects/ngx-re/src/index.ts",
+        "dist/ngx-re"
+      ],
+      "@ngx-re/*": [
+        "projects/ngx-re/src/*",
+        "dist/ngx-re/src/*"
+      ]
+    }
   }
 }

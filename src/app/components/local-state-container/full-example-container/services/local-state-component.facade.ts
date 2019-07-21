@@ -1,8 +1,7 @@
 import {Injectable} from '@angular/core';
+import {Hook$, selectSlice} from '@ngx-re';
 import {combineLatest, merge, Subject} from 'rxjs';
 import {filter, map, mergeAll, takeUntil, tap} from 'rxjs/operators';
-import {Hook$} from '../../../../addons/hook$-decorator/hook';
-import {selectSlice} from '../../../../addons/local-state$-service/operators/selectSlice';
 import {NgRxStoreService} from './ng-rx-store.service';
 
 @Injectable({

@@ -12,8 +12,8 @@ import {
   OnInit,
   SimpleChanges
 } from '@angular/core';
+import {Hook$} from '@ngx-re';
 import {Observable} from 'rxjs';
-import {Hook$} from '../../addons/hook$-decorator/hook';
 
 @Component({
   selector: 'app-reactive-lifecycle-hooks',

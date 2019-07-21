@@ -1,8 +1,7 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {LocalStateService} from '@ngx-re';
 import {Subject} from 'rxjs';
 import {map, share, switchMapTo} from 'rxjs/operators';
-import {LocalStateService} from '../../../addons/local-state$-service/local-state';
-import {selectSlice} from '../../../addons/local-state$-service/operators/selectSlice';
 import {NgRxStoreService} from './services/ng-rx-store.service';
 
 @Component({

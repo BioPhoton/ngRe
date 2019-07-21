@@ -3,8 +3,7 @@ import {NgModule} from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {BrowserModule} from '@angular/platform-browser';
 import {RouterModule} from '@angular/router';
-import {LetDirective} from './addons/let-directive/let.directive';
-import {PushPipe} from './addons/push$-pipe/push.pipe';
+import {Let$Directive, NgxReModule, Push$Pipe} from '../../projects/ngx-re/src';
 
 import {AppComponent} from './app.component';
 import {HostListenerContainerComponent} from './components/host-listener-container/host-listener-container.component';
@@ -32,8 +31,8 @@ import {PushPipeComponent} from './components/push-pipe-container/push-pipe.comp
 
 @NgModule({
   declarations: [
-    PushPipe,
-    LetDirective,
+    Push$Pipe,
+    Let$Directive,
     // ===================
     AppComponent,
     PushPipeContainerComponent,
@@ -61,6 +60,7 @@ import {PushPipeComponent} from './components/push-pipe-container/push-pipe.comp
     BrowserModule,
     HttpClientModule,
     ReactiveFormsModule,
+    NgxReModule,
     RouterModule.forRoot([
       {
         path: 'push-pipe',

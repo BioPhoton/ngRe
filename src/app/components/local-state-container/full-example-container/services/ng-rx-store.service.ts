@@ -1,6 +1,6 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {LocalStateService} from '../../../../addons/local-state$-service/local-state';
+import {LocalStateService} from '@ngx-re';
 import {getRandomAttendees, getRandomCity} from '../random';
 
 // Requires a model
@@ -19,7 +19,9 @@ export class NgRxStoreService {
   }
 
   updateAttendees() {
-    //  https://my-json-server.typicode.com/<your-username>/<your-repo>
+    this.http.get('https://my-json-server.typicode.com/BioPhoton/reactiveAddons/posts')
+      .subscribe(console.log);
+    //  https://my-json-server.typicode.com/BioPhoton/reactiveAddons
     /*this.http.get('https://swapi.co/api/people/')
       .pipe(
         expand((r: any) => 'next' in r ? this.http.get(r.next) : EMPTY),

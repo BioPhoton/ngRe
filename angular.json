@@ -147,6 +147,41 @@
           }
         }
       }
+    },
+    "ngxRe": {
+      "projectType": "library",
+      "root": "projects/ngx-re",
+      "sourceRoot": "projects/ngx-re/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "tsConfig": "projects/ngx-re/tsconfig.lib.json",
+            "project": "projects/ngx-re/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/ngx-re/src/test.ts",
+            "tsConfig": "projects/ngx-re/tsconfig.spec.json",
+            "karmaConfig": "projects/ngx-re/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/ngx-re/tsconfig.lib.json",
+              "projects/ngx-re/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }},
   "defaultProject": "reactiveAddons"
 }
