@@ -3,6 +3,7 @@ import {FullExampleComponent} from './full-exmple.component';
 import {HookContainerComponent} from './hook$-container.component';
 import {SelectChangeContainerComponent} from './select-change-container.component';
 import {SelectChangeComponent} from './select-change.component';
+import {ServiceLifeCycleContainerComponent} from './service-life-cycle-contaier.component';
 
 export * from './routes';
 export const HOOK_DECLARATIONS = [
@@ -10,5 +11,6 @@ export const HOOK_DECLARATIONS = [
   FullExampleContainerComponent,
   FullExampleComponent,
   SelectChangeContainerComponent,
-  SelectChangeComponent
+  SelectChangeComponent,
+  ServiceLifeCycleContainerComponent
 ];

@@ -6,13 +6,23 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
     <h1>LocalStateService Container</h1>
     <ul class="top-menu">
       <li>
-        <a [routerLink]="['./full-example']">
-          Full Example
+        <a [routerLink]="['./state-clean-up']">
+          SelectSlice RxJS Operator
         </a>
       </li>
       <li>
-        <a [routerLink]="['./state-clean-up']">
-          SelectSlice RxJS Operator
+        <a [routerLink]="['./late-subscriber']">
+          Late Subscriber
+        </a>
+      </li>
+      <li>
+        <a [routerLink]="['./early-producer']">
+          Early Producer
+        </a>
+      </li>
+      <li>
+        <a [routerLink]="['./full-example']">
+          Full Example
         </a>
       </li>
     </ul>

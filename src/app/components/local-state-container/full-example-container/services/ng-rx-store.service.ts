@@ -39,14 +39,14 @@ export class NgRxStoreService {
         }
       );*/
     setTimeout(() => {
-      this.store.setSlice({attendees: getRandomAttendees(30)});
+      this.store.setSlices({attendees: getRandomAttendees(30)});
     }, 2000);
   }
 
   updateCities() {
     setTimeout(() => {
       console.log('updateCities');
-      this.store.setSlice({cities: getRandomCity(5, 10)});
+      this.store.setSlices({cities: getRandomCity(5, 10)});
     }, 2000);
   }
 }

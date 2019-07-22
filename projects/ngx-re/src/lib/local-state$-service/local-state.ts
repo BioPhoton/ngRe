@@ -47,8 +47,10 @@ export class LocalStateService {
   // This breaks the functional programming style for the user.
   // We should avoid such things. It's recommended passing streams like with `connectSlice();`
   /** @deprecated This is invitation for imperative  client code */
-  setSlice(command) {
-    this.command$$.next(command);
+  setSlices(commands) {
+    Object.entries(commands)
+      .map(([key, value]) => ({[key]: value}))
+      .forEach(command => this.command$$.next(command));
   }
 
   // This should be the way to go. Functional style should be broken by the user.

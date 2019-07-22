@@ -13,6 +13,11 @@ import {map} from 'rxjs/operators';
         </a>
       </li>
       <li>
+        <a [routerLink]="['./service-hooks']">
+          Service LifeCycleHooks
+        </a>
+      </li>
+      <li>
         <a [routerLink]="['./select-change']">
           SelectChange RxJS Operator
         </a>

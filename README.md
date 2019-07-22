@@ -17,26 +17,9 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
 ---
 ## Table of content
 ---
-- [Sections Important For Reactive Architecture](#Sections-Important-For-Reactive-Architecture)
-  - [Component Bindings](#Component-Bindings)
-    - [DomElement](#DomElement)
-    - [WebComponent](#WebComponent)
-    - [AngularComponent](#AngularComponent)
-  - [Life Cycle Hooks](#Life-Cycle-Hooks)
-- [Sections Important For Running Zone Less](#Sections-Important-For-Running-Zone-Less)
-- [Needs Overview](#Needs-Overview)
-  - [Automoate boilerplate](#Automoate-Boilerplate)
-  - [Intuitive Way To Handle Timing Issues](#Intuitiv-Way-To-Handle-Timing-Issues)
-  - [Convenient Way To Wire Things Together](#Convenient-Way-To-Wire-Things-Together)
-- [Suggested Extensions](#Suggested-Extensions)
-  - [Push Pipe](#Push-Pipe)
-  - [Multi Let Structural Directive](#Multi-Let-Structural-Directive)
-  - [Observable Life Cycle Hooks](#Observable-Life-Cycle-Hooks)
-    - [selectChange RxJS Operator](#selectChange-RxJS-Operator)
-  - [Observable Input Bindings](#Observable-Input-Bindings)
-  - [Observable Output Bindings](#Observable-Output-Bindings)
-  - [Local State Management](#Local-State-Management)
-    - [selectSlice RxJS Operator](#selectSlice-RxJS-Operator)
+
+<!-- toc -->
+
 ---
 
 # Sections Important For Reactive Architecture

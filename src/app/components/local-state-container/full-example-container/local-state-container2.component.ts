@@ -91,7 +91,7 @@ export class LocalStateContainer2Component {
     this.ngRxFacade.connectUpdateAttendees$(this.refreshAttendeesClick$$);
     this.ngRxFacade.connectUpdateCities$(this.refreshCitiesClick$$);
 
-    this.localState.setSlice({filters: {paymentDone: false, specialMember: false}});
+    this.localState.setSlices({filters: {paymentDone: false, specialMember: false}});
     this.localState.connectSlices({filters: this.filtersComponentStateChange$$});
     this.localState.connectSlices({showAll: this.showAllCommand$});
     this.localState.connectSlices({attendeesWithCity: this.ngRxFacade.attendeesWithCity$});
