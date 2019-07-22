@@ -17,33 +17,44 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
 ---
 ## Table of content
 ---
-- [Sections Important For Reactive Architecture](#Sections-Important-For-Reactive-Architecture)
-  - [Component Bindings](#Component-Bindings)
-    - [DomElement](#DomElement)
-    - [WebComponent](#WebComponent)
-    - [AngularComponent](#AngularComponent)
-  - [Life Cycle Hooks](#Life-Cycle-Hooks)
-    - [Component And Directive Life Cycle Hooks](Component-And-Directive-Life-Cycle-Hooks)
-    - [Service Life Cycle Hooks](Service-Life-Cycle-Hooks)
-   - [Local State](Local-State) 
-     - [Encapsulate Statemanagement](Encapsulate-Statemanagement)
-     - [Managing Component](Managing-Component)
-     - [Late Subecriber](Late-Subecriber)
-     - [Early Producer](Early-Producer)
-- [Sections Important For Running Zone Less](#Sections-Important-For-Running-Zone-Less)
-- [Needs Overview](#Needs-Overview)
-  - [Automoate boilerplate](#Automoate-Boilerplate)
-  - [Intuitive Way To Handle Timing Issues](#Intuitiv-Way-To-Handle-Timing-Issues)
-  - [Convenient Way To Wire Things Together](#Convenient-Way-To-Wire-Things-Together)
-- [Suggested Extensions](#Suggested-Extensions)
-  - [Push Pipe](#Push-Pipe)
-  - [Multi Let Structural Directive](#Multi-Let-Structural-Directive)
-  - [Observable Life Cycle Hooks](#Observable-Life-Cycle-Hooks)
-    - [selectChange RxJS Operator](#selectChange-RxJS-Operator)
-  - [Observable Input Bindings](#Observable-Input-Bindings)
-  - [Observable Output Bindings](#Observable-Output-Bindings)
-  - [Local State Management](#Local-State-Management)
-    - [selectSlice RxJS Operator](#selectSlice-RxJS-Operator)
+- [Sections Important For Reactive Architecture](#sections-important-for-reactive-architecture)
+  * [Component/Directive Bindings](#component-directive-bindings)
+    + [DomElement](#domelement)
+      - [Send to property over `<elem attr=""></elem>`](#send-to-property-over---elem-attr------elem--)
+    + [WebComponent](#webcomponent)
+      - [Send to property over `<elem attr=""></elem>`](#send-to-property-over---elem-attr------elem---1)
+      - [Receive events over `elem.addEventListener()`](#receive-events-over--elemaddeventlistener---)
+    + [AngularComponents](#angularcomponents)
+      - [Input Decorator](#input-decorator)
+      - [Output Decorator](#output-decorator)
+      - [HostListener Decorator](#hostlistener-decorator)
+      - [HostBinding Decorator](#hostbinding-decorator)
+      - [Input Binding](#input-binding)
+      - [Output Binding](#output-binding)
+  * [Life Cycle Hooks](#life-cycle-hooks)
+    + [Component And Directive Life Cycle Hooks](#component-and-directive-life-cycle-hooks)
+    + [Service Life Cycle Hooks](#service-life-cycle-hooks)
+  * [Local State](#local-state)
+    + [Late Subecriber](#late-subecriber)
+    + [Encapsulate Statemanagement (move to service)](#encapsulate-statemanagement--move-to-service-)
+    + [Managing Component State (the state object)](#managing-component-state--the-state-object-)
+    + [Late Subecriber](#late-subecriber-1)
+    + [Early Producer](#early-producer)
+- [Sections Important For Running Zone Less](#sections-important-for-running-zone-less)
+- [Needs Overview](#needs-overview)
+  * [Automoate Boilerplate](#automoate-boilerplate)
+  * [Intuitive Way To Handle Timing Issues](#intuitive-way-to-handle-timing-issues)
+  * [Convenient Way To Wire Things Together](#convenient-way-to-wire-things-together)
+- [Suggested Extensions](#suggested-extensions)
+  * [Push Pipe](#push-pipe)
+  * [Multi Let Structural Directive](#multi-let-structural-directive)
+  * [Observable Life Cycle Hooks](#observable-life-cycle-hooks)
+    + [selectChange RxJS Operator](#selectchange-rxjs-operator)
+  * [Observable Input Bindings](#observable-input-bindings)
+  * [Observable Output Bindings](#observable-output-bindings)
+  * [Local State Management](#local-state-management)
+    + [selectSlice RxJS Operator](#selectslice-rxjs-operator)
+
 ---
 
 # Sections Important For Reactive Architecture
@@ -1129,3 +1140,7 @@ buttons$ = this.lS.state$
 Following things are done under the hood:
 - it handles late subscribers with `shareReplay(1)` 
 - it forwards only distinct values
+
+
+
+https://ecotrust-canada.github.io/markdown-toc/
