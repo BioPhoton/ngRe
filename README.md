@@ -25,6 +25,11 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
   - [Life Cycle Hooks](#Life-Cycle-Hooks)
     - [Component And Directive Life Cycle Hooks](Component-And-Directive-Life-Cycle-Hooks)
     - [Service Life Cycle Hooks](Service-Life-Cycle-Hooks)
+   - [Local State](Local-State) 
+     - [Encapsulate Statemanagement](Encapsulate-Statemanagement)
+     - [Managing Component](Managing-Component)
+     - [Late Subecriber](Late-Subecriber)
+     - [Early Producer](Early-Producer)
 - [Sections Important For Running Zone Less](#Sections-Important-For-Running-Zone-Less)
 - [Needs Overview](#Needs-Overview)
   - [Automoate boilerplate](#Automoate-Boilerplate)
@@ -669,11 +674,195 @@ We need a decorator to **automates the boilerplate** of the `Subject` creation a
 
 ---   
 
-## State Composition
+## Local State
+
+### Late Subecriber
+
+Producers can be out of control, so we need a handle this cast in a different way.
+A way to handle the case on our side.
+
+**Producer under control**
+```typescript
+@Component({
+  selector: 'container',
+  template: `<laet-subscriber [state]="state$ | async"></late-subscrier>`
+})
+export class LateSubscriberComponent {
+  state$ = of(1);
+}
+
+@Component({
+  selector: 'app-late-subscriber',
+  template: `
+    <h2>Late Subscriber Child</h2>
+    <p><b>replayed$</b></p>
+    <pre>{{replayed$ | async | json}}</pre>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class LateSubscriberComponent {
+  replayed$ = new ReplaySubject(1);
+  
+  @Input()
+  set state(v) {
+    this.replayed$.next(v);
+  }
+
+}
+```
+
+**Producer NOT under control**
+```typescript
+@Component({
+  selector: 'container',
+  template: `<laet-subscriber [state]="state$ | async"></late-subscrier>`
+})
+export class LateSubscriberComponent {
+  state$ = of(1);
+}
+
+@Component({
+  selector: 'app-late-subscriber',
+  template: `
+    <h2>Late Subscriber Child</h2>
+    <p><b>fromLocalState$</b></p>
+    <pre>{{fromLocalState$ | async | json}}</pre>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class LateSubscriberComponent {
+  private localState = new LocalStateService();
+  fromLocalState$ = this.localState.state$;
+
+  @Input()
+  set state(v) {
+    this.localState.set(v});
+  }
+
+  constructor() {
+  }
+
+}
+
+export class LocalStateService {
+  private command = new ReplaySubject(1);
+  state$ = this.command.asObservable();
+
+  constructor() {
+  }
+
+  set(command) {
+    this.command.next(command);
+  }
+}
+```
+
+**Needs**   
 
 TBD
 
+--- 
 
+### Encapsulate Statemanagement (move to service)
+
+### Managing Component State (the state object)
+
+### Late Subecriber
+
+Producers can be out of control, so we need a handle this cast in a different way.
+A way to handle the case on our side.
+
+**Producer under control**
+```typescript
+@Component({
+  selector: 'container',
+  template: `<laet-subscriber [state]="state$ | async"></late-subscrier>`
+})
+export class LateSubscriberComponent {
+  state$ = of(1);
+}
+
+@Component({
+  selector: 'app-late-subscriber',
+  template: `
+    <h2>Late Subscriber Child</h2>
+    <p><b>replayed$</b></p>
+    <pre>{{replayed$ | async | json}}</pre>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class LateSubscriberComponent {
+  replayed$ = new ReplaySubject(1);
+  
+  @Input()
+  set state(v) {
+    this.replayed$.next(v);
+  }
+
+}
+```
+
+**Producer NOT under control**
+```typescript
+@Component({
+  selector: 'container',
+  template: `<laet-subscriber [state]="state$ | async"></late-subscrier>`
+})
+export class LateSubscriberComponent {
+  state$ = of(1);
+}
+
+@Component({
+  selector: 'app-late-subscriber',
+  template: `
+    <h2>Late Subscriber Child</h2>
+    <p><b>fromLocalState$</b></p>
+    <pre>{{fromLocalState$ | async | json}}</pre>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class LateSubscriberComponent {
+  private localState = new LocalStateService();
+  fromLocalState$ = this.localState.state$;
+
+  @Input()
+  set state(v) {
+    this.localState.set(v});
+  }
+
+  constructor() {
+  }
+
+}
+
+export class LocalStateService {
+  private command = new ReplaySubject(1);
+  state$ = this.command.asObservable();
+
+  constructor() {
+  }
+
+  set(command) {
+    this.command.next(command);
+  }
+}
+```
+
+**Needs**   
+
+TBD
+
+--- 
+
+### Early Producer
+
+TBD
+
+**Needs**   
+
+TBD
+
+--- 
 
 # Sections Important For Running Zone Less
 
@@ -705,12 +894,12 @@ There are two problems:
 - Early Subscriber Problem
 
 _Late Subscriber Problem:_
-Incoming values arrive before the has happened subscription. 
+**There is already a subscription** Incoming values arrive before the has happened subscription. 
 
 For example state over input bindings arrives before the view gets rendered and a used pipe could receive the value.
 We call this situation late subscriber problem. In this case, the view is a late subscribe to the values from '@Input()' properties.
 
-_Early Subscriber Problem:_
+_Early Producer Problem:_
 The subscription happens before any value can arrive.
 
 For example, subscriptions to view elements the constructor happen before they ever exist.
