@@ -20,6 +20,40 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
 
 <!-- toc -->
 
+- [Sections Important For Reactive Architecture](#sections-important-for-reactive-architecture)
+  * [Component/Directive Bindings](#componentdirective-bindings)
+    + [DomElement](#domelement)
+      - [Input Bindings](#input-bindings)
+    + [WebComponent](#webcomponent)
+      - [Send to property over ``](#send-to-property-over-)
+      - [Receive events over `elem.addEventListener()`](#receive-events-over-elemaddeventlistener)
+    + [AngularComponents](#angularcomponents)
+      - [Input Decorator](#input-decorator)
+      - [Output Decorator](#output-decorator)
+      - [HostListener Decorator](#hostlistener-decorator)
+      - [HostBinding Decorator](#hostbinding-decorator)
+      - [Input Binding](#input-binding)
+      - [Output Binding](#output-binding)
+  * [Life Cycle Hooks](#life-cycle-hooks)
+    + [Implement any hook](#implement-any-hook)
+    + [Services And Life Cycle Hooks](#services-and-life-cycle-hooks)
+- [Sections Important For Running Zone Less](#sections-important-for-running-zone-less)
+- [Needs Overview](#needs-overview)
+  * [Automate Boilerplate](#automate-boilerplate)
+  * [Intuitive Way To Handle Timing Issues](#intuitive-way-to-handle-timing-issues)
+  * [Convenient Way To Wire Things Together](#convenient-way-to-wire-things-together)
+- [Suggested Extensions](#suggested-extensions)
+  * [Push Pipe](#push-pipe)
+  * [Multi Let Structural Directive](#multi-let-structural-directive)
+  * [Observable Life Cycle Hooks](#observable-life-cycle-hooks)
+    + [selectChange RxJS Operator](#selectchange-rxjs-operator)
+  * [Observable Input Bindings](#observable-input-bindings)
+  * [Observable Output Bindings](#observable-output-bindings)
+  * [Local State Management](#local-state-management)
+    + [selectSlice RxJS Operator](#selectslice-rxjs-operator)
+
+<!-- tocstop -->
+
 ---
 
 # Sections Important For Reactive Architecture
@@ -56,7 +90,9 @@ DomElements is everything you can query from `document`.
 
 The goal is to list vanilla js versions as well as the angular way and list options on how to make property values and events working with angular.
 
-#### Send to property over `<elem attr=""></elem>`
+#### Input Bindings
+
+**Set properties over `<elem attr=""></elem>`**
 
 To set a value for an input attribute you can query the dom get the item and set the value.
 
@@ -386,11 +422,11 @@ As we know exactly when changes happen we can trigger change detection manually.
 
 One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run unto some annoying situation:
 
-
+---   
 
 #### Output Binding 
 
-**_Receive events from child compoent over `(stateChange)="fn($event)"`_**
+**_Receive events from child component over `(stateChange)="fn($event)"`_**
 
 In the parent component, we can receive events from child components over specific template syntax, the round brackets `(stateChange)`.
 Angular automatically updates fires the provides function over change detection.
@@ -439,7 +475,7 @@ As the component's logic can partially rely on the components life cycle hooks w
 
 Angular fires a variety of lifecycle hooks. Some of them a single time some of them only once a components lifetime.
 
-Angulars life cycle hooks are listed ere in order:   
+Angular's life cycle hooks are listed ere in order:   
 (Here the Interface name is used. The implemented method starts with the prefix 'ng')
 - OnChanges (ongoing, transports changes)
 - OnInit (single shot)
@@ -497,14 +533,11 @@ export class ChildComponent implements OnChanges {
 
 ### Services And Life Cycle Hooks
 
-TBD
-
 # Sections Important For Running Zone Less
-TBD
 
 # Needs Overview
 
-## Automoate Boilerplate
+## Automate Boilerplate
 
 Automate boilerplate of setting up a subject and connecting it to producer
 
