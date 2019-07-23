@@ -687,96 +687,85 @@ We need a decorator to **automates the boilerplate** of the `Subject` creation a
 
 ## Local State
 
-### Late Subecriber
+### Encapsulation and Instantiation
 
-Producers can be out of control, so we need a handle this cast in a different way.
-A way to handle the case on our side.
+The goal here is to evaluate aproaches of encapsulating statemanagement into a service. 
+As this is trivial in angular we directly go to the example.
 
-**Producer under control**
+**Simple approach:**   
+
 ```typescript
 @Component({
-  selector: 'container',
-  template: `<laet-subscriber [state]="state$ | async"></late-subscrier>`
+  selector: 'app-child',
+  template: ``,
+  providers: [LocalProvidedService]
 })
-export class LateSubscriberComponent {
-  state$ = of(1);
+export class ChildComponent implements OnChanges {
+  constructor(private localStateService: LocalStateService) {
+    this.localStateService.next(42);
+  }
 }
 
-@Component({
-  selector: 'app-late-subscriber',
-  template: `
-    <h2>Late Subscriber Child</h2>
-    <p><b>replayed$</b></p>
-    <pre>{{replayed$ | async | json}}</pre>
-  `,
-  changeDetection: ChangeDetectionStrategy.OnPush
+@Injctable({
+  providedIn: 'root'
 })
-export class LateSubscriberComponent {
-  replayed$ = new ReplaySubject(1);
+export class LocalProvidedService implements OnDestroy {
+  subject = new Subject();
   
-  @Input()
-  set state(v) {
-    this.replayed$.next(v);
-  }
-
-}
-```
-
-**Producer NOT under control**
-```typescript
-@Component({
-  selector: 'container',
-  template: `<laet-subscriber [state]="state$ | async"></late-subscrier>`
-})
-export class LateSubscriberComponent {
-  state$ = of(1);
-}
-
-@Component({
-  selector: 'app-late-subscriber',
-  template: `
-    <h2>Late Subscriber Child</h2>
-    <p><b>fromLocalState$</b></p>
-    <pre>{{fromLocalState$ | async | json}}</pre>
-  `,
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class LateSubscriberComponent {
-  private localState = new LocalStateService();
-  fromLocalState$ = this.localState.state$;
-
-  @Input()
-  set state(v) {
-    this.localState.set(v});
-  }
-
-  constructor() {
-  }
-
-}
-
-export class LocalStateService {
-  private command = new ReplaySubject(1);
-  state$ = this.command.asObservable();
-
-  constructor() {
-  }
-
-  set(command) {
-    this.command.next(command);
+  next(value) {
+    this.subject.next(value);
   }
 }
 ```
 
 **Needs**   
+As Angular already provides a DI layer ther is nothing to solve here
 
-TBD
+---   
 
---- 
+### Managing the State Structure
 
-### Encapsulate Statemanagement (move to service)
+The goal here is to come up with a good slim solution for managing the conponents state as a object.
+The state should be immutable by default and easy to change and receive changes.
 
-### Managing Component State (the state object)
+**Simple approach:**   
+
+```typescript
+@Component({
+  selector: 'app-child',
+  template: `
+    <button (click)="increment()">click</button>
+    state: {{state$ | async | json}}
+  `
+})
+export class ChildComponent implements OnChanges {
+  command$ = Subject();
+  
+  state$ = this.command$
+    .pipe(
+      scan((state, command) => ({...state, ...command}), {})
+    );
+
+  increment() {
+    this.command$.next({value: 1})  
+  } 
+}
+```
+
+**Needs**   
+We need to manage the components state as an object. The logic should make immutable changes so we don't have care about it.
+State should be easy to receive and change to the state should be able with as minimal code as possible.
+
+> **Manage state as an object**  
+> Form the above explorations following things are needed to organize our state
+> - an object to identify every stored value over a key
+> - setup a `Subject` to have the observers `.next()` methode available to send values
+> - accumulate the values in an object over the `scan` operator
+> - at least immutable changes to the shalow 
+>   done by i.e. the TypeScript spread operator `...` should be automated by the logic
+> - having a layer of validation for the commands
+
+---   
 
 ### Late Subecriber
 
