@@ -439,11 +439,6 @@ We cal rely on trust that subscription to `state$` happens after `AfterViewInit`
 > **Inconsistent handling of undefined variables**   
 > It is important to mention the inconsistant handling of undefined variables and observables that didnt send a value yet. 
 
-> **Nested Template Scopes**   
-> One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some   
-> annoying situation where we have to nest multiple divs to have a context per bound vairable.
-
-
 ```typescript
 @Component({
   selector: 'my-app',
@@ -455,8 +450,6 @@ export class AppComponent  {
   state$ = of(42);
 }
 ```
-
-
 **Needs:**   
 As we know exactly when changes happen we can trigger change detection manually. Knowing the advantages of subscriptions over the template and lifecycle hooks the solution should be similar to `async` pipe.
 
@@ -472,6 +465,61 @@ As we know exactly when changes happen we can trigger change detection manually.
 > - when initially passed `EMPTY` the pipe should forward undefined as value as on value ever was emitted
 > - when initially passed `NEVER` the pipe should forward undefined as value as on value ever was emitted
 > - when reassigned a new `Observable` the pipe should forward undefined as value as on value was emitted from the new `Observable`
+
+
+##### Nested Template Scopes   
+One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some   
+annoying situation where we have to nest multiple divs to have a context per bound vairable.
+
+**Nested Template Scope Problem**
+```html
+<div *ngIf="(observable1$ | async) as color">
+  <div *ngIf="(observable2$ | async) as shape">
+    <div *ngIf="(observable3$ | async) as name">
+      <app-color 
+        [color]="color" [shape]="shape" [name]="name">
+  	  </app-color>  
+     </div>
+   <div>
+</div>
+```
+
+**Getting rid of Nested Div Problem**
+```html
+<ng-container *ngIf="observable1$ | async as color">
+  <ng-container *ngIf="observable2$ | async as shape">
+    <ng-container *ngIf="observable3$ | async as name">
+      <app-color 
+        [color]="color" [shape]="shape" [name]="name">
+  	  </app-color>  
+     </ng-container>
+   <ng-container>
+</ng-container>    
+```
+
+**Possible Solutions**
+```html
+<ng-container *ngIf="{
+              color: observable1$ | async,
+              shape: observable2$ | async,
+              name:  observable3$ | async
+            } as c">
+  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+  </app-color>  
+</ng-container>
+```
+
+**Needs:**   
+Bringing it together into one object helps a lot. The syntax could be more convenient. Furthermore we could implement some default behaviour for falsy falues.
+
+> **Implement more convenient binding syntax**   
+> To improve usability we should fulfill following:
+> - the context should be always present. `*ngIf="{}"` would do that already
+> - controlled change detection to run zone-less
+> - avoid multiple usage of the `async`pipe
+> - better control over the context. Maybe we could get rid of the `as` as variable??
+> - implement an internal layer to handle null vs undefined etc
+> - implement option to put attitional logic for complete and error of an observable
 
 ---   
 
@@ -1081,18 +1129,17 @@ as well as input binding `[color]="thing$ | push"` and trigger the changes of th
 
 The multi-let directive is a not tested idea of binding multiple observables in the same view context. 
 
-Here multiple subscriptions in the view could lead to performance issues. Unfortunately, there is no other built-in.
+Here multiple subscriptions in the view could lead to performance issues. Unfortunately, there is no other built-in solution for that.
 
 ```html
-<div *ngIf="(observable1$ | async) as color">
-  <div *ngIf="(observable2$ | async) as shape">
-    <div *ngIf="(observable3$ | async) as name">
-      <app-color 
-        [color]="color" [shape]="shape" [name]="name">
-  	  </app-color>  
-     </div>
-   <div>
-</div>
+<ng-container *ngIf="{
+              color: observable1$ | async,
+              shape: observable2$ | async,
+              name:  observable3$ | async
+            } as c">
+  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+  </app-color>  
+</ng-container>
 ```
 
 A custom directive could probably solve it. `*letMany="{o: o$, t: t$} as s;"` 
@@ -1137,13 +1184,13 @@ Following things are done under the hood:
 
 ### selectChange RxJS Operator
 
-**``**
 
 An operators `selectChange` to select a specific slice from `SimpleChange`. 
 This operator can be used in combination with `onChanges$`.
 
 It also provides a very early option to control the forwarded values.
 
+**Example of selectSlice operator**
 ```typescript
 export class MyComponent {
   @hook$('onChanges') 
