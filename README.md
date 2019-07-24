@@ -847,7 +847,9 @@ The goal would be to find a solution that can get encapsulated and abstracted aw
 export class LateSubscriberComponent {
   command$ = new Subject();
   state$ = this.command
-    .pipe(scan((s,c)=>({...s,...c}), {}));
+    .pipe(
+      scan((s,c)=>({...s,...c}), {})
+    );
   
   @Input()
   set state(v) {
@@ -874,7 +876,10 @@ export class LateSubscriberComponent {
 export class LateSubscriberComponent {
   command$ = new Subject();
   state$ = this.command
-    .pipe(scan( (s,c) => ({...s,...c}), {} ));
+    .pipe(
+      scan( (s,c) => ({...s,...c}), {} ),
+      publish()
+    );
   
   @Input()
   set state(v) {
@@ -882,6 +887,8 @@ export class LateSubscriberComponent {
   }
   
   constructor() {
+    this.state.connect();
+
     this.state = { slice1: 7 };
     this.state = { slice2: 42 };
   }
@@ -890,12 +897,92 @@ export class LateSubscriberComponent {
 **Needs**   
 We need to have the observable to be hot with component constructor. Additional pipes or similar should be abstractedd away.
 
-> ** **
->  
+> **Providing State as Hot**
+> To ensure all values get processed we need to:
+> - call the `.connect()` from a `publish` method at component construction
+> - use `publishReplay(1)` to privide state for late suscriber
 
 ---
 
+### Subscription handling
 
+Normally we use the components lifecycle to subscribe and unsubscribe from certian observables in the component.
+We already know some solutions for getting a clean and elegant subscription handling by turning OnDestroy into an Observable. 
+But it still feels a bit repetetive. Furthermore it is up to the user to do subscription handling right.
+ 
+The goal would be to find a way to move subscription hadling outside of the component code.
+
+**Subscription Handling Inside of Component**
+```typescript
+@Component({
+  selector: 'app-early-producer',
+  template: ``
+})
+export class LateSubscriberComponent {
+  ngOnDestroy$ = new Subject();
+  command$ = new Subject();
+  state$ = this.command
+    .pipe(
+      scan( (s,c) => ({...s,...c}), {} ),
+      publish()
+    );
+  
+  constructor() {
+    this.state$
+    .pipe(takeUntil(this.ngOnDestroy$))
+    .subscribe(console.log);
+  }
+  
+  ngOnDestroy() {
+    this.ngOnDestroy$.next();
+  }
+  
+}
+```
+
+**Subscription Handling over View Provider**
+```typescript
+@Component({
+  selector: 'app-early-producer',
+  template: ``,
+  providers: [LocalStateService]
+})
+export class LateSubscriberComponent implements OnDestroy {
+   
+  constructor(private localState: LocalStateService) {
+    this.localState.state$
+    .subscribe(console.log);
+  }
+ 
+}
+
+class LocalStateService implements OnDestroy {
+   ngOnDestroy$ = new Subject();
+   
+   command$ = new Subject();
+   state$ = this.command
+    .pipe(
+      scan( (s,c) => ({...s,...c}), {} ),
+      publish()
+    );
+  
+    ngOnDestroy() {
+      this.ngOnDestroy$.next();
+    }
+}
+```
+
+**Needs**   
+We need to find a elegant way of controling subscriptions in a component.
+
+> **Automated subscription handling**
+> To ensure all subscriptions are cleaned up we need to:
+> - encapsulate state managed in the component into a service 
+> - leverage the services `OnDestroy` life cycle hook to handle subscription inside the service
+> - provide it under the components providers to bind it's lifetime to the components lifetime
+> - use dependency injection us instanciate the service with component construction
+
+---
 
 # Sections Important For Running Zone Less
 
