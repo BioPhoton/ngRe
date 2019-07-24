@@ -450,11 +450,15 @@ export class AppComponent  {
   state$ = of(42);
 }
 ```
+
 **Needs:**   
 As we know exactly when changes happen we can trigger change detection manually. Knowing the advantages of subscriptions over the template and lifecycle hooks the solution should be similar to `async` pipe.
 
 > **NgZone could be detached**   
 > As all changes can get detected we could detache the pipe from the `ChangeDetection` and trigger it on every value change
+
+> **Performance optimisations**
+> - consider scheduling over `AnimationFrameScheduler` the output is always for the view
 
 > **Implement strick and consistent handling of undefined for pipes**   
 > A pipe similar to `async` that should act as following:
@@ -466,47 +470,101 @@ As we know exactly when changes happen we can trigger change detection manually.
 > - when initially passed `NEVER` the pipe should forward undefined as value as on value ever was emitted
 > - when reassigned a new `Observable` the pipe should forward undefined as value as on value was emitted from the new `Observable`
 
-
 ##### Nested Template Scopes   
 One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some   
 annoying situation where we have to nest multiple divs to have a context per bound vairable.
 
 **Nested Template Scope Problem**
 ```html
-<div *ngIf="(observable1$ | async) as color">
-  <div *ngIf="(observable2$ | async) as shape">
-    <div *ngIf="(observable3$ | async) as name">
-      <app-color 
-        [color]="color" [shape]="shape" [name]="name">
-  	  </app-color>  
-     </div>
-   <div>
-</div>
+@Component({
+  selector: 'my-app',
+  template: `
+  <div *ngIf="(observable1$ | async) as color">
+    <div *ngIf="(observable2$ | async) as shape">
+      <div *ngIf="(observable3$ | async) as name">
+        <app-color 
+          [color]="color" [shape]="shape" [name]="name">
+        </app-color>  
+       </div>
+     <div>
+  </div>
+  `})
+export class AppComponent  {
+  observable1$ = interval(1000);
+  observable2$ = interval(1500);
+  observable3$ = interval(2000);
+}
 ```
 
 **Getting rid of Nested Div Problem**
 ```html
-<ng-container *ngIf="observable1$ | async as color">
-  <ng-container *ngIf="observable2$ | async as shape">
-    <ng-container *ngIf="observable3$ | async as name">
-      <app-color 
-        [color]="color" [shape]="shape" [name]="name">
-  	  </app-color>  
-     </ng-container>
-   <ng-container>
-</ng-container>    
+@Component({
+  selector: 'my-app',
+  template: `
+  <ng-container *ngIf="observable1$ | async as color">
+    <ng-container *ngIf="observable2$ | async as shape">
+      <ng-container *ngIf="observable3$ | async as name">
+        <app-color 
+          [color]="color" [shape]="shape" [name]="name">
+        </app-color>  
+       </ng-container>
+     <ng-container>
+  </ng-container>
+  `})
+export class AppComponent  {
+  observable1$ = interval(1000);
+  observable2$ = interval(1500);
+  observable3$ = interval(2000);
+}
 ```
 
 **Possible Solutions**
 ```html
-<ng-container *ngIf="{
-              color: observable1$ | async,
-              shape: observable2$ | async,
-              name:  observable3$ | async
-            } as c">
-  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
-  </app-color>  
-</ng-container>
+@Component({
+  selector: 'my-app',
+  template: `
+  <ng-container
+    *ngIf="{
+      color: observable1$ | async,
+      shape: observable2$ | async,
+      name:  observable3$ | async
+    } as c">
+    <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+    </app-color>  
+  </ng-container>
+  `})
+export class AppComponent  {
+  observable1$ = interval(1000);
+  observable2$ = interval(1500);
+  observable3$ = interval(2000);
+}
+```
+
+**Composition in the Component**
+```html
+@Component({
+  selector: 'my-app',
+  template: `
+  <ng-container *ngIf="observables$ | async as c">
+    color: {{c.color}} shape: {{c.shape}} name: {{c.name}}  
+  </ng-container>
+  `})
+export class AppComponent  {
+  observable1$ = interval(1000);
+  observable2$ = interval(1500);
+  observable3$ = interval(2000);
+
+  observables$ = combineLatest(
+    this.observable1$.pipe(startWith(null), distinctUntilChanged()),
+    this.observable2$.pipe(startWith(null), distinctUntilChanged()),
+    this.observable3$.pipe(startWith(null), distinctUntilChanged()),
+    (color, shape, name) => ({color, shape, name})
+  )
+  .pipe(
+    observeOn(AnimationFrameScheduler)
+  );
+
+}
 ```
 
 **Needs:**   
@@ -520,6 +578,8 @@ Bringing it together into one object helps a lot. The syntax could be more conve
 > - better control over the context. Maybe we could get rid of the `as` as variable??
 > - implement an internal layer to handle null vs undefined etc
 > - implement option to put attitional logic for complete and error of an observable
+> - consider scheduling over `AnimationFrameScheduler` the output is always for the view
+> - handling changes could be done programatically. Good for running zone-less
 
 ---   
 
