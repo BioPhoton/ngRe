@@ -488,9 +488,10 @@ One more downside here. If we use the `as` template syntax and have multiple obs
   <div *ngIf="(observable1$ | async) as color">
     <div *ngIf="(observable2$ | async) as shape">
       <div *ngIf="(observable3$ | async) as name">
-        <app-color 
-          [color]="color" [shape]="shape" [name]="name">
-        </app-color>  
+        <app-color [color]="color" [shape]="shape" [name]="name">
+        </app-color>
+        <app-color [color]="color" [shape]="shape" [name]="name">
+        </app-color>
        </div>
      <div>
   </div>
@@ -510,9 +511,10 @@ export class AppComponent  {
   <ng-container *ngIf="observable1$ | async as color">
     <ng-container *ngIf="observable2$ | async as shape">
       <ng-container *ngIf="observable3$ | async as name">
-        <app-color 
-          [color]="color" [shape]="shape" [name]="name">
-        </app-color>  
+        <app-color [color]="color" [shape]="shape" [name]="name">
+        </app-color>
+        <app-color [color]="color" [shape]="shape" [name]="name">
+        </app-color>
        </ng-container>
      <ng-container>
   </ng-container>
@@ -537,6 +539,8 @@ export class AppComponent  {
     } as c">
     <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
     </app-color>  
+    <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+    </app-color>
   </ng-container>
   `})
 export class AppComponent  {
@@ -552,7 +556,10 @@ export class AppComponent  {
   selector: 'my-app',
   template: `
   <ng-container *ngIf="observables$ | async as c">
-    color: {{c.color}} shape: {{c.shape}} name: {{c.name}}  
+    <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+    </app-color>
+    <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+    </app-color>
   </ng-container>
   `})
 export class AppComponent  {
@@ -1290,6 +1297,8 @@ The current way of handling subscriptions in the view looks like that:
             } as c">
   <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
   </app-color>  
+  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+  </app-color>  
 </ng-container>
 ```
 
@@ -1297,14 +1306,27 @@ The `*let` directive take over several things and makes it more convenient and s
 `*let="{o: o$, t: t$} as s;"` 
 
 ```html
-<ng-container *let="{
-              color: observable1$,
-              shape: observable2$,
-              name:  observable3$
-            } as c">
-  <app-color 
-    [color]="c.color" [shape]="c.shape" [name]="c.name">
-  </app-color>  
+<!-- observables = { color: observable1$, shape: observable2$, name:  observable3$ } -->
+
+<ng-container *let="observables as c">
+  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+  </app-color>
+  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+  </app-color>
+</ng-container>
+
+<ng-container *let="observables; let c">
+  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+  </app-color>
+  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+  </app-color>
+</ng-container>
+
+<ng-container *let="observables; color as c; shape as s; name as n">
+  <app-color [color]="c" [shape]="s" [name]="n">
+  </app-color>
+  <app-color [color]="c" [shape]="s" [name]="n">
+  </app-color>
 </ng-container>
 ```
 
