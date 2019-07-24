@@ -1084,30 +1084,28 @@ The multi-let directive is a not tested idea of binding multiple observables in 
 Here multiple subscriptions in the view could lead to performance issues. Unfortunately, there is no other built-in.
 
 ```html
-<div *ngIf="(o1$ | push) as o1">
-  <div *ngIf="(o2$ | push) as o2">
-    <div *ngIf="(o3$ | push) as o3">
+<div *ngIf="(observable1$ | async) as color">
+  <div *ngIf="(observable2$ | async) as shape">
+    <div *ngIf="(observable3$ | async) as name">
       <app-color 
-      [color]="o1.color" [shape]="o1.shape" 
-      [name]="o2.name" [age]="o2.age"
-      [value]="o3">
-      </app-color>  
+        [color]="color" [shape]="shape" [name]="name">
+  	  </app-color>  
      </div>
    <div>
 </div>
 ```
 
-A custom directive could probably solve it. `*multiLet="o$ | push as o; t$ | push as t;"` 
+A custom directive could probably solve it. `*letMany="{o: o$, t: t$} as s;"` 
 This would help the nested divs and the number of subscriptions.
 
 ```html
-<div *multiLet="o1$ | push as o1;
-                o2$ | push as o2;
-                o3$ | push as o3;">
+<div *letMany="{
+              color: observable1$,
+              shape: observable2$,
+              name:  observable3$
+            } as c">
   <app-color 
-    [color]="o1.color" [shape]="o1.shape" 
-    [name]="o2.name" [age]="o2.age"
-    [value]="o3">
+    [color]="c.color" [shape]="c.shape" [name]="c.name">
   </app-color>  
 </div>
 ```
