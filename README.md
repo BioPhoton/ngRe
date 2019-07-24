@@ -68,7 +68,7 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
 
 Here we will try to list all areas in angular where such helper primitives would be needed. 
 The first step is to list all possible situations and a very simple solution for a reactive approach.
-Each area may have different requirements to be more convenient to use in a reactive way. 
+Each area may have different requirements to be more convenient to use reactively. 
 
 Every section explains the current _imperative_ approach as well as the _reactive_ approach in a simple way.
 This should help to understand the problems and get a good overview of the options and needs for a reactive architecture in angular.
@@ -244,8 +244,8 @@ Here `ReplaySubject` is critical because of the life cycle hooks.
 > - hooking into the `setter` of the input binding and `.next()` the incoming value
 
 > **Early Producer**   
-> All input bindings are so called "early producer". A cache mechanism is needed as followed:
-> - Use a `ReplaySubject` with `bufferSize` of `1` to emmit notifications
+> All input bindings are so-called "early producer". A cache mechanism is needed as followed:
+> - Use a `ReplaySubject` with `bufferSize` of `1` to emit notifications
 
 --- 
 
@@ -349,7 +349,7 @@ export class ChildComponent  {
 **Needs:**   
 
 We would need a decorator **automates the boilerplate** of the `Subject` creation and connect it with the property. 
-As `subscriptions` can occour earlier than the `Host` could send a value we speak about "early supscribers". 
+As `subscriptions` can occur earlier than the `Host` could send a value we speak about "early subscribers". 
 This problem can be solved as the subject is created in with instance construction.
 
 > **Boilerplate Automation**   
@@ -357,8 +357,8 @@ This problem can be solved as the subject is created in with instance constructi
 > - setting up a `Subject`
 > - hooking into the `setter` of the input binding and `.next()` the incoming value
 
-> **Early Supscribers**   
-> Make sure the created `Subject` it present early enough in time
+> **Early Producer**   
+> Make sure the created `Subject` it present early enough
 
 ---   
 
@@ -398,8 +398,8 @@ TBD
 
 **Provide an observable** instead of a function.
 
-Here again we would need a decorator that **automates** the `Subject` creation and connection. 
-As subscriptions can occour earlier than the `Host` could be ready we speak about "early supscribers". 
+Here again, we would need a decorator that **automates** the `Subject` creation and connection. 
+As subscriptions can occur earlier than the `Host` could be ready we speak about "early subscribers". 
 This problem can be solved as the subject is created in with instance construction.
 
 > **Boilerplate Automation**   
@@ -407,8 +407,8 @@ This problem can be solved as the subject is created in with instance constructi
 > - setting up a `Subject`
 > - hooking into the `setter` of the input binding and `.next()` the incoming value
 
-> **Early Supscribers**   
-> Make sure the created `Subject` it present early enough in time
+> **Early Subscribers**   
+> Make sure the created `Subject` it present early enough
 
 
 ---   
@@ -444,7 +444,7 @@ We cal rely on trust that subscription to `state$` happens after `AfterViewInit`
 
 
 > **Inconsistent handling of undefined variables**   
-> It is important to mention the inconsistant handling of undefined variables and observables that didnt send a value yet. 
+> It is important to mention the inconsistent handling of undefined variables and observables that didn't send a value yet. 
 
 ```typescript
 @Component({
@@ -462,13 +462,13 @@ export class AppComponent  {
 As we know exactly when changes happen we can trigger change detection manually. Knowing the advantages of subscriptions over the template and lifecycle hooks the solution should be similar to `async` pipe.
 
 > **NgZone could be detached**   
-> As all changes can get detected we could detache the pipe from the `ChangeDetection` and trigger it on every value change
+> As all changes can get detected we could detach the pipe from the `ChangeDetection` and trigger it on every value change
 
 > **Performance optimisations**
 > - consider scheduling over `AnimationFrameScheduler` the output is always for the view
 
 > **Implement strick and consistent handling of undefined for pipes**   
-> A pipe similar to `async` that should act as following:
+> A pipe similar to `async` that should act as follows:
 > - when initially passed `undefined` the pipe should forward undefined as value as on value ever was emitted
 > - when initially passed `null` the pipe should forward undefined as value as on value ever was emitted
 > - when initially passed `of(undefined)` the pipe should forward undefined as value as `undefined` was emitted
@@ -478,8 +478,7 @@ As we know exactly when changes happen we can trigger change detection manually.
 > - when reassigned a new `Observable` the pipe should forward undefined as value as on value was emitted from the new `Observable`
 
 ##### Nested Template Scopes   
-One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some   
-annoying situation where we have to nest multiple divs to have a context per bound vairable.
+One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some annoying situation where we have to nest multiple divs to have a context per bound variable.
 
 **Nested Template Scope Problem**
 ```html
@@ -575,18 +574,18 @@ export class AppComponent  {
 ```
 
 **Needs:**   
-Bringing it together into one object helps a lot. The syntax could be more convenient. Furthermore we could implement some default behaviour for falsy falues.
+Bringing it together into one object helps a lot. The syntax could be more convenient. Furthermore, we could implement some default behavior for falsy values.
 
 > **Implement more convenient binding syntax**   
-> To improve usability we should fulfill following:
+> To improve usability we should fulfill the following:
 > - the context should be always present. `*ngIf="{}"` would do that already
 > - controlled change detection to run zone-less
-> - avoid multiple usage of the `async`pipe
+> - avoid multiple usages of the `async pipe
 > - better control over the context. Maybe we could get rid of the `as` as variable??
 > - implement an internal layer to handle null vs undefined etc
-> - implement option to put attitional logic for complete and error of an observable
+> - implement the option to put additional logic for complete and error of an observable
 > - consider scheduling over `AnimationFrameScheduler` the output is always for the view
-> - handling changes could be done programatically. Good for running zone-less
+> - handling changes could be done programmatically. Good for running zone-less
 
 ---   
 
@@ -635,7 +634,7 @@ export class AppComponent  {
 As it is minimal overhead we can stick with creating a `Subject` on our own.
 
 > **No need for custom extensions**   
->  Due to the fact of the minimal overhrad and the resources of creating a custom `Decorator` for it there **no need for as extension**
+>  Due to the fact of the minimal overhead and the resources of creating a custom `Decorator` for it there **no need for as extension**
 
 ---   
 
@@ -703,10 +702,10 @@ export class ChildComponent implements OnChanges {
 
 **Handle general things for hooks:**   
 
-Followig things need to be done for every lifecycle hook:
+Following things need to be done for every lifecycle hook:
 - every life cycle replays the last value and completion
 - errors are swallowed and complete is returned instead
-- every hook should be tied to the components lifecycle
+- every hook should be tied to the lifecycle of the component
 
 ```typescript
 @Component({
@@ -735,9 +734,9 @@ export class ChildComponent implements OnChanges {
 
 **Handle hook specific stuff:**   
 
-To handle the differences in lifecycle hooks we follow following rules:
-- single shot life cycle hooks complete after thier first emission
-- single shot life cycle hooks swallow errors and emmit a last void
+To handle the differences in lifecycle hooks we follow the following rules:
+- single shot life cycle hooks complete after their first emission
+- single shot life cycle hooks swallow errors and emit the last void
 - on-going life cycle hooks just complete on error
 
 ```typescript
@@ -781,7 +780,7 @@ export class ChildComponent implements OnChanges {
 **Needs**   
 We need a decorator to **automates the boilerplate** of the `Subject` creation and connect it with the property away. 
 
-Also `subscriptions` can occour earlier than the `Host` could send a value we speak about "early supscribers". 
+Also `subscriptions` can occur earlier than the `Host` could send a value we speak about "early subscribers". 
 This problem can be solved as the subject is created in with instance construction.
 
 > **Boilerplate Automation**   
@@ -792,22 +791,22 @@ This problem can be solved as the subject is created in with instance constructi
 
 > **Respect Lifetime and State of Lifecycles**   
 > - subscription handling tied to component lifetime
-> - single shot observables complete after thier first call
+> - single shot observables complete after their first call
 
-> **Late Supscribers**   
-> - As subscriptions could happen before values are present (subscribing to `OnInit` in constructor) 
->   we have to make sure the Subject is creates early enough in time for all life cycle hooks
+> **Late Subscribers**   
+> - As subscriptions could happen before values are present (subscribing to `OnInit` in the constructor) 
+>   we have to make sure the Subject is created early enough for all life cycle hooks
 > - on subscription to already completed observable of a lifecycle it should return the last event and complete again. 
 
 ---   
 
 ### Service Life Cycle Hooks
 
-In general services are global or even when lazy loaded the are not unregistered at some point in time.
-The only exception are Services in the `Components` `providers` and ´viewProviders´ section.
-Threr parts od the services logic could rely on the life of the service, which it exactly the life tiime of the component. 
+In general, services are global or even when lazy-loaded the are not unregistered at some point in time.
+The only exception is Services in the `Components` `providers` and ´viewProviders´ section.
+Their parts of the services logic could rely on the life of the service, which is exactly the lifetime of the component. 
 
-Angular for suh scenarios angular profides the `OnDestroy` life cycle hook for classes decorated with `@Injectable`.
+Angular for such scenarios angular provides the `OnDestroy` life cycle hook for classes decorated with `@Injectable`.
 
 The goal here is to find a unified way to have the services `OnDestroy` life cycle hooks as observable.
 
@@ -877,7 +876,7 @@ We need a decorator to **automates the boilerplate** of the `Subject` creation a
 
 ### Encapsulation and Instantiation
 
-The goal here is to evaluate aproaches of encapsulating statemanagement into a service. 
+The goal here is to evaluate approaches of encapsulating state-management into a service. 
 As this is trivial in angular we directly go to the example.
 
 **Simple approach:**   
@@ -907,13 +906,13 @@ export class LocalProvidedService implements OnDestroy {
 ```
 
 **Needs**   
-As Angular already provides a DI layer ther is nothing to solve here
+As Angular already provides a DI layer there is nothing to solve here
 
 ---   
 
 ### Managing the State Structure
 
-The goal here is to come up with a good slim solution for managing the conponents state as a object.
+The goal here is to come up with a good slim solution for managing the components state as an object.
 The state should be immutable by default and easy to change and receive changes.
 
 **Simple approach:**   
@@ -942,27 +941,27 @@ export class ChildComponent implements OnChanges {
 
 **Needs**   
 We need to manage the components state as an object. The logic should make immutable changes so we don't have care about it.
-State should be easy to receive and change to the state should be able with as minimal code as possible.
+The state should be easy to receive and change to the state should be able with as minimal code as possible.
 
 > **Manage state as an object**  
 > Form the above explorations following things are needed to organize our state
 > - an object to identify every stored value over a key
-> - setup a `Subject` to have the observers `.next()` methode available to send values
+> - setup a `Subject` to have the observers `.next()` Methode available to send values
 > - accumulate the values in an object over the `scan` operator
-> - at least immutable changes to the shalow 
+> - at least immutable changes to the shallow 
 >   done by i.e. the TypeScript spread operator `...` should be automated by the logic
 > - having a layer of validation for the commands
 
 ---   
 
-### Late Subecriber
+### Late Subscriber
 
-Situations where interested parties join a part of your application later on in time are called late subscribers. 
+Situations, where interested parties join a part of your application later on in time, are called late subscribers. 
 Some meaningful examples could be:
-- the view is a late subscriber to stuf happening in the `constructor` or in the `ngOnChanges` method.
+- the view is a late subscriber to stuff happening in the `constructor` or the `ngOnChanges` method.
 - any component is a late subscriber to a stateful service
 
-Such situations are handeled over getter in imperative programming. In reactive programming we solve this over thin caching layer.
+Such situations are handled over getter in imperative programming. In reactive programming, we solve this over thin caching layer.
 
 **Problem of beeing too late**
 ```typescript
@@ -1007,20 +1006,20 @@ export class LateSubscriberComponent {
 
 **Needs**   
 
-We need to abstract timing issues away from the consumer. In the case of late subscribers it is easily possible with sbjects like `BehaviorSubject` or `ReplaySubject` or operators like `share` or `shareReplay`.
+We need to abstract timing issues away from the consumer. In the case of late subscribers, it is easily possible with subjects like `BehaviorSubject` or `ReplaySubject` or operators like `share` or `shareReplay`.
 
 
 > **Caching latest Values**
-> - use `ReplaySubject` to cache the latest (n) values. In most of the cases this is the way to go.
+> - use `ReplaySubject` to cache the latest (n) values. In most of the cases, this is the way to go.
 > - there are rare cases where we want to use an initial value and are not able to use `startWith`, here a `BehaviorSubject` can be used 
 > - In cases where we have no control of the source we can also use `shareReplay`
-> - In stateful services the replayed values are always limited to `1`. The actual value and all future onse.
+> - In stateful services the replayed values are always limited to `1`. The actual value and all future ones.
 
 --- 
 
 ### Early Producer
 
-Situations where we have early producers are things where we have values produces and transported over _cold_ Observables. In this case, as we have no subscriber yet on the mentioned Observable, we are loosing all values until the first subscriber. 
+Situations, where we have early producers, are things where we have values produces and transported over _cold_ Observables. In this case, as we have no subscriber yet on the mentioned Observable, we are losing all values until the first subscriber. 
 
 The goal would be to find a solution that can get encapsulated and abstracted away from the actual code.
 
@@ -1094,11 +1093,11 @@ We need to have the observable to be hot with component constructor. Additional 
 
 ### Subscription handling
 
-Normally we use the components lifecycle to subscribe and unsubscribe from certian observables in the component.
+Normally we use the component's lifecycle to subscribe and unsubscribe from certain observables in the component.
 We already know some solutions for getting a clean and elegant subscription handling by turning OnDestroy into an Observable. 
-But it still feels a bit repetetive. Furthermore it is up to the user to do subscription handling right.
+But it still feels a bit repetitive. Furthermore, it is up to the user to do subscription handling right.
  
-The goal would be to find a way to move subscription hadling outside of the component code.
+The goal would be to find a way to move subscription handling outside of the component code.
 
 **Subscription Handling Inside of Component**
 ```typescript
@@ -1161,14 +1160,14 @@ class LocalStateService implements OnDestroy {
 ```
 
 **Needs**   
-We need to find a elegant way of controling subscriptions in a component.
+We need to find an elegant way of controlling subscriptions in a component.
 
 > **Automated subscription handling**
 > To ensure all subscriptions are cleaned up outside ou the component we need to:
 > - encapsulate state managed in the component into a service 
 > - leverage the services `OnDestroy` life cycle hook to handle subscription inside the service
-> - provide it under the components providers to bind it's lifetime to the components lifetime
-> - use dependency injection us instanciate the service with component construction
+> - provide it under the component's providers to bind its lifetime to the components lifetime
+> - use dependency injection us instantiate the service with component construction
 
 ---
 
@@ -1178,7 +1177,7 @@ We need to find a elegant way of controling subscriptions in a component.
 
 ## Automate Boilerplate
 
-Automate boilerplate of setting up a subject and connecting it to producer.
+Automate boilerplate of setting up a subject and connecting it to a producer.
 
 Here a configuration method for the type of `Subject` similar to the one from [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34) would be nice.
 
@@ -1255,7 +1254,7 @@ Extensions suggested:
 
 An angular pipe similar to the `async` pipe but triggers `detectChanges` instead of `markForCheck`.
 This is required to run zone-less. We render on every pushed message.
-(currenty there in an [isssue](https://github.com/angular/angular/issues/31438) with the `ChangeDetectorRef` in ivy so we have to wait for the fix.
+(currently, there is an [isssue](https://github.com/angular/angular/issues/31438) with the `ChangeDetectorRef` in ivy so we have to wait for the fix.
 
 The pipe should work as template binding `{{thing$ | push}}` 
 as well as input binding `[color]="thing$ | push"` and trigger the changes of the host component.
@@ -1271,15 +1270,15 @@ as well as input binding `[color]="thing$ | push"` and trigger the changes of th
 ```
 
 **Included Features:**
-- subscription handling over view  life cycle
+- subscription handling overview  life cycle
 - a unified way of handling null and undefined with streams
 - optional flag to turn off scheduling over `AnimationFrameScheduler` (on by default)
-- change detection is done manually which allowes it to work zone-less too
+- change detection is done manually which allows it to work zone-less too
 
 ## Let Structural Directive
 
 The `*let` directive serves a convenient way of binding multiple observables in the same view context.
-It also helps with severyn default processing under the hood.
+It also helps with Severyn default processing under the hood.
 
 The current way of handling subscriptions in the view looks like that:
 
@@ -1294,7 +1293,7 @@ The current way of handling subscriptions in the view looks like that:
 </ng-container>
 ```
 
-The `*let` directive take over several things and makes it more conveniant and save to work with streams in the template
+The `*let` directive take over several things and makes it more convenient and save to work with streams in the template
 `*let="{o: o$, t: t$} as s;"` 
 
 ```html
@@ -1311,11 +1310,11 @@ The `*let` directive take over several things and makes it more conveniant and s
 
 **Included Features:**
 - binding is always present. (`*ngIf="{}"` normally effects it)
-- it takes away the multiple usage of the `async` pipe 
-- propper handling of null and undefined falues
+- it takes away the multiple usages of the `async` pipe 
+- propper handling of null and undefined values
 - removes state slices if bound observable completes or errors
-- a option to disable scheduling over `AnimationFrameScheduler` (on by default)
-- controlles change detection and therefore can run zone-less
+- an option to disable scheduling over `AnimationFrameScheduler` (on by default)
+- control change detection and therefore can run zone-less
 
 ## Observable Life Cycle Hooks
 
@@ -1341,13 +1340,13 @@ as well as forward passed values i.e. `changes` in from the `OnChanges` hook.
 - it handles late subscribers.
 - exposes only observables
 - respects single shot vs ongoing life cycles
-- subscription handling over component lifetime
-- return latest value when resucscribe
+- subscription handling over the component lifetime
+- return the latest value when resubscribing
 
 ### selectChanges RxJS Operator
 
 
-An operators `selectChanges` to select one or many specific slice from `SimpleChange`. 
+An operators `selectChanges` to select one or many specific slices from `SimpleChange`. 
 This operator can be used in combination with `onChanges$`.
 
 It also provides a very early option to control the forwarded values.
