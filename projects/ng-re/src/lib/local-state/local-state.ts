@@ -39,9 +39,9 @@ export class LocalStateService {
       );
 
   constructor() {
-    // the local state service should be hot on instantiation
-    (this.state$ as ConnectableObservable<any>).connect();
-    // @TODO destroy state$ on ngOnDestroy
+    // the local state service's `state$` observable should be hot on instantiation
+    const subscription = (this.state$ as ConnectableObservable<any>).connect();
+    this.onDestroy$.subscriber(_ => subscription.unsubscribe());
   }
 
   // This breaks the functional programming style for the user.
