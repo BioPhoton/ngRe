@@ -52,7 +52,7 @@ const getHooksOperatorsMap = (destroy$: Observable<any>): { [x in keyof Hooks]: 
   onInit: singleShotOperators(destroy$)
 });
 
-export function Hook$<T>(hookName: HookNames): PropertyDecorator {
+export function Hook$<T>(hookName: keyof Hooks): PropertyDecorator {
   return (
     // tslint:disable-next-line
     component: Object,

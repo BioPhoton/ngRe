@@ -25,7 +25,7 @@ export class LetDirective implements OnInit {
     if (isObservable(o)) {
       this.lS.connectSlices({ngReLet: o});
     } else {
-      this.lS.connectSlices(o);
+      this.lS.connectSlices(o as { [key: string]: Observable<any> });
     }
   }
 
@@ -55,7 +55,7 @@ export class LetDirective implements OnInit {
     // tslint:disable-next-line
     v && Object.entries(v).map(([key, value]) => this.context[key] = value);
     this.cd.detectChanges();
-  };
+  }
 
   ngOnInit() {
     this.viewContainerRef
