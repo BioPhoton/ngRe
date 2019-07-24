@@ -1,5 +1,18 @@
 import {ɵComponentDef as ComponentDef, ɵNG_COMPONENT_DEF as NG_COMPONENT_DEF} from '@angular/core';
-import {Subject} from 'rxjs';
+import {getPropertySubject, getReplaySubjectFactory} from 'ng-re/lib/core/get-property-subject';
+import {EMPTY, Observable, of, pipe, UnaryFunction} from 'rxjs';
+import {catchError, take, takeUntil} from 'rxjs/operators';
+
+export enum HookNames {
+  afterContentChecked = 'afterContentChecked',
+  afterContentInit = 'afterContentInit',
+  afterViewChecked = 'afterViewChecked',
+  afterViewInit = 'afterViewInit',
+  doCheck = 'doCheck',
+  onChanges = 'onChanges',
+  onDestroy = 'onDestroy',
+  onInit = 'onInit',
+}
 
 interface Hooks {
   afterContentChecked: string;
@@ -23,15 +36,31 @@ const hooksWrapped: { [x in keyof Hooks]: boolean } = {
   onInit: false
 };
 
-// @TODO get proper typing  => MethodDecorator || PropertyDecorator ?
-export function Hook$(hookName: string): Function {
+const singleShotOperators = (destroy$: Observable<any>): UnaryFunction<any, any> =>
+  pipe(take(1), catchError(e => of()), takeUntil(destroy$));
+const onGoingOperators = (destroy$: Observable<any>): UnaryFunction<any, any> =>
+  pipe(catchError(e => EMPTY), takeUntil(destroy$));
+
+const getHooksOperatorsMap = (destroy$: Observable<any>): { [x in keyof Hooks]: UnaryFunction<any, any> } => ({
+  afterContentChecked: singleShotOperators(destroy$),
+  afterContentInit: singleShotOperators(destroy$),
+  afterViewChecked: onGoingOperators(destroy$),
+  afterViewInit: singleShotOperators(destroy$),
+  doCheck: onGoingOperators(destroy$),
+  onChanges: onGoingOperators(destroy$),
+  onDestroy: pipe(catchError(e => of()), take(1)),
+  onInit: singleShotOperators(destroy$)
+});
+
+export function Hook$<T>(hookName: HookNames): PropertyDecorator {
   return (
     // tslint:disable-next-line
     component: Object,
-    propertyKey: PropertyKey,
-    descriptor: PropertyDescriptor
+    propertyKey: PropertyKey
   ) => {
-    const subject = new Subject();
+    const keyUniquePerPrototype = Symbol('@ngRe-hook$');
+    const subjectFactory = getReplaySubjectFactory(1);
+
     const cDef: ComponentDef<any> = component.constructor[NG_COMPONENT_DEF];
 
     let target;
@@ -45,24 +74,33 @@ export function Hook$(hookName: string): Function {
       originalHook = target[hook];
     } else {
 
-      // @TODO I guess this is a miss conception that ngChanes is wraped in a function.
+      // @TODO I guess this is a miss conception that ngChanges is wrapped in a function.
       target = hooksWrapped[hookName] ? component : cDef;
       hook = hooksWrapped[hookName] ? getCompHookName(hookName) : hookName;
       // @TODO fix case for ngOnChanges not implemented
       originalHook = hooksWrapped[hookName] ? cDef[hook] : component[hook];
     }
 
-    target[hook] = (args) => {
-      subject.next(args);
+    target[hook] = function(args) {
+      getPropertySubject<T>(this, keyUniquePerPrototype, subjectFactory, hookName).next(args);
       // tslint:disable-next-line:no-unused-expression
       originalHook && originalHook.call(component, args);
     };
 
-    component[propertyKey] = subject.asObservable();
-    return component[propertyKey];
+    const propertyKeyDescriptor: TypedPropertyDescriptor<Observable<T>> = {
+      get() {
+        const destroy$ = getPropertySubject<T>(this, keyUniquePerPrototype, subjectFactory, HookNames.onDestroy).asObservable();
+        const hookOperators = getHooksOperatorsMap(destroy$)[hookName];
+        return getPropertySubject<T>(this, keyUniquePerPrototype, subjectFactory, hookName).asObservable()
+          .pipe(
+            hookOperators
+          );
+      }
+    };
+    Object.defineProperty(target, propertyKey, propertyKeyDescriptor);
+
   };
 }
-
 
 function getCompHookName(hookName: string): string {
   return 'ng' + hookName[0].toUpperCase() + hookName.slice(1);

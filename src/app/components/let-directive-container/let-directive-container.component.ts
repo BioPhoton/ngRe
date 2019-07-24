@@ -11,35 +11,42 @@ import {filter, map, share} from 'rxjs/operators';
       <p><b>*ngIf="test$ | async as o":</b></p>
       <pre>{{o | json}}</pre>
     </div>
+
     <ng-container
       *ngReLet="test$ as o">
       <p><b>*reLet="test$ as o":</b></p>
       <pre>{{o | json}}</pre>
     </ng-container>
+
     <ng-container
       *ngReLet="test$; let o">
       <p><b>*ngReLet="test$; let o":</b></p>
       <pre>{{o | json}}</pre>
     </ng-container>
+
     <ng-container *ngReLet="{test:test$, test2:test2$} as o">
       <p><b>*ngReLet="observables as o":</b></p>
       <pre>{{o | json}}</pre>
-      <div *ngIf="o.test">
+      <div *ngIf="o?.test">
         <p><b>*ngIf="o.test":</b></p>
-        <pre>{{o.test | json}}</pre>
+        <pre>{{o?.test | json}}</pre>
       </div>
-      <div *ngIf="o.test2">
+      <div *ngIf="o?.test2">
         <p><b> *ngIf="o.test2$":</b></p>
-        <pre>{{o.test2 | json}}</pre>
+        <pre>{{o?.test2 | json}}</pre>
       </div>
+    </ng-container>
+    <ng-container *ngReLet="{test:test$, test2:test2$}; test as t; test2 as t2">
+      <p><b> *ngReLet="test:test$, test2:test2$; test as t; test2 as t2":</b></p>
+      <pre>{{t | json}} : {{t2 | json}}</pre>
     </ng-container>
   `
 })
 export class LetDirectiveContainerComponent {
 
   test$ = this.getHotRandomInterval('test$', 1000);
-
   test2$ = this.getHotRandomInterval('test2$', 1000);
+  observables$ = {test: this.test$, test2: this.test2$};
 
   constructor() {
   }

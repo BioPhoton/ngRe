@@ -13,14 +13,14 @@ import {
   SimpleChanges
 } from '@angular/core';
 import {Hook$} from 'ng-re';
-import {Observable} from 'rxjs';
+import {Observable, Observer} from 'rxjs';
 
 @Component({
   selector: 'app-full-example',
   template: `
     <h2>FullExample</h2>
     <p><b>state: </b></p>
-    <pre>{{state | json}}</pre>
+    <pre>{{onChanges$ | async | json}}</pre>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -39,15 +39,23 @@ export class FullExampleComponent implements OnChanges, DoCheck, OnInit, AfterVi
   @Input() state;
 
   constructor() {
-    this.doCheck$.subscribe(v => console.log('doCheck$', v));
-    this.onChanges$.subscribe(v => console.log('onChanges$', v));
-    this.onInit$.subscribe(v => console.log('onInit$', v));
-    this.afterContentChecked$.subscribe(v => console.log('afterContentChecked$', v));
-    this.afterContentInit$.subscribe(v => console.log('afterContentInit$', v));
-    this.afterViewChecked$.subscribe(v => console.log('afterViewChecked$', v));
-    this.afterViewInit$.subscribe(v => console.log('afterViewInit$', v));
-    this.onDestroy$.subscribe(v => console.log('onDestroy$', v));
+    this.doCheck$.subscribe(this.getHookObserver('onCheck$'));
+    this.onChanges$.subscribe(this.getHookObserver('onChanges$'));
+    this.onInit$.subscribe(this.getHookObserver('onInit$ next'));
+    this.afterContentChecked$.subscribe(this.getHookObserver('afterContentChecked$'));
+    this.afterContentInit$.subscribe(this.getHookObserver('afterContentInit$'));
+    this.afterViewChecked$.subscribe(this.getHookObserver('afterViewChecked$'));
+    this.afterViewInit$.subscribe(this.getHookObserver('afterViewInit$'));
+    this.onDestroy$.subscribe(this.getHookObserver('onDestroy$'));
 
+  }
+
+  private getHookObserver(name: string): Observer<any> {
+    return {
+      next(n) { console.log(name + ' next', n); },
+      error(e) { console.log(name + ' error', e); },
+      complete( ) { console.log(name + ' complete'); },
+    };
   }
 
   ngDoCheck(): void {

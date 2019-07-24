@@ -1,7 +1,7 @@
 import {ChangeDetectorRef, Directive, Input, OnInit, TemplateRef, ViewContainerRef} from '@angular/core';
 import {isObservable, Observable} from 'rxjs';
-import {selectSlice} from '../local-state/operators/selectSlice';
 import {LocalStateService} from '../local-state/local-state';
+import {selectSlice} from '../local-state/operators/selectSlice';
 
 export class LetContext {
   constructor(
@@ -21,7 +21,7 @@ export class LetDirective implements OnInit {
   private context = new LetContext({});
 
   @Input()
-  set ngReLet(o: { [key: string]: Observable<any> }) {
+  set ngReLet(o: { [key: string]: Observable<any> } | Observable<any>) {
     if (isObservable(o)) {
       this.lS.connectSlices({ngReLet: o});
     } else {
@@ -35,6 +35,9 @@ export class LetDirective implements OnInit {
     private readonly templateRef: TemplateRef<LetContext>,
     private readonly viewContainerRef: ViewContainerRef
   ) {
+    this.context.$implicit = {};
+    this.context.ngReLet = {};
+
     this.lS.state$
       .pipe(
         selectSlice(s => s.ngReLet)
@@ -45,10 +48,14 @@ export class LetDirective implements OnInit {
   }
 
   updateContext = (v) => {
-      this.context.$implicit = v;
-      this.context.ngReLet = v;
-      this.cd.detectChanges();
-  }
+    // to enable `let` syntax we have to use $implicit
+    this.context.$implicit = v;
+    // to enable `as` syntax we have to assign the directives selector
+    this.context.ngReLet = v;
+    // tslint:disable-next-line
+    v && Object.entries(v).map(([key, value]) => this.context[key] = value);
+    this.cd.detectChanges();
+  };
 
   ngOnInit() {
     this.viewContainerRef
