@@ -705,19 +705,16 @@ This problem can be solved as the subject is created in with instance constructi
 > For every binding following steps could be automated:
 > - setting up a `Subject`
 > - hooking into the `setter` of the input binding and `.next()` the incoming value
+> - hiding observer methods form external usage
+
+> **Respect Lifetime and State of Lifecycles**   
+> - subscription handling tied to component lifetime
+> - single shot observables complete after thier first call
 
 > **Late Supscribers**   
 > - As subscriptions could happen before values are present (subscribing to `OnInit` in constructor) 
 >   we have to make sure the Subject is creates early enough in time for all life cycle hooks
-
-> **Early Producer**   
-> - As subscriptions could happen later in time we could lose values (subscribing to `OnChanges` in `OnInit`)
->   A cache mechanism which uses `ReplaySubject` with `bufferSize` of `1` is needed for following hooks:
-> - OnChanges
-> - DoCheck
-> - OnInit
-> - AfterContentChecked
-> - AfterViewChecked
+> - on subscription to already completed observable of a lifecycle it should return the last event and complete again. 
 
 ---   
 
@@ -1160,17 +1157,22 @@ Extensions suggested:
 - Push Pipe
 - Multi Let Structural Directive
 - Observable Life Cycle Hooks
-  - Helper Operator
+  - selectChange RxJS Operator
 - Observable Input Bindings
 - Observable Output Bindings
+- Observable Host Bindings
+- Observable Host Listener
+- Observable ViewChild/Children
+- Observable ContentChild/Children
 - Local State Management
-  - Helper Operator
+  - selectSlices RxJS Operator
+  - 
 
 ## Push Pipe
 
 An angular pipe similar to the `async` pipe but triggers `detectChanges` instead of `markForCheck`.
 This is required to run zone-less. We render on every pushed message.
-(currenty there in an [isssue](https://github.com/angular/angular/issues/31438) with the `ChangeDetectorRef` in ivy so we have to wait for the fix=
+(currenty there in an [isssue](https://github.com/angular/angular/issues/31438) with the `ChangeDetectorRef` in ivy so we have to wait for the fix.
 
 The pipe should work as template binding `{{thing$ | push}}` 
 as well as input binding `[color]="thing$ | push"` and trigger the changes of the host component.
@@ -1185,11 +1187,18 @@ as well as input binding `[color]="thing$ | push"` and trigger the changes of th
 </app-color>
 ```
 
+**Included Features:**
+- subscription handling over view  life cycle
+- a unified way of handling null and undefined with streams
+- optional flag to turn off scheduling over `AnimationFrameScheduler` (on by default)
+- change detection is done manually which allowes it to work zone-less too
+
 ## Let Structural Directive
 
-The multi-let directive is a not tested idea of binding multiple observables in the same view context. 
+The `*let` directive serves a convenient way of binding multiple observables in the same view context.
+It also helps with severyn default processing under the hood.
 
-Here multiple subscriptions in the view could lead to performance issues. Unfortunately, there is no other built-in solution for that.
+The current way of handling subscriptions in the view looks like that:
 
 ```html
 <ng-container *ngIf="{
@@ -1202,8 +1211,8 @@ Here multiple subscriptions in the view could lead to performance issues. Unfort
 </ng-container>
 ```
 
-A custom directive could probably solve it. `*let="{o: o$, t: t$} as s;"` 
-This would help the nested divs and the number of subscriptions.
+The `*let` directive take over several things and makes it more conveniant and save to work with streams in the template
+`*let="{o: o$, t: t$} as s;"` 
 
 ```html
 <ng-container *let="{
@@ -1216,6 +1225,14 @@ This would help the nested divs and the number of subscriptions.
   </app-color>  
 </ng-container>
 ```
+
+**Included Features:**
+- binding is always present. (`*ngIf="{}"` normally effects it)
+- it takes away the multiple usage of the `async` pipe 
+- propper handling of null and undefined falues
+- removes state slices if bound observable completes or errors
+- a option to disable scheduling over `AnimationFrameScheduler` (on by default)
+- controlles change detection and therefore can run zone-less
 
 ## Observable Life Cycle Hooks
 
@@ -1237,15 +1254,17 @@ as well as forward passed values i.e. `changes` in from the `OnChanges` hook.
     .subscribe();
 ```
 
-Following things are done under the hood:
-- It uses a caching method like `ReplaySubject` does to handle late subscribers.
-- The property i.e. `onInit$` gets an observable assigned, not a subject.
-- Single-shot life cycle hooks complete after the first notification similar to HTTP requests from `HttpClient`
+**Included Features**
+- it handles late subscribers.
+- exposes only observables
+- respects single shot vs ongoing life cycles
+- subscription handling over component lifetime
+- return latest value when resucscribe
 
-### selectChange RxJS Operator
+### selectChanges RxJS Operator
 
 
-An operators `selectChange` to select a specific slice from `SimpleChange`. 
+An operators `selectChanges` to select one or many specific slice from `SimpleChange`. 
 This operator can be used in combination with `onChanges$`.
 
 It also provides a very early option to control the forwarded values.
@@ -1336,9 +1355,9 @@ constructor(private lS: LocalState<MyState>) {
 }
 ```
 
-### selectSlice RxJS Operator
+### selectSlices RxJS Operator
 
-A flexible way to query a state slice.
+A flexible way to query one or many state slices.
 It considers also a late subscriber. 
 
 An operators `selectSlice` to select a specific slice from the managed state. 
