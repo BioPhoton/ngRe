@@ -680,8 +680,7 @@ export class ChildComponent implements OnChanges {
 ``` 
 
 **Reactive approach:**   
-As above mentioned in section Input Decorator we **us a `ReplaySubject` to avoid timing issues** related to life cycle hooks.
-Therefor `changes$` which is 
+As above mentioned in section Input Decorator we **replay the latest value to avoid timing issues** related to life cycle hooks.
 
 ```typescript
 @Component({
@@ -701,6 +700,83 @@ export class ChildComponent implements OnChanges {
   }
 }
 ```
+
+**Handle general things for hooks:**   
+
+Followig things need to be done for every lifecycle hook:
+- every life cycle replays the last value and completion
+- errors are swallowed and complete is returned instead
+- every hook should be tied to the components lifecycle
+
+```typescript
+@Component({
+  selector: 'app-child',
+  template: `<p>change: {{changes$ | async | json}}</p>`
+})
+export class ChildComponent implements OnChanges {
+  @Input() state;
+   
+  onDestroy$$ = new ReplaySubject(1);
+  onDestroy$ = this.onDestroy$$.pipe(catchError(e => EMPTY));
+  
+  onChanges$$ = new ReplaySubject(1);
+  onChanges$ = this.onChanges$$.pipe(catchError(e => EMPTY), takeUntil(this.onDestroy$));
+  
+   
+  ngOnChanges(changes) {
+    this.onChanges$.next(changes);
+  }
+  
+  ngOnDestroy(changes) {
+    this.onDestroy$.next(changes);
+  }
+}
+```
+
+**Handle hook specific stuff:**   
+
+To handle the differences in lifecycle hooks we follow following rules:
+- single shot life cycle hooks complete after thier first emission
+- single shot life cycle hooks swallow errors and emmit a last void
+- on-going life cycle hooks just complete on error
+
+```typescript
+@Component({
+  selector: 'app-child',
+  template: `<p>change: {{changes$ | async | json}}</p>`
+})
+export class ChildComponent implements OnChanges {
+  @Input() state;
+  
+  const singleShotOperators = pipe(
+    take(1),
+    catchError(e => of(void)),
+    takeUntil(this.onDestroy$)
+  );
+  const ongoingOperators = pipe(
+    catchError(e => EMPTY),
+    takeUntil(this.onDestroy$)
+  );
+  
+  onChanges$ = this.onChanges$$.pipe(this.ongoingOperators);
+  onInit$ = this.onInit$$.pipe(this.singleShotOperators);
+  doCheck$ = this.doCheck$$.pipe(this.ongoingOperators);
+  afterContentInit$ = this.afterContentInit$$.pipe(this.singleShotOperators);
+  afterContentChecked$ = this.afterContentChecked$$.pipe(this.ongoingOperators);
+  afterViewInit$ = this.afterViewInit$$.pipe(this.singleShotOperators);
+  afterViewChecked$ = this.afterViewChecked$$.pipe(this.ongoingOperators);
+  onDestroy$ = this.onDestroy$$.pipe(take(1));
+   
+  ngOnChanges(changes) {
+    this.onChanges$.next(changes);
+  }
+  
+  ngOnDestroy(changes) {
+    this.onDestroy$.next(changes);
+  }
+}
+```
+
 
 **Needs**   
 We need a decorator to **automates the boilerplate** of the `Subject` creation and connect it with the property away. 
