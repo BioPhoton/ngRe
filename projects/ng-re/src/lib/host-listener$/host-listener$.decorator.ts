@@ -1,8 +1,6 @@
 import {ElementRef} from '@angular/core';
 import {fromEvent} from 'rxjs';
 
-
-// @TODO get proper typing  => MethodDecorator || PropertyDecorator ?
 export function HostListener$<T>(eventName: string): PropertyDecorator {
   return (
     // tslint:disable-next-line

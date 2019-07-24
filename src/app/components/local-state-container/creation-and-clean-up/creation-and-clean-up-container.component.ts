@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {LocalStateService, selectSlice} from '@ngx-re';
+import {LocalStateService, selectSlice} from 'ng-re';
 import {interval} from 'rxjs';
 import {take} from 'rxjs/operators';
 

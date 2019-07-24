@@ -1,31 +1,32 @@
 import {ChangeDetectorRef, Directive, Input, OnInit, TemplateRef, ViewContainerRef} from '@angular/core';
 import {isObservable, Observable} from 'rxjs';
-import {selectSlice} from '../local-state$-service/operators/selectSlice';
-import {LocalStateService} from '../local-state$-service/local-state';
+import {selectSlice} from '../local-state/operators/selectSlice';
+import {LocalStateService} from '../local-state/local-state';
 
 export class LetContext {
   constructor(
     // to enable let we have to use $implicit
     public $implicit?: any,
     // to enable as we have to assign this
-    public reLet?: any
+    public ngReLet?: any
   ) {
   }
 }
 
 @Directive({
-  selector: '[reLet]',
+  selector: '[ngReLet]',
   providers: [LocalStateService]
 })
-export class Let$Directive implements OnInit {
+export class LetDirective implements OnInit {
   private context = new LetContext({});
 
   @Input()
-  set reLet(o: { [key: string]: Observable<any> }) {
+  set ngReLet(o: { [key: string]: Observable<any> }) {
     if (isObservable(o)) {
-      this.lS.connectSlices({reLet: o});
+      this.lS.connectSlices({ngReLet: o});
+    } else {
+      this.lS.connectSlices(o);
     }
-    this.lS.connectSlices(o);
   }
 
   constructor(
@@ -36,7 +37,7 @@ export class Let$Directive implements OnInit {
   ) {
     this.lS.state$
       .pipe(
-        selectSlice(s => s.reLet)
+        selectSlice(s => s.ngReLet)
       )
       .subscribe(this.updateContext);
     this.lS.state$
@@ -45,7 +46,7 @@ export class Let$Directive implements OnInit {
 
   updateContext = (v) => {
       this.context.$implicit = v;
-      this.context.reLet = v;
+      this.context.ngReLet = v;
       this.cd.detectChanges();
   }
 

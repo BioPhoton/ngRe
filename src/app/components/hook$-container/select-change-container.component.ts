@@ -1,5 +1,5 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {Hook$, selectChange} from '@ngx-re';
+import {Hook$, selectChange} from 'ng-re';
 
 @Component({
   selector: 'app-select-change-container',

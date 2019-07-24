@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Hook$} from '../hook$-decorator/hook$.decorator';
+import {Hook$} from '../hook$/hook$.decorator';
 import {ConnectableObservable, merge, Observable, Subject} from 'rxjs';
 import {endWith, map, mergeAll, publishReplay, scan, takeUntil, tap} from 'rxjs/operators';
 
@@ -46,7 +46,7 @@ export class LocalStateService {
 
   // This breaks the functional programming style for the user.
   // We should avoid such things. It's recommended passing streams like with `connectSlice();`
-  /** @deprecated This is invitation for imperative  client code */
+  /** @deprecated This is an invitation for imperative client code */
   setSlices(commands) {
     Object.entries(commands)
       .map(([key, value]) => ({[key]: value}))

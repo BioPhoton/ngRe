@@ -1,6 +1,6 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {LocalStateService} from '@ngx-re';
+import {LocalStateService} from 'ng-re';
 import {getRandomAttendees, getRandomCity} from '../random';
 
 // Requires a model

@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, Input, Output} from '@angular/core';
 import {FormBuilder, FormGroup} from '@angular/forms';
-import {Input$, selectSlice} from '@ngx-re';
+import {Input$, selectSlice} from 'ng-re';
 import {combineLatest, Observable} from 'rxjs';
 import {filter, map, shareReplay, switchMap} from 'rxjs/operators';
 
@@ -26,13 +26,12 @@ export class OptionsComponent {
 
   // localState$$ = new ReplaySubject<OptionsState>(1);
 
-  @Input()
-  state;
-  @Input$('state')
-  localState$$;
+  @Input$()
+  @Input('state')
+  localState$;
 
-  config$ = this.localState$$.pipe(selectSlice(v => v.config));
-  state$ = this.localState$$.pipe(selectSlice(v => v.state));
+  config$ = this.localState$.pipe(selectSlice(v => v.config));
+  state$ = this.localState$.pipe(selectSlice(v => v.state));
 
   formGroup$: Observable<FormGroup> = combineLatest(this.state$, this.config$)
     .pipe(

@@ -1,5 +1,5 @@
 import {pipe} from 'rxjs';
-import {distinctUntilChanged, map, tap} from 'rxjs/operators';
+import {distinctUntilChanged, map} from 'rxjs/operators';
 import {STATE_DEFAULT} from '../../core/state-default';
 
 export function selectSlice<T>(mapToSliceFn: (s: any) => any) {
@@ -7,7 +7,6 @@ export function selectSlice<T>(mapToSliceFn: (s: any) => any) {
     map(s => {
       return (s !== STATE_DEFAULT) ? mapToSliceFn(s) : s;
     }),
-    distinctUntilChanged<T>(),
-    tap(_ => 'slice updated', mapToSliceFn)
+    distinctUntilChanged<T>()
   );
 }

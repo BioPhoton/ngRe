@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {Input$} from '@ngx-re';
+import {Input$} from 'ng-re';
 
 @Component({
   selector: 'app-input',
@@ -13,10 +13,8 @@ import {Input$} from '@ngx-re';
 })
 export class InputComponent {
 
-  @Input()
-  state;
-
-  @Input$('state')
+  @Input$()
+  @Input('state')
   state$;
 
   constructor() {

@@ -5,11 +5,9 @@ import {INPUT$_ROUTES} from './components/input-container';
 import {LET_ROUTES} from './components/let-directive-container';
 import {LOCAL_STATE_ROUTES} from './components/local-state-container';
 import {PUSH$_ROUTES} from './components/push-pipe-container';
-import {ReadmeComponent} from './readme.component';
 
 export const APP_ROUTES = [
  // {path: '', redirectTo: 'readme', pathMath: 'full'},
-  {path: 'readme', component: ReadmeComponent},
   {path: 'push-pipe', children: PUSH$_ROUTES},
   {path: 'hook', children: HOOKS$_ROUTES},
   {path: 'host-listener', children: HOST_LISTENER$_ROUTES},

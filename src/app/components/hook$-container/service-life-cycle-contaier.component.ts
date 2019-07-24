@@ -12,7 +12,7 @@ import {
   OnInit,
   SimpleChanges
 } from '@angular/core';
-import {Hook$} from '@ngx-re';
+import {Hook$} from 'ng-re';
 import {Observable} from 'rxjs';
 import {DummyService} from './dummy.service';
 

@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, Injector} from '@angular/core';
-import {HostListener$} from '@ngx-re';
+import {HostListener$} from 'ng-re';
 import {scan} from 'rxjs/operators';
 
 @Component({

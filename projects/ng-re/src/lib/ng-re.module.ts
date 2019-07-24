@@ -1,10 +1,10 @@
 import {NgModule} from '@angular/core';
-import {Async$Pipe} from './push$-pipe/async$.pipe';
-import {Push$Pipe} from './push$-pipe/push$.pipe';
-import {Let$Directive} from './let$-directive/let$.directive';
+import {LetDirective} from './let/let.directive';
+import {Async$Pipe} from './push$/async$.pipe';
+import {Push$Pipe} from './push$/push$.pipe';
 
 const DECLARATIONS = [
-  Let$Directive,
+  LetDirective,
   Push$Pipe,
   Async$Pipe
 ];
@@ -12,7 +12,6 @@ const DECLARATIONS = [
 const EXPORTS = [
   DECLARATIONS
 ];
-
 
 @NgModule({
   declarations: [
@@ -23,5 +22,5 @@ const EXPORTS = [
     EXPORTS
   ]
 })
-export class NgxReModule {
+export class NgReModule {
 }

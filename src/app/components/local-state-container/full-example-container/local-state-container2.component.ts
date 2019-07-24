@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {LocalStateService, selectSlice} from '@ngx-re';
+import {LocalStateService, selectSlice} from 'ng-re';
 import {combineLatest, ReplaySubject, Subject} from 'rxjs';
 import {map, startWith, withLatestFrom} from 'rxjs/operators';
 import {mapToAttendeesWithSelectionFiltered} from './map-to-Attendees-with-selection-filtered';

@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {Input$} from '@ngx-re';
+import {Input$} from 'ng-re';
 
 
 @Component({
@@ -15,14 +15,12 @@ import {Input$} from '@ngx-re';
 })
 export class Input2Component {
 
-  @Input()
-  state;
-  @Input$('state')
+  @Input$()
+  @Input('state')
   state$;
 
-  @Input()
-  state2;
-  @Input$('state2')
+  @Input$()
+  @Input('state2')
   state2$;
 
   constructor() {

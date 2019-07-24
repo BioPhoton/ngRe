@@ -3,7 +3,7 @@ import {NgModule} from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {BrowserModule} from '@angular/platform-browser';
 import {RouterModule} from '@angular/router';
-import {Let$Directive, NgxReModule, Push$Pipe} from '@ngx-re';
+import {NgReModule} from '../../projects/ng-re/src/lib/ng-re.module';
 
 import {AppComponent} from './app.component';
 import {APP_ROUTES} from './app.routes';
@@ -14,15 +14,10 @@ import {INPUT$_DECLARATIONS} from './components/input-container';
 import {LET_DECLARATIONS} from './components/let-directive-container';
 import {LOCAL_STATE_DECLARATIONS} from './components/local-state-container';
 import {PUSH$_DECLARATIONS} from './components/push-pipe-container';
-import {ReadmeComponent} from './readme.component';
 
 @NgModule({
   declarations: [
-    Push$Pipe,
-    Let$Directive,
-    // ===================
     AppComponent,
-    ReadmeComponent,
     PUSH$_DECLARATIONS,
     HOOK_DECLARATIONS,
     HOST_LISTENER$_DECLARATIONS,
@@ -35,7 +30,7 @@ import {ReadmeComponent} from './readme.component';
     BrowserModule,
     HttpClientModule,
     ReactiveFormsModule,
-    NgxReModule,
+    NgReModule,
     RouterModule.forRoot(APP_ROUTES)
   ],
   bootstrap: [AppComponent],

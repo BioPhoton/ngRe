@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {combineLatest, Subject} from 'rxjs';
 import {map, startWith, withLatestFrom} from 'rxjs/operators';
-import {Input$, LocalStateService, selectSlice} from '@ngx-re';
+import {Input$, LocalStateService, selectSlice} from 'ng-re';
 import {mapToAttendeesWithSelectionFiltered} from './map-to-Attendees-with-selection-filtered';
 import {LocalStateComponentFacade} from './services/local-state-component.facade';
 
@@ -39,10 +39,8 @@ import {LocalStateComponentFacade} from './services/local-state-component.facade
 export class ChildLocalStateContainerComponent {
   // INCOMING ==========================
   // INPUT DATA
-
-  @Input()
-  selectedAttendeesIds;
-  @Input$('selectedAttendeesIds')
+  @Input$()
+  @Input('selectedAttendeesIds')
   selectedAttendeesIdsFromInput$;
 
   // VIEW EVENTS

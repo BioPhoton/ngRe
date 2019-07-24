@@ -1,28 +1,28 @@
 import {Component} from '@angular/core';
 import {interval, Observable} from 'rxjs';
-import {filter, map, share, skipWhile} from 'rxjs/operators';
+import {filter, map, share} from 'rxjs/operators';
 
 @Component({
   selector: 'app-let-directive-container',
   template: `
-    <h1>*reLet Container</h1>
+    <h1>*ngReLet Container</h1>
 
     <div *ngIf="test$ | async as o">
       <p><b>*ngIf="test$ | async as o":</b></p>
       <pre>{{o | json}}</pre>
     </div>
     <ng-container
-      *reLet="test$ as o">
+      *ngReLet="test$ as o">
       <p><b>*reLet="test$ as o":</b></p>
       <pre>{{o | json}}</pre>
     </ng-container>
     <ng-container
-      *reLet="test$; let o">
-      <p><b>*reLet="test$; let o":</b></p>
+      *ngReLet="test$; let o">
+      <p><b>*ngReLet="test$; let o":</b></p>
       <pre>{{o | json}}</pre>
     </ng-container>
-    <ng-container *reLet="{test:test$, test2:test2$} as o">
-      <p><b>reLet="observables as o":</b></p>
+    <ng-container *ngReLet="{test:test$, test2:test2$} as o">
+      <p><b>*ngReLet="observables as o":</b></p>
       <pre>{{o | json}}</pre>
       <div *ngIf="o.test">
         <p><b>*ngIf="o.test":</b></p>
@@ -33,8 +33,7 @@ import {filter, map, share, skipWhile} from 'rxjs/operators';
         <pre>{{o.test2 | json}}</pre>
       </div>
     </ng-container>
-  `,
-  styles: []
+  `
 })
 export class LetDirectiveContainerComponent {
 

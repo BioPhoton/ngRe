@@ -20,13 +20,13 @@
       "dom"
     ],
     "paths": {
-      "@ngx-re": [
-        "projects/ngx-re/src/index.ts",
-        "dist/ngx-re"
+      "ng-re": [
+        "dist/ng-re",
+        "projects/ng-re/src/public-api.ts"
       ],
-      "@ngx-re/*": [
-        "projects/ngx-re/src/*",
-        "dist/ngx-re/src/*"
+      "ng-re/*": [
+        "dist/ng-re/*",
+        "projects/ng-re/src/*"
       ]
     }
   }

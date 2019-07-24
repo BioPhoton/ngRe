@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {Input$} from '@ngx-re';
+import {Input$} from 'ng-re';
 import {map} from 'rxjs/operators';
 
 @Component({
@@ -25,9 +25,8 @@ import {map} from 'rxjs/operators';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableComponent {
-  @Input()
-  state;
-  @Input$('state')
+  @Input$()
+  @Input('state')
   state$;
 
   headings$ = this.state$.pipe(
