@@ -1125,7 +1125,7 @@ as well as input binding `[color]="thing$ | push"` and trigger the changes of th
 </app-color>
 ```
 
-## Multi Let Structural Directive
+## Let Structural Directive
 
 The multi-let directive is a not tested idea of binding multiple observables in the same view context. 
 
@@ -1142,11 +1142,11 @@ Here multiple subscriptions in the view could lead to performance issues. Unfort
 </ng-container>
 ```
 
-A custom directive could probably solve it. `*letMany="{o: o$, t: t$} as s;"` 
+A custom directive could probably solve it. `*let="{o: o$, t: t$} as s;"` 
 This would help the nested divs and the number of subscriptions.
 
 ```html
-<div *letMany="{
+<ng-container *let="{
               color: observable1$,
               shape: observable2$,
               name:  observable3$
@@ -1154,7 +1154,7 @@ This would help the nested divs and the number of subscriptions.
   <app-color 
     [color]="c.color" [shape]="c.shape" [name]="c.name">
   </app-color>  
-</div>
+</ng-container>
 ```
 
 ## Observable Life Cycle Hooks
