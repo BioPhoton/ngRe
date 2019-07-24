@@ -1248,6 +1248,6 @@ Following things are done under the hood:
 - it handles late subscribers with `shareReplay(1)` 
 - it forwards only distinct values
 
+### Connection to global state management
 
-
-https://ecotrust-canada.github.io/markdown-toc/
+TBD
