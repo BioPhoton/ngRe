@@ -769,100 +769,133 @@ State should be easy to receive and change to the state should be able with as m
 
 ### Late Subecriber
 
-Producers can be out of control, so we need a handle this cast in a different way.
-A way to handle the case on our side.
+Situations where interested parties join a part of your application later on in time are called late subscribers. 
+Some meaningful examples could be:
+- the view is a late subscriber to stuf happening in the `constructor` or in the `ngOnChanges` method.
+- any component is a late subscriber to a stateful service
 
-**Producer under control**
+Such situations are handeled over getter in imperative programming. In reactive programming we solve this over thin caching layer.
+
+**Problem of beeing too late**
 ```typescript
-@Component({
-  selector: 'container',
-  template: `<laet-subscriber [state]="state$ | async"></late-subscrier>`
-})
-export class LateSubscriberComponent {
-  state$ = of(1);
-}
-
 @Component({
   selector: 'app-late-subscriber',
   template: `
     <h2>Late Subscriber Child</h2>
-    <p><b>replayed$</b></p>
-    <pre>{{replayed$ | async | json}}</pre>
+    {{state$ | async | json}}
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LateSubscriberComponent {
-  replayed$ = new ReplaySubject(1);
+  state$ = new Subject();
   
   @Input()
   set state(v) {
-    this.replayed$.next(v);
+    this.state$.next(v);
   }
 
 }
 ```
 
-**Producer NOT under control**
+**Replaiing latest (n) values**
 ```typescript
-@Component({
-  selector: 'container',
-  template: `<laet-subscriber [state]="state$ | async"></late-subscrier>`
-})
-export class LateSubscriberComponent {
-  state$ = of(1);
-}
-
 @Component({
   selector: 'app-late-subscriber',
   template: `
     <h2>Late Subscriber Child</h2>
-    <p><b>fromLocalState$</b></p>
-    <pre>{{fromLocalState$ | async | json}}</pre>
+    {{state$ | async | json}}
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LateSubscriberComponent {
-  private localState = new LocalStateService();
-  fromLocalState$ = this.localState.state$;
-
+  state$ = new Subject();
+  
   @Input()
   set state(v) {
-    this.localState.set(v});
-  }
-
-  constructor() {
-  }
-
-}
-
-export class LocalStateService {
-  private command = new ReplaySubject(1);
-  state$ = this.command.asObservable();
-
-  constructor() {
-  }
-
-  set(command) {
-    this.command.next(command);
+    this.state$.next(v);
   }
 }
 ```
 
 **Needs**   
 
-TBD
+We need to abstract timing issues away from the consumer. In the case of late subscribers it is easily possible with sbjects like `BehaviorSubject` or `ReplaySubject` or operators like `share` or `shareReplay`.
+
+
+> **Caching latest Values**
+> - use `ReplaySubject` to cache the latest (n) values. In most of the cases this is the way to go.
+> - there are rare cases where we want to use an initial value and are not able to use `startWith`, here a `BehaviorSubject` can be used 
+> - In cases where we have no control of the source we can also use `shareReplay`
+> - In stateful services the replayed values are always limited to `1`. The actual value and all future onse.
 
 --- 
 
 ### Early Producer
 
-TBD
+Situations where we have early producers are things where we have values produces and transported over _cold_ Observables. In this case, as we have no subscriber yet on the mentioned Observable, we are loosing all values until the first subscriber. 
 
+The goal would be to find a solution that can get encapsulated and abstracted away from the actual code.
+
+**Problem of early production**
+```typescript
+@Component({
+  selector: 'app-early-producer',
+  template: `
+    {{state$ | async | json}}
+  `
+})
+export class LateSubscriberComponent {
+  command$ = new Subject();
+  state$ = this.command
+    .pipe(scan((s,c)=>({...s,...c}), {}));
+  
+  @Input()
+  set state(v) {
+    this.command$.next(v);
+  }
+  
+  constructor() {
+    this.state = {slice1: 7};
+    this.state = {slice2: 42};
+  }
+}
+```
+
+**Making the accumulation hot**
+```typescript
+@Component({
+  selector: 'app-late-subscriber',
+  template: `
+    <h2>Late Subscriber Child</h2>
+    {{state$ | async | json}}
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class LateSubscriberComponent {
+  command$ = new Subject();
+  state$ = this.command
+    .pipe(scan( (s,c) => ({...s,...c}), {} ));
+  
+  @Input()
+  set state(v) {
+    this.command$.next(v);
+  }
+  
+  constructor() {
+    this.state = { slice1: 7 };
+    this.state = { slice2: 42 };
+  }
+}
+```
 **Needs**   
+We need to have the observable to be hot with component constructor. Additional pipes or similar should be abstractedd away.
 
-TBD
+> ** **
+>  
 
---- 
+---
+
+
 
 # Sections Important For Running Zone Less
 
