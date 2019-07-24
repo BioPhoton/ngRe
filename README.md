@@ -19,43 +19,47 @@ The goal would be to **give an overview** of the needs and a **suggested a set o
 ---
 
 <!-- toc -->
+
 - [Sections Important For Reactive Architecture](#sections-important-for-reactive-architecture)
-  * [Component/Directive Bindings](#component-directive-bindings)
+  * [Component/Directive Bindings](#componentdirective-bindings)
     + [DomElement](#domelement)
-      - [Send to property over `<elem attr=""></elem>`](#send-to-property-over---elem-attr------elem--)
+      - [Send to property over ``](#send-to-property-over-)
     + [WebComponent](#webcomponent)
-      - [Send to property over `<elem attr=""></elem>`](#send-to-property-over---elem-attr------elem---1)
-      - [Receive events over `elem.addEventListener()`](#receive-events-over--elemaddeventlistener---)
+      - [Send to property over ``](#send-to-property-over--1)
+      - [Receive events over `elem.addEventListener()`](#receive-events-over-elemaddeventlistener)
     + [AngularComponents](#angularcomponents)
       - [Input Decorator](#input-decorator)
       - [Output Decorator](#output-decorator)
       - [HostListener Decorator](#hostlistener-decorator)
       - [HostBinding Decorator](#hostbinding-decorator)
       - [Input Binding](#input-binding)
+        * [Nested Template Scopes](#nested-template-scopes)
       - [Output Binding](#output-binding)
   * [Life Cycle Hooks](#life-cycle-hooks)
     + [Component And Directive Life Cycle Hooks](#component-and-directive-life-cycle-hooks)
     + [Service Life Cycle Hooks](#service-life-cycle-hooks)
   * [Local State](#local-state)
+    + [Encapsulation and Instantiation](#encapsulation-and-instantiation)
+    + [Managing the State Structure](#managing-the-state-structure)
     + [Late Subecriber](#late-subecriber)
-    + [Encapsulate Statemanagement (move to service)](#encapsulate-statemanagement--move-to-service-)
-    + [Managing Component State (the state object)](#managing-component-state--the-state-object-)
-    + [Late Subecriber](#late-subecriber-1)
     + [Early Producer](#early-producer)
+    + [Subscription handling](#subscription-handling)
 - [Sections Important For Running Zone Less](#sections-important-for-running-zone-less)
 - [Needs Overview](#needs-overview)
-  * [Automoate Boilerplate](#automoate-boilerplate)
+  * [Automate Boilerplate](#automate-boilerplate)
   * [Intuitive Way To Handle Timing Issues](#intuitive-way-to-handle-timing-issues)
   * [Convenient Way To Wire Things Together](#convenient-way-to-wire-things-together)
 - [Suggested Extensions](#suggested-extensions)
   * [Push Pipe](#push-pipe)
-  * [Multi Let Structural Directive](#multi-let-structural-directive)
+  * [Let Structural Directive](#let-structural-directive)
   * [Observable Life Cycle Hooks](#observable-life-cycle-hooks)
-    + [selectChange RxJS Operator](#selectchange-rxjs-operator)
+    + [selectChanges RxJS Operator](#selectchanges-rxjs-operator)
   * [Observable Input Bindings](#observable-input-bindings)
   * [Observable Output Bindings](#observable-output-bindings)
   * [Local State Management](#local-state-management)
-    + [selectSlice RxJS Operator](#selectslice-rxjs-operator)
+    + [selectSlices RxJS Operator](#selectslices-rxjs-operator)
+    + [Connection to global state management](#connection-to-global-state-management)
+
 <!-- tocstop -->
 
 ---
@@ -1084,7 +1088,7 @@ class LocalStateService implements OnDestroy {
 We need to find a elegant way of controling subscriptions in a component.
 
 > **Automated subscription handling**
-> To ensure all subscriptions are cleaned up we need to:
+> To ensure all subscriptions are cleaned up outside ou the component we need to:
 > - encapsulate state managed in the component into a service 
 > - leverage the services `OnDestroy` life cycle hook to handle subscription inside the service
 > - provide it under the components providers to bind it's lifetime to the components lifetime
@@ -1096,7 +1100,7 @@ We need to find a elegant way of controling subscriptions in a component.
 
 # Needs Overview
 
-## Automoate Boilerplate
+## Automate Boilerplate
 
 Automate boilerplate of setting up a subject and connecting it to producer.
 
