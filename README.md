@@ -442,11 +442,6 @@ We cal rely on trust that subscription to `state$` happens after `AfterViewInit`
 > **Inconsistent handling of undefined variables**   
 > It is important to mention the inconsistant handling of undefined variables and observables that didnt send a value yet. 
 
-> **Nested Template Scopes**   
-> One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some   
-> annoying situation where we have to nest multiple divs to have a context per bound vairable.
-
-
 ```typescript
 @Component({
   selector: 'my-app',
@@ -459,12 +454,14 @@ export class AppComponent  {
 }
 ```
 
-
 **Needs:**   
 As we know exactly when changes happen we can trigger change detection manually. Knowing the advantages of subscriptions over the template and lifecycle hooks the solution should be similar to `async` pipe.
 
 > **NgZone could be detached**   
 > As all changes can get detected we could detache the pipe from the `ChangeDetection` and trigger it on every value change
+
+> **Performance optimisations**
+> - consider scheduling over `AnimationFrameScheduler` the output is always for the view
 
 > **Implement strick and consistent handling of undefined for pipes**   
 > A pipe similar to `async` that should act as following:
@@ -475,6 +472,117 @@ As we know exactly when changes happen we can trigger change detection manually.
 > - when initially passed `EMPTY` the pipe should forward undefined as value as on value ever was emitted
 > - when initially passed `NEVER` the pipe should forward undefined as value as on value ever was emitted
 > - when reassigned a new `Observable` the pipe should forward undefined as value as on value was emitted from the new `Observable`
+
+##### Nested Template Scopes   
+One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some   
+annoying situation where we have to nest multiple divs to have a context per bound vairable.
+
+**Nested Template Scope Problem**
+```html
+@Component({
+  selector: 'my-app',
+  template: `
+  <div *ngIf="(observable1$ | async) as color">
+    <div *ngIf="(observable2$ | async) as shape">
+      <div *ngIf="(observable3$ | async) as name">
+        <app-color 
+          [color]="color" [shape]="shape" [name]="name">
+        </app-color>  
+       </div>
+     <div>
+  </div>
+  `})
+export class AppComponent  {
+  observable1$ = interval(1000);
+  observable2$ = interval(1500);
+  observable3$ = interval(2000);
+}
+```
+
+**Getting rid of Nested Div Problem**
+```html
+@Component({
+  selector: 'my-app',
+  template: `
+  <ng-container *ngIf="observable1$ | async as color">
+    <ng-container *ngIf="observable2$ | async as shape">
+      <ng-container *ngIf="observable3$ | async as name">
+        <app-color 
+          [color]="color" [shape]="shape" [name]="name">
+        </app-color>  
+       </ng-container>
+     <ng-container>
+  </ng-container>
+  `})
+export class AppComponent  {
+  observable1$ = interval(1000);
+  observable2$ = interval(1500);
+  observable3$ = interval(2000);
+}
+```
+
+**Possible Solutions**
+```html
+@Component({
+  selector: 'my-app',
+  template: `
+  <ng-container
+    *ngIf="{
+      color: observable1$ | async,
+      shape: observable2$ | async,
+      name:  observable3$ | async
+    } as c">
+    <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
+    </app-color>  
+  </ng-container>
+  `})
+export class AppComponent  {
+  observable1$ = interval(1000);
+  observable2$ = interval(1500);
+  observable3$ = interval(2000);
+}
+```
+
+**Composition in the Component**
+```html
+@Component({
+  selector: 'my-app',
+  template: `
+  <ng-container *ngIf="observables$ | async as c">
+    color: {{c.color}} shape: {{c.shape}} name: {{c.name}}  
+  </ng-container>
+  `})
+export class AppComponent  {
+  observable1$ = interval(1000);
+  observable2$ = interval(1500);
+  observable3$ = interval(2000);
+
+  observables$ = combineLatest(
+    this.observable1$.pipe(startWith(null), distinctUntilChanged()),
+    this.observable2$.pipe(startWith(null), distinctUntilChanged()),
+    this.observable3$.pipe(startWith(null), distinctUntilChanged()),
+    (color, shape, name) => ({color, shape, name})
+  )
+  .pipe(
+    observeOn(AnimationFrameScheduler)
+  );
+
+}
+```
+
+**Needs:**   
+Bringing it together into one object helps a lot. The syntax could be more convenient. Furthermore we could implement some default behaviour for falsy falues.
+
+> **Implement more convenient binding syntax**   
+> To improve usability we should fulfill following:
+> - the context should be always present. `*ngIf="{}"` would do that already
+> - controlled change detection to run zone-less
+> - avoid multiple usage of the `async`pipe
+> - better control over the context. Maybe we could get rid of the `as` as variable??
+> - implement an internal layer to handle null vs undefined etc
+> - implement option to put attitional logic for complete and error of an observable
+> - consider scheduling over `AnimationFrameScheduler` the output is always for the view
+> - handling changes could be done programatically. Good for running zone-less
 
 ---   
 
@@ -600,19 +708,16 @@ This problem can be solved as the subject is created in with instance constructi
 > For every binding following steps could be automated:
 > - setting up a `Subject`
 > - hooking into the `setter` of the input binding and `.next()` the incoming value
+> - hiding observer methods form external usage
+
+> **Respect Lifetime and State of Lifecycles**   
+> - subscription handling tied to component lifetime
+> - single shot observables complete after thier first call
 
 > **Late Supscribers**   
 > - As subscriptions could happen before values are present (subscribing to `OnInit` in constructor) 
 >   we have to make sure the Subject is creates early enough in time for all life cycle hooks
-
-> **Early Producer**   
-> - As subscriptions could happen later in time we could lose values (subscribing to `OnChanges` in `OnInit`)
->   A cache mechanism which uses `ReplaySubject` with `bufferSize` of `1` is needed for following hooks:
-> - OnChanges
-> - DoCheck
-> - OnInit
-> - AfterContentChecked
-> - AfterViewChecked
+> - on subscription to already completed observable of a lifecycle it should return the last event and complete again. 
 
 ---   
 
@@ -1055,17 +1160,22 @@ Extensions suggested:
 - Push Pipe
 - Multi Let Structural Directive
 - Observable Life Cycle Hooks
-  - Helper Operator
+  - selectChange RxJS Operator
 - Observable Input Bindings
 - Observable Output Bindings
+- Observable Host Bindings
+- Observable Host Listener
+- Observable ViewChild/Children
+- Observable ContentChild/Children
 - Local State Management
-  - Helper Operator
+  - selectSlices RxJS Operator
+  - 
 
 ## Push Pipe
 
 An angular pipe similar to the `async` pipe but triggers `detectChanges` instead of `markForCheck`.
 This is required to run zone-less. We render on every pushed message.
-(currenty there in an [isssue](https://github.com/angular/angular/issues/31438) with the `ChangeDetectorRef` in ivy so we have to wait for the fix=
+(currenty there in an [isssue](https://github.com/angular/angular/issues/31438) with the `ChangeDetectorRef` in ivy so we have to wait for the fix.
 
 The pipe should work as template binding `{{thing$ | push}}` 
 as well as input binding `[color]="thing$ | push"` and trigger the changes of the host component.
@@ -1080,40 +1190,52 @@ as well as input binding `[color]="thing$ | push"` and trigger the changes of th
 </app-color>
 ```
 
-## Multi Let Structural Directive
+**Included Features:**
+- subscription handling over view  life cycle
+- a unified way of handling null and undefined with streams
+- optional flag to turn off scheduling over `AnimationFrameScheduler` (on by default)
+- change detection is done manually which allowes it to work zone-less too
 
-The multi-let directive is a not tested idea of binding multiple observables in the same view context. 
+## Let Structural Directive
 
-Here multiple subscriptions in the view could lead to performance issues. Unfortunately, there is no other built-in.
+The `*let` directive serves a convenient way of binding multiple observables in the same view context.
+It also helps with severyn default processing under the hood.
 
-```html
-<div *ngIf="(o1$ | push) as o1">
-  <div *ngIf="(o2$ | push) as o2">
-    <div *ngIf="(o3$ | push) as o3">
-      <app-color 
-      [color]="o1.color" [shape]="o1.shape" 
-      [name]="o2.name" [age]="o2.age"
-      [value]="o3">
-      </app-color>  
-     </div>
-   <div>
-</div>
-```
-
-A custom directive could probably solve it. `*multiLet="o$ | push as o; t$ | push as t;"` 
-This would help the nested divs and the number of subscriptions.
+The current way of handling subscriptions in the view looks like that:
 
 ```html
-<div *multiLet="o1$ | push as o1;
-                o2$ | push as o2;
-                o3$ | push as o3;">
-  <app-color 
-    [color]="o1.color" [shape]="o1.shape" 
-    [name]="o2.name" [age]="o2.age"
-    [value]="o3">
+<ng-container *ngIf="{
+              color: observable1$ | async,
+              shape: observable2$ | async,
+              name:  observable3$ | async
+            } as c">
+  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
   </app-color>  
-</div>
+</ng-container>
 ```
+
+The `*let` directive take over several things and makes it more conveniant and save to work with streams in the template
+`*let="{o: o$, t: t$} as s;"` 
+
+```html
+<ng-container *let="{
+              color: observable1$,
+              shape: observable2$,
+              name:  observable3$
+            } as c">
+  <app-color 
+    [color]="c.color" [shape]="c.shape" [name]="c.name">
+  </app-color>  
+</ng-container>
+```
+
+**Included Features:**
+- binding is always present. (`*ngIf="{}"` normally effects it)
+- it takes away the multiple usage of the `async` pipe 
+- propper handling of null and undefined falues
+- removes state slices if bound observable completes or errors
+- a option to disable scheduling over `AnimationFrameScheduler` (on by default)
+- controlles change detection and therefore can run zone-less
 
 ## Observable Life Cycle Hooks
 
@@ -1135,20 +1257,22 @@ as well as forward passed values i.e. `changes` in from the `OnChanges` hook.
     .subscribe();
 ```
 
-Following things are done under the hood:
-- It uses a caching method like `ReplaySubject` does to handle late subscribers.
-- The property i.e. `onInit$` gets an observable assigned, not a subject.
-- Single-shot life cycle hooks complete after the first notification similar to HTTP requests from `HttpClient`
+**Included Features**
+- it handles late subscribers.
+- exposes only observables
+- respects single shot vs ongoing life cycles
+- subscription handling over component lifetime
+- return latest value when resucscribe
 
-### selectChange RxJS Operator
+### selectChanges RxJS Operator
 
-**``**
 
-An operators `selectChange` to select a specific slice from `SimpleChange`. 
+An operators `selectChanges` to select one or many specific slice from `SimpleChange`. 
 This operator can be used in combination with `onChanges$`.
 
 It also provides a very early option to control the forwarded values.
 
+**Example of selectSlice operator**
 ```typescript
 export class MyComponent {
   @hook$('onChanges') 
@@ -1234,9 +1358,9 @@ constructor(private lS: LocalState<MyState>) {
 }
 ```
 
-### selectSlice RxJS Operator
+### selectSlices RxJS Operator
 
-A flexible way to query a state slice.
+A flexible way to query one or many state slices.
 It considers also a late subscriber. 
 
 An operators `selectSlice` to select a specific slice from the managed state. 
@@ -1253,6 +1377,6 @@ Following things are done under the hood:
 - it handles late subscribers with `shareReplay(1)` 
 - it forwards only distinct values
 
+### Connection to global state management
 
-
-https://ecotrust-canada.github.io/markdown-toc/
+TBD
