@@ -1,18 +1,23 @@
 # Proposal for a fully reactive/zone-less architecture in Angular
 #### 
 
-This document is a proposal for a fully reactive architecture in Angular.
-Its main goal is to serve as the glue between your reactive code and the framework.
-  
+
+**This document is a proposal for a fully reactive architecture in Angular. 
+Its main goal is to serve as the glue between your reactive code and the framework.**
+
+
 Parts of Angular like the `ReactiveFromsModule`, `RouterModule`, `HttpClientModule` etc. are already reactive.
-for those who prefer imperative code, it's little effort to restrict it to a simple subscription.
+For those who prefer imperative code, it's little effort to restrict it to a single subscription.
 
 On the other hand for those who prefer reactive code, it's not that easy. 
-A lot of conveniences is missing, and beside the `async` pipe there is pretty much nothing there to take away the manual mapping to observables. Furthermore, an increasing number of packages start to be fully observable based. A very popular and widely used example is `ngRx`. It enables us to maintain global push-based state management based on observables.
+A lot of conveniences is missing, and beside the `async` pipe there is pretty much nothing there to take away the manual mapping to observables.  
+Furthermore, an increasing number of packages start to be fully observable based. A very popular and widely used example is [ngRx](https://ngrx.io/). It enables us to maintain global push-based state management based on observables. 
+Also other well known librariey, [angular material](https://material.angular.io/) provide a reactive way of usage.
 
-This creates even more interest and for reactive primitives like the `async` and other template syntax and decorators.
+This creates even more interest and for so called `reactive primitives` for the Angular framework, like the `async` and other template syntax, decorators and services.
  
-The goal would be to **give an overview** of the needs and a **suggested a set of extensions** to make it more convenient to **work in a reactive architecture**.
+The the first setp would be to **give an overview** of the needs and a **suggested a set of extensions** to make it more convenient to **work in a reactive architecture**.
+In a second step We will show best usage and common proplems in a fully reactive architecture.
 
 ---
 ## Table of content
