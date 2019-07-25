@@ -876,6 +876,7 @@ We need a decorator to **automates the boilerplate** of the `Subject` creation a
 > For every binding following steps could be automated:
 > - setting up a `Subject`
 > - hooking into the `setter` of the input binding and `.next()` the incoming value
+> - we should NOT override but EXTEND the potentially already existing functions
 
 ---   
 
@@ -1180,38 +1181,61 @@ We need to find an elegant way of controlling subscriptions in a component.
 
 # Sections Important For Running Zone Less
 
-# Needs Overview
+TBD
 
-## Automate Boilerplate
+# General Overview of Explored Problems
 
-Automate boilerplate of setting up a subject and connecting it to a producer.
+## General Timing Issues
 
-Here a configuration method for the type of `Subject` similar to the one from [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34) would be nice.
+As a lot of problem are related to timimg issues this section is here to give a comülete overview of all the different types issues. 
 
-In a majority of the cases, there was a need for abstracting away the boilerplate of setting up a subject and connecting it to the producer. A normal `Subject` was used in most of the cases. Some cases used a `ReplaySunject` or `BeHaviorSubject` to initialize the value. This was used to provide the latest value for a new subscriber. 
-
-Here we think one or many component property/method decorator can help. 
-
-**Decorators that:**
-- automatically use the right caching strategy i.e. replay
-- getter is hot by after the decorator fires i.e. subscription possible without considering life cycle hooks
-- setter accepts observables as values i.e. connecting a reactive radio group directly to a style property 
-
----
-
-## Intuitive Way To Handle Timing Issues
-
-As timing and multicasting is anyway a complex topic we should make it easy for the consumer of these extensions to use them. 
-
-There are two problems:
+There are two different problems occuring in multiple different situations:
 - Late Subscriber Problem
-- Early Subscriber Problem
+- Early Producer Problem
 
-_Late Subscriber Problem:_
-**There is already a subscription** Incoming values arrive before the has happened subscription. 
+### The Late Subscriber Problem
 
-For example state over input bindings arrives before the view gets rendered and a used pipe could receive the value.
+Incoming values arrive before the subscription has happened.
+
+For example state over `@Input()` decorators arrives before the view gets rendered and a used pipe could receive the value.
+
+```typescript
+@Component({
+  selector: 'app-late-subscriber',
+  template: `
+    {{state$ | async | json}}
+  `
+})
+export class LateSubscriberComponent {
+  state$ = new Subject();
+  
+  @Input()
+  set state(v) {
+    this.state$.next(v);
+  }
+
+}
+```
+
 We call this situation late subscriber problem. In this case, the view is a late subscribe to the values from '@Input()' properties.
+There are several situation from our previous explorations that have this problem:
+- [Input Decorators](Input-Decorators)
+  - transporting values from `@Input` to `AfterViewInit` hook
+  - transporting values from `@Input` to the view
+  - transporting values from `@Input` to the constructor 
+- [Component And Directive Life Cycle Hooks](Component-And-Directive-Life-Cycle-Hooks)
+  - transporting `OnChanges` to the view
+  - getting the state of any life cycle hook later in time (importen when hooks are composed)
+- [Local State](Local-State)
+  - transporting the current local state to the view
+  - getting the current local state for other compositions
+
+**Solutions**
+
+All those problems biol down to 2 different solutions depending on the perticular problem.
+- using `ReplaySubjects` with `bufferSize` of `1` to cache the latest sent value
+- using `shareReplay` => @TODO Provide an example in the right section above!! 
+
 
 _Early Producer Problem:_
 The subscription happens before any value can arrive.
@@ -1237,6 +1261,27 @@ The problem of connecting all component bindings, global state, locally provided
 The main reason here is getting the values over View elements that are instantiated later.
 
 TBD
+
+
+
+## Automate Boilerplate
+
+Automate boilerplate of setting up a subject and connecting it to a producer.
+
+Here a configuration method for the type of `Subject` similar to the one from [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34) would be nice.
+
+In a majority of the cases, there was a need for abstracting away the boilerplate of setting up a subject and connecting it to the producer. A normal `Subject` was used in most of the cases. Some cases used a `ReplaySunject` or `BeHaviorSubject` to initialize the value. This was used to provide the latest value for a new subscriber. 
+
+Here we think one or many component property/method decorator can help. 
+
+**Decorators that:**
+- automatically use the right caching strategy i.e. replay
+- getter is hot by after the decorator fires i.e. subscription possible without considering life cycle hooks
+- setter accepts observables as values i.e. connecting a reactive radio group directly to a style property 
+
+---
+
+## Intuitive Way To Handle Timing Issues
 
 # Suggested Extensions
 
