@@ -509,6 +509,7 @@ export class AppComponent  {
 ```
 
 **Getting rid of Nested Div Problem**
+
 ```html
 @Component({
   selector: 'my-app',
@@ -531,7 +532,11 @@ export class AppComponent  {
 }
 ```
 
-**Possible Solutions**
+Here we still nest `ng-container` which feels bloatet for this need.
+Another solution could be to compose an object in the view.
+
+
+**Composing Object in the View**
 ```html
 @Component({
   selector: 'my-app',
@@ -584,6 +589,14 @@ export class AppComponent  {
 
 }
 ```
+
+
+**Providing Placeholder Content over the `; else #Temlate` syntax**
+TBD
+
+
+**Providing Placeholder Content over `ng-content` wrapper**
+TBD
 
 **Needs:**   
 Bringing it together into one object helps a lot. The syntax could be more convenient. Furthermore, we could implement some default behavior for falsy values.
