@@ -1021,7 +1021,7 @@ export class LateSubscriberComponent {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LateSubscriberComponent {
-  state$ = new Subject();
+  state$ = new ReplaySubject(1);
   
   @Input()
   set state(v) {
@@ -1035,11 +1035,136 @@ export class LateSubscriberComponent {
 We need to abstract timing issues away from the consumer. In the case of late subscribers, it is easily possible with subjects like `BehaviorSubject` or `ReplaySubject` or operators like `share` or `shareReplay`.
 
 
-> **Caching latest Values**
+> **Replaiing latest Values**
 > - use `ReplaySubject` to cache the latest (n) values. In most of the cases, this is the way to go.
 > - there are rare cases where we want to use an initial value and are not able to use `startWith`, here a `BehaviorSubject` can be used 
 > - In cases where we have no control of the source we can also use `shareReplay`
 > - In stateful services the replayed values are always limited to `1`. The actual value and all future ones.
+
+--- 
+
+### Sharing References over Observables
+
+There are sitiations where we have to compose multiple streams, compute new state and create a reference to some object, i.e. a `FromGroup`. This reference is than lateron shared with multiple subscribers.
+
+Such situations are handled by mutation a compoennt property in imperative programming. 
+In reactive programming, we solve this multicasting.
+
+**Problem of beeing shared references**
+```typescript
+@Component({
+  selector: 'app-sharing-a-reference',
+  template: `
+    <h2>Sharing a reference</h2>
+    <p><b>default$:</b></p>
+    <form *ngIf="(formGroup$ | async$) as formGroup" [formGroup]="formGroup">
+      <div *ngFor="let c of formGroup.controls | keyvalue">
+        <label>{{c.key}}</label>
+        <input [formControlName]="c.key"/>
+      </div>
+    </form>
+  `
+})
+export class SharingAReferenceComponent {
+  state$ = new ReplaySubject(1);
+  @Input()
+  set formGroupModel(value) {
+    this.state$.next(value);
+  }
+
+  @Output() formValueChange = new EventEmitter();
+
+  formGroup$: Observable<FormGroup> = combineLatest(this.state$, this.router.params)
+    .pipe(
+      map(this.preparingFormGroupConfig),
+      map(config => this.fb.group(config))
+    );
+    
+  constructor(
+    private fb: FormBuilder,
+    private router: ActivatedRoute
+  ) {
+    this.formGroup$
+      .pipe(
+        switchMap((fg: FormGroup) => fg.valueChanges)
+      )
+      .subscribe(v => this.formValueChange.emit(v));
+  }
+
+  preparingFormGroupConfig([modelFromInput, modelFromRouterParams]) {
+    // override defaults with router params if exist
+    return Object.entries({...modelFromInput, ...modelFromRouterParams})
+      .reduce((c, [name, initialValue]) => ({...c, [name]: [initialValue]}), {});
+  }
+
+}
+```
+
+As we see the provided example is not working. The reason for this is we subscribe multiple times to the `formGroup$`.
+One time tin the template to render the form, the second time in the construtor to forward form value changes to the `EventEmitter`.
+Due to the fact that the `formGroup$` observbale is cold (every subscriber revieves a unique producer) we instanciate the `FormGroup` once per subscription.
+ 
+**Multicaste the referene**
+```typescriptimport {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+@Component({
+  selector: 'app-sharing-a-reference',
+  template: `
+    <h2>Sharing a reference</h2>
+    <p><b>default$:</b></p>
+    <form *ngIf="(formGroup$ | async$) as formGroup" [formGroup]="formGroup">
+      <div *ngFor="let c of formGroup.controls | keyvalue">
+        <label>{{c.key}}</label>
+        <input [formControlName]="c.key"/>
+      </div>
+    </form>
+  `
+})
+export class SharingAReferenceComponent {
+  state$ = new ReplaySubject(1);
+  @Input()
+  set formGroupModel(value) {
+    this.state$.next(value);
+  }
+
+  @Output() formValueChange = new EventEmitter();
+
+  formGroup$: Observable<FormGroup> = combineLatest(this.state$, this.router.params)
+    .pipe(
+      map(this.preparingFormGroupConfig),
+      map(config => this.fb.group(config)),
+      shareReplay(1)
+    );
+    
+  constructor(
+    private fb: FormBuilder,
+    private router: ActivatedRoute
+  ) {
+    this.formGroup$
+      .pipe(
+        switchMap((fg: FormGroup) => fg.valueChanges)
+      )
+      .subscribe(v => this.formValueChange.emit(v));
+  }
+
+  preparingFormGroupConfig([modelFromInput, modelFromRouterParams]) {
+    // override defaults with router params if exist
+    return Object.entries({...modelFromInput, ...modelFromRouterParams})
+      .reduce((c, [name, initialValue]) => ({...c, [name]: [initialValue]}), {});
+  }
+
+}
+```
+
+Here we use `shareReplay(1)` to make sure all subscriber receive the same reference.
+
+**Needs**   
+
+To be able to share references creates on the fly over boservables we have to make shure the observables are multicasted.
+
+
+> **Sharing a reference over observables**
+> - use `shareReplay(1)` make shure all subscribers recieve the same reference
+> - forward last instance for late subscriber. Also done with `shareReplay(1)`
 
 --- 
 
@@ -1250,12 +1375,13 @@ There are several situation from our previous explorations that have this proble
 
 **Solutions**
 
-All those problems biol down to 2 different solutions depending on the perticular problem.
+All those problems boil down to 2 different solutions depending on the perticular problem.
 - using `ReplaySubjects` with `bufferSize` of `1` to cache the latest sent value
-- using `shareReplay` => @TODO Provide an example in the right section above!! 
+- using `shareReplay` for referencial sharing as shown in [Sharing References over Observables](Sharing-References-over-Observables)
 
 
-_Early Producer Problem:_
+### The Early Producer Problem
+
 The subscription happens before any value can arrive.
 
 For example, subscriptions to view elements the constructor happen before they ever exist.
@@ -1271,6 +1397,9 @@ In this way, it is easy to have a simplified public API but flexibility internal
   this provides a generic configurable way for all cases 
 ---
 
+## Sharing references 
+
+TBD
 
 ## Convenient Way To Wire Things Together
 As discussed in [Automoate boilerplate](#Automoate-boilerplate) a lot of things that are related to angular can be solved by the right decorator. But there are other areas where we need to provide some solutions. A more general one than just life cycle hooks of a single component. 
