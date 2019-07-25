@@ -1,5 +1,5 @@
-# Proposal for a fully reactive/zone-less architecture in Angular
-#### 
+# Reactive Extensions for Angular
+## Proposal for a fully reactive/zone-less architecture in Angular 
 
 
 **This document is a proposal for a fully reactive architecture in Angular. 
