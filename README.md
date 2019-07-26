@@ -474,13 +474,13 @@ As we know exactly when changes happen we can trigger change detection manually.
 
 > **Implement strick and consistent handling of undefined for pipes**   
 > A pipe similar to `async` that should act as follows:
-> - when initially passed `undefined` the pipe should forward undefined as value as on value ever was emitted
-> - when initially passed `null` the pipe should forward undefined as value as on value ever was emitted
-> - when initially passed `of(undefined)` the pipe should forward undefined as value as `undefined` was emitted
-> - when initially passed `of(null)` the pipe should forward undefined as value as `null` was emitted
-> - when initially passed `EMPTY` the pipe should forward undefined as value as on value ever was emitted
-> - when initially passed `NEVER` the pipe should forward undefined as value as on value ever was emitted
-> - when reassigned a new `Observable` the pipe should forward undefined as value as on value was emitted from the new `Observable`
+> - when initially passed `undefined` the pipe should **forward `undefined`** as value as on value ever was emitted
+> - when initially passed `null` the pipe should **forward `undefined`** as value as on value ever was emitted
+> - when initially passed `of(undefined)` the pipe should **forward `undefined`** as value as `undefined` was emitted
+> - when initially passed `of(null)` the pipe should **forward `undefined`** as value as `null` was emitted
+> - when initially passed `EMPTY` the pipe should **forward `undefined`** as value as on value ever was emitted
+> - when initially passed `NEVER` the pipe should **forward `undefined`** as value as on value ever was emitted
+> - when reassigned a new `Observable` the pipe should **forward `undefined`** as value as on value was emitted from the new `Observable`
 
 ##### Nested Template Scopes   
 One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some annoying situation where we have to nest multiple divs to have a context per bound variable.
