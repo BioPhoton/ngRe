@@ -1,7 +1,7 @@
 import {ChangeDetectorRef, Directive, Input, OnInit, TemplateRef, ViewContainerRef} from '@angular/core';
 import {invalidInputValueError} from 'ng-re/lib/core/invalid_pipe_argument_error';
-import {animationFrameScheduler, combineLatest, iif, isObservable, Observable, of, ReplaySubject} from 'rxjs';
-import {observeOn, switchMap, tap, withLatestFrom} from 'rxjs/operators';
+import {animationFrameScheduler, combineLatest, isObservable, Observable, of, ReplaySubject} from 'rxjs';
+import {observeOn, switchMap, tap} from 'rxjs/operators';
 import {LocalStateService} from '../local-state/local-state';
 import {selectSlice} from '../local-state/operators/selectSlice';
 
@@ -71,7 +71,7 @@ export class LetDirective implements OnInit {
     // @TODO Too much and remove?
     // tslint:disable-next-line
     v && Object.entries(v).map(([key, value]) => this.context[key] = value);
-  }
+  };
 
   ngOnInit() {
     this.viewContainerRef
