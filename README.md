@@ -1,18 +1,23 @@
-# Proposal for a fully reactive/zone-less architecture in Angular
-#### 
+# Reactive Extensions for Angular
+## Proposal for a fully reactive/zone-less architecture in Angular 
 
-This document is a proposal for a fully reactive architecture in Angular.
-Its main goal is to serve as the glue between your reactive code and the framework.
-  
+
+**This document is a proposal for a fully reactive architecture in Angular. 
+Its main goal is to serve as the glue between your reactive code and the framework.**
+
+
 Parts of Angular like the `ReactiveFromsModule`, `RouterModule`, `HttpClientModule` etc. are already reactive.
-for those who prefer imperative code, it's little effort to restrict it to a simple subscription.
+For those who prefer imperative code, it's little effort to restrict it to a single subscription.
 
 On the other hand for those who prefer reactive code, it's not that easy. 
-A lot of conveniences is missing, and beside the `async` pipe there is pretty much nothing there to take away the manual mapping to observables. Furthermore, an increasing number of packages start to be fully observable based. A very popular and widely used example is `ngRx`. It enables us to maintain global push-based state management based on observables.
+A lot of conveniences is missing, and beside the `async` pipe there is pretty much nothing there to take away the manual mapping to observables.  
+Furthermore, an increasing number of packages start to be fully observable based. A very popular and widely used example is [ngRx](https://ngrx.io/). It enables us to maintain global push-based state management based on observables. 
+Also other well known librariey, [angular material](https://material.angular.io/) provide a reactive way of usage.
 
-This creates even more interest and for reactive primitives like the `async` and other template syntax and decorators.
+This creates even more interest and for so called `reactive primitives` for the Angular framework, like the `async` and other template syntax, decorators and services.
  
-The goal would be to **give an overview** of the needs and a **suggested a set of extensions** to make it more convenient to **work in a reactive architecture**.
+The the first setp would be to **give an overview** of the needs and a **suggested a set of extensions** to make it more convenient to **work in a reactive architecture**.
+In a second step We will show best usage and common proplems in a fully reactive architecture.
 
 ---
 ## Table of content
@@ -469,13 +474,13 @@ As we know exactly when changes happen we can trigger change detection manually.
 
 > **Implement strick and consistent handling of undefined for pipes**   
 > A pipe similar to `async` that should act as follows:
-> - when initially passed `undefined` the pipe should forward undefined as value as on value ever was emitted
-> - when initially passed `null` the pipe should forward undefined as value as on value ever was emitted
-> - when initially passed `of(undefined)` the pipe should forward undefined as value as `undefined` was emitted
-> - when initially passed `of(null)` the pipe should forward undefined as value as `null` was emitted
-> - when initially passed `EMPTY` the pipe should forward undefined as value as on value ever was emitted
-> - when initially passed `NEVER` the pipe should forward undefined as value as on value ever was emitted
-> - when reassigned a new `Observable` the pipe should forward undefined as value as on value was emitted from the new `Observable`
+> - when initially passed `undefined` the pipe should **forward `undefined`** as value as on value ever was emitted
+> - when initially passed `null` the pipe should **forward `undefined`** as value as on value ever was emitted
+> - when initially passed `of(undefined)` the pipe should **forward `undefined`** as value as `undefined` was emitted
+> - when initially passed `of(null)` the pipe should **forward `undefined`** as value as `null` was emitted
+> - when initially passed `EMPTY` the pipe should **forward `undefined`** as value as on value ever was emitted
+> - when initially passed `NEVER` the pipe should **forward `undefined`** as value as on value ever was emitted
+> - when reassigned a new `Observable` the pipe should **forward `undefined`** as value as on value was emitted from the new `Observable`
 
 ##### Nested Template Scopes   
 One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some annoying situation where we have to nest multiple divs to have a context per bound variable.
@@ -504,6 +509,7 @@ export class AppComponent  {
 ```
 
 **Getting rid of Nested Div Problem**
+
 ```html
 @Component({
   selector: 'my-app',
@@ -526,7 +532,11 @@ export class AppComponent  {
 }
 ```
 
-**Possible Solutions**
+Here we still nest `ng-container` which feels bloatet for this need.
+Another solution could be to compose an object in the view.
+
+
+**Composing Object in the View**
 ```html
 @Component({
   selector: 'my-app',
@@ -579,6 +589,14 @@ export class AppComponent  {
 
 }
 ```
+
+
+**Providing Placeholder Content over the `; else #Temlate` syntax**
+TBD
+
+
+**Providing Placeholder Content over `ng-content` wrapper**
+TBD
 
 **Needs:**   
 Bringing it together into one object helps a lot. The syntax could be more convenient. Furthermore, we could implement some default behavior for falsy values.
@@ -876,6 +894,7 @@ We need a decorator to **automates the boilerplate** of the `Subject` creation a
 > For every binding following steps could be automated:
 > - setting up a `Subject`
 > - hooking into the `setter` of the input binding and `.next()` the incoming value
+> - we should NOT override but EXTEND the potentially already existing functions
 
 ---   
 
@@ -1002,7 +1021,7 @@ export class LateSubscriberComponent {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LateSubscriberComponent {
-  state$ = new Subject();
+  state$ = new ReplaySubject(1);
   
   @Input()
   set state(v) {
@@ -1016,11 +1035,136 @@ export class LateSubscriberComponent {
 We need to abstract timing issues away from the consumer. In the case of late subscribers, it is easily possible with subjects like `BehaviorSubject` or `ReplaySubject` or operators like `share` or `shareReplay`.
 
 
-> **Caching latest Values**
+> **Replaiing latest Values**
 > - use `ReplaySubject` to cache the latest (n) values. In most of the cases, this is the way to go.
 > - there are rare cases where we want to use an initial value and are not able to use `startWith`, here a `BehaviorSubject` can be used 
 > - In cases where we have no control of the source we can also use `shareReplay`
 > - In stateful services the replayed values are always limited to `1`. The actual value and all future ones.
+
+--- 
+
+### Sharing References over Observables
+
+There are sitiations where we have to compose multiple streams, compute new state and create a reference to some object, i.e. a `FromGroup`. This reference is than lateron shared with multiple subscribers.
+
+Such situations are handled by mutation a compoennt property in imperative programming. 
+In reactive programming, we solve this multicasting.
+
+**Problem of beeing shared references**
+```typescript
+@Component({
+  selector: 'app-sharing-a-reference',
+  template: `
+    <h2>Sharing a reference</h2>
+    <p><b>default$:</b></p>
+    <form *ngIf="(formGroup$ | async$) as formGroup" [formGroup]="formGroup">
+      <div *ngFor="let c of formGroup.controls | keyvalue">
+        <label>{{c.key}}</label>
+        <input [formControlName]="c.key"/>
+      </div>
+    </form>
+  `
+})
+export class SharingAReferenceComponent {
+  state$ = new ReplaySubject(1);
+  @Input()
+  set formGroupModel(value) {
+    this.state$.next(value);
+  }
+
+  @Output() formValueChange = new EventEmitter();
+
+  formGroup$: Observable<FormGroup> = combineLatest(this.state$, this.router.params)
+    .pipe(
+      map(this.preparingFormGroupConfig),
+      map(config => this.fb.group(config))
+    );
+    
+  constructor(
+    private fb: FormBuilder,
+    private router: ActivatedRoute
+  ) {
+    this.formGroup$
+      .pipe(
+        switchMap((fg: FormGroup) => fg.valueChanges)
+      )
+      .subscribe(v => this.formValueChange.emit(v));
+  }
+
+  preparingFormGroupConfig([modelFromInput, modelFromRouterParams]) {
+    // override defaults with router params if exist
+    return Object.entries({...modelFromInput, ...modelFromRouterParams})
+      .reduce((c, [name, initialValue]) => ({...c, [name]: [initialValue]}), {});
+  }
+
+}
+```
+
+As we see the provided example is not working. The reason for this is we subscribe multiple times to the `formGroup$`.
+One time tin the template to render the form, the second time in the construtor to forward form value changes to the `EventEmitter`.
+Due to the fact that the `formGroup$` observbale is cold (every subscriber revieves a unique producer) we instanciate the `FormGroup` once per subscription.
+ 
+**Multicaste the referene**
+```typescriptimport {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+@Component({
+  selector: 'app-sharing-a-reference',
+  template: `
+    <h2>Sharing a reference</h2>
+    <p><b>default$:</b></p>
+    <form *ngIf="(formGroup$ | async$) as formGroup" [formGroup]="formGroup">
+      <div *ngFor="let c of formGroup.controls | keyvalue">
+        <label>{{c.key}}</label>
+        <input [formControlName]="c.key"/>
+      </div>
+    </form>
+  `
+})
+export class SharingAReferenceComponent {
+  state$ = new ReplaySubject(1);
+  @Input()
+  set formGroupModel(value) {
+    this.state$.next(value);
+  }
+
+  @Output() formValueChange = new EventEmitter();
+
+  formGroup$: Observable<FormGroup> = combineLatest(this.state$, this.router.params)
+    .pipe(
+      map(this.preparingFormGroupConfig),
+      map(config => this.fb.group(config)),
+      shareReplay(1)
+    );
+    
+  constructor(
+    private fb: FormBuilder,
+    private router: ActivatedRoute
+  ) {
+    this.formGroup$
+      .pipe(
+        switchMap((fg: FormGroup) => fg.valueChanges)
+      )
+      .subscribe(v => this.formValueChange.emit(v));
+  }
+
+  preparingFormGroupConfig([modelFromInput, modelFromRouterParams]) {
+    // override defaults with router params if exist
+    return Object.entries({...modelFromInput, ...modelFromRouterParams})
+      .reduce((c, [name, initialValue]) => ({...c, [name]: [initialValue]}), {});
+  }
+
+}
+```
+
+Here we use `shareReplay(1)` to make sure all subscriber receive the same reference.
+
+**Needs**   
+
+To be able to share references creates on the fly over boservables we have to make shure the observables are multicasted.
+
+
+> **Sharing a reference over observables**
+> - use `shareReplay(1)` make shure all subscribers recieve the same reference
+> - forward last instance for late subscriber. Also done with `shareReplay(1)`
 
 --- 
 
@@ -1180,7 +1324,92 @@ We need to find an elegant way of controlling subscriptions in a component.
 
 # Sections Important For Running Zone Less
 
-# Needs Overview
+TBD
+
+# General Overview of Explored Problems
+
+## General Timing Issues
+
+As a lot of problem are related to timimg issues this section is here to give a comülete overview of all the different types issues. 
+
+There are two different problems occuring in multiple different situations:
+- Late Subscriber Problem
+- Early Producer Problem
+
+### The Late Subscriber Problem
+
+Incoming values arrive before the subscription has happened.
+
+For example state over `@Input()` decorators arrives before the view gets rendered and a used pipe could receive the value.
+
+```typescript
+@Component({
+  selector: 'app-late-subscriber',
+  template: `
+    {{state$ | async | json}}
+  `
+})
+export class LateSubscriberComponent {
+  state$ = new Subject();
+  
+  @Input()
+  set state(v) {
+    this.state$.next(v);
+  }
+
+}
+```
+
+We call this situation late subscriber problem. In this case, the view is a late subscribe to the values from '@Input()' properties.
+There are several situation from our previous explorations that have this problem:
+- [Input Decorators](Input-Decorators)
+  - transporting values from `@Input` to `AfterViewInit` hook
+  - transporting values from `@Input` to the view
+  - transporting values from `@Input` to the constructor 
+- [Component And Directive Life Cycle Hooks](Component-And-Directive-Life-Cycle-Hooks)
+  - transporting `OnChanges` to the view
+  - getting the state of any life cycle hook later in time (importen when hooks are composed)
+- [Local State](Local-State)
+  - transporting the current local state to the view
+  - getting the current local state for other compositions
+
+**Solutions**
+
+All those problems boil down to 2 different solutions depending on the perticular problem.
+- using `ReplaySubjects` with `bufferSize` of `1` to cache the latest sent value
+- using `shareReplay` for referencial sharing as shown in [Sharing References over Observables](Sharing-References-over-Observables)
+
+
+### The Early Producer Problem
+
+The subscription happens before any value can arrive.
+
+For example, subscriptions to view elements the constructor happen before they ever exist.
+We call this situation early subscriber problem. In this case, the component constructor is an early subscribe to the events from '(click)' bindings. 
+
+All above decorators should rely on a generic way of wrapping a function or property as well as a way
+to configure the used Subject for multicasting similar to [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34)
+
+In this way, it is easy to have a simplified public API but flexibility internally.
+
+**Decorators that:**
+- rely on configurable multicasting similar to `multicast` operator.
+  this provides a generic configurable way for all cases 
+---
+
+## Sharing references 
+
+TBD
+
+## Convenient Way To Wire Things Together
+As discussed in [Automoate boilerplate](#Automoate-boilerplate) a lot of things that are related to angular can be solved by the right decorator. But there are other areas where we need to provide some solutions. A more general one than just life cycle hooks of a single component. 
+
+The problem of connecting all component bindings, global state, locally provided services, view events and 
+The main reason here is getting the values over View elements that are instantiated later.
+
+TBD
+
+
 
 ## Automate Boilerplate
 
@@ -1200,43 +1429,6 @@ Here we think one or many component property/method decorator can help.
 ---
 
 ## Intuitive Way To Handle Timing Issues
-
-As timing and multicasting is anyway a complex topic we should make it easy for the consumer of these extensions to use them. 
-
-There are two problems:
-- Late Subscriber Problem
-- Early Subscriber Problem
-
-_Late Subscriber Problem:_
-**There is already a subscription** Incoming values arrive before the has happened subscription. 
-
-For example state over input bindings arrives before the view gets rendered and a used pipe could receive the value.
-We call this situation late subscriber problem. In this case, the view is a late subscribe to the values from '@Input()' properties.
-
-_Early Producer Problem:_
-The subscription happens before any value can arrive.
-
-For example, subscriptions to view elements the constructor happen before they ever exist.
-We call this situation early subscriber problem. In this case, the component constructor is an early subscribe to the events from '(click)' bindings. 
-
-All above decorators should rely on a generic way of wrapping a function or property as well as a way
-to configure the used Subject for multicasting similar to [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34)
-
-In this way, it is easy to have a simplified public API but flexibility internally.
-
-**Decorators that:**
-- rely on configurable multicasting similar to `multicast` operator.
-  this provides a generic configurable way for all cases 
----
-
-
-## Convenient Way To Wire Things Together
-As discussed in [Automoate boilerplate](#Automoate-boilerplate) a lot of things that are related to angular can be solved by the right decorator. But there are other areas where we need to provide some solutions. A more general one than just life cycle hooks of a single component. 
-
-The problem of connecting all component bindings, global state, locally provided services, view events and 
-The main reason here is getting the values over View elements that are instantiated later.
-
-TBD
 
 # Suggested Extensions
 
