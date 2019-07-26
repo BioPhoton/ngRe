@@ -41,7 +41,7 @@ export class LocalStateService {
   constructor() {
     // the local state service's `state$` observable should be hot on instantiation
     const subscription = (this.state$ as ConnectableObservable<any>).connect();
-    this.onDestroy$.subscriber(_ => subscription.unsubscribe());
+    this.onDestroy$.subscribe(_ => subscription.unsubscribe());
   }
 
   // This breaks the functional programming style for the user.

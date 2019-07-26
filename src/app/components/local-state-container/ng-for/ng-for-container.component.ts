@@ -7,7 +7,7 @@ import {LocalStateService, selectSlice} from 'ng-re';
     <h2>ngFor Container</h2>
     <div>
       <button
-        *ngFor="let i of buttons$"
+        *ngFor="let i of buttons$ | async"
         (click)="command.next(i)">
         Button 1
       </button>

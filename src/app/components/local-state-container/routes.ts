@@ -4,6 +4,8 @@ import {FullExampleContainerComponent} from './full-example-container/full-examp
 import {LateSubscribersContainerComponent} from './late-subscribers/late-subscribers-container.component';
 import {LocalStateContainerComponent} from './local-state-container.component';
 import {NgForContainerComponent} from './ng-for/ng-for-container.component';
+import {PlaceholderContentContainerComponent} from './placeholder-content/placeholder-content-container.component';
+import {SharingAReferenceContainerComponent} from './sharing-a-reference/sharing-a-reference-container.component';
 
 export const LOCAL_STATE_ROUTES = [
   {
@@ -21,6 +23,14 @@ export const LOCAL_STATE_ROUTES = [
       {
         path: 'early-producer',
         component: EarlyProducerContainerComponent
+      },
+      {
+        path: 'sharing-a-reference',
+        component: SharingAReferenceContainerComponent
+      },
+      {
+        path: 'placeholder-content',
+        component: PlaceholderContentContainerComponent
       },
       {
         path: 'ng-for',

@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {interval, Observable} from 'rxjs';
-import {map, share} from 'rxjs/operators';
+import {interval, Observable, timer} from 'rxjs';
+import {map, share, take} from 'rxjs/operators';
 
 @Component({
   selector: 'app-input-container',
@@ -23,15 +23,15 @@ import {map, share} from 'rxjs/operators';
 })
 export class InputContainerComponent {
 
-  state$ = this.getHotRandomInterval('val1', 1000);
-  state2$ = this.getHotRandomInterval('val2', 3000);
+  state$ = this.getHotRandomInterval('val1', 1).pipe(take(2));
+  state2$ = this.getHotRandomInterval('val2', 3).pipe(take(2));
 
   constructor() {
 
   }
 
   getHotRandomInterval(name: string, intVal: number = 1000): Observable<{ [key: string]: number }> {
-    return interval(intVal)
+    return timer(0, intVal)
       .pipe(
         map(_ => ({[name]: Math.random()})),
         share()

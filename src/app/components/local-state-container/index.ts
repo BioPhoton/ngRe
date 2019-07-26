@@ -9,6 +9,9 @@ import {LateSubscriberComponent} from './late-subscribers/late-subscriber.compon
 import {LateSubscribersContainerComponent} from './late-subscribers/late-subscribers-container.component';
 import {LocalStateContainerComponent} from './local-state-container.component';
 import {NgForContainerComponent} from './ng-for/ng-for-container.component';
+import {PlaceholderContentContainerComponent} from './placeholder-content/placeholder-content-container.component';
+import {SharingAReferenceContainerComponent} from './sharing-a-reference/sharing-a-reference-container.component';
+import {SharingAReferenceComponent} from './sharing-a-reference/sharing-a-reference.component';
 
 export * from './routes';
 export const LOCAL_STATE_DECLARATIONS = [
@@ -18,6 +21,11 @@ export const LOCAL_STATE_DECLARATIONS = [
   LateSubscriberComponent,
 
   EarlyProducerContainerComponent,
+
+  SharingAReferenceContainerComponent,
+  SharingAReferenceComponent,
+
+  PlaceholderContentContainerComponent,
 
   NgForContainerComponent,
 

@@ -77,7 +77,6 @@ export function Hook$<T>(hookName: keyof Hooks): PropertyDecorator {
       // @TODO I guess this is a miss conception that ngChanges is wrapped in a function.
       target = hooksWrapped[hookName] ? component : cDef;
       hook = hooksWrapped[hookName] ? getCompHookName(hookName) : hookName;
-      // @TODO fix case for ngOnChanges not implemented
       originalHook = hooksWrapped[hookName] ? cDef[hook] : component[hook];
     }
 

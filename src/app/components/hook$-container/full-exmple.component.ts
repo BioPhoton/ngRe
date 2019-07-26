@@ -1,17 +1,4 @@
-import {
-  AfterContentChecked,
-  AfterContentInit,
-  AfterViewChecked,
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  DoCheck,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  SimpleChanges
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input, SimpleChanges} from '@angular/core';
 import {Hook$} from 'ng-re';
 import {Observable, Observer} from 'rxjs';
 
@@ -24,8 +11,9 @@ import {Observable, Observer} from 'rxjs';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FullExampleComponent implements OnChanges, DoCheck, OnInit, AfterViewInit,
-  AfterViewChecked, AfterContentInit, AfterContentChecked, OnDestroy {
+/*implements OnChanges, DoCheck, OnInit, AfterViewInit,
+  AfterViewChecked, AfterContentInit, AfterContentChecked, OnDestroy */
+export class FullExampleComponent {
 
   @Hook$('doCheck') doCheck$: Observable<void>;
   @Hook$('onChanges') onChanges$: Observable<SimpleChanges>;
@@ -52,42 +40,50 @@ export class FullExampleComponent implements OnChanges, DoCheck, OnInit, AfterVi
 
   private getHookObserver(name: string): Observer<any> {
     return {
-      next(n) { console.log(name + ' next', n); },
-      error(e) { console.log(name + ' error', e); },
-      complete( ) { console.log(name + ' complete'); },
+      next(n) {
+        console.log(name + ' next', n);
+      },
+      error(e) {
+        console.log(name + ' error', e);
+      },
+      complete() {
+        console.log(name + ' complete');
+      },
     };
   }
 
-  ngDoCheck(): void {
-    console.log('original ngDoCheck');
-  }
+  /*
+    ngDoCheck(): void {
+      console.log('original ngDoCheck');
+    }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log('original ngOnChanges', changes);
-  }
+    ngOnChanges(changes: SimpleChanges): void {
+      console.log('original ngOnChanges', changes);
+    }
 
-  ngOnInit(): void {
-    console.log('original ngOnInit');
-  }
+    ngOnInit(): void {
+      console.log('original ngOnInit');
+    }
 
-  ngAfterContentInit(): void {
-    console.log('original ngAfterContentInit');
-  }
+    ngAfterContentInit(): void {
+      console.log('original ngAfterContentInit');
+    }
 
-  ngAfterContentChecked(): void {
-    console.log('original ngAfterContentChecked');
-  }
+    ngAfterContentChecked(): void {
+      console.log('original ngAfterContentChecked');
+    }
 
-  ngAfterViewInit(): void {
-    console.log('original ngAfterViewInit');
-  }
+    ngAfterViewInit(): void {
+      console.log('original ngAfterViewInit');
+    }
 
-  ngAfterViewChecked(): void {
-    console.log('original ngAfterViewChecked');
-  }
+    ngAfterViewChecked(): void {
+      console.log('original ngAfterViewChecked');
+    }
 
-  ngOnDestroy(): void {
-    console.log('original ngOnDestroy');
-  }
+    ngOnDestroy(): void {
+      console.log('original ngOnDestroy');
+    }
+    */
 
 }

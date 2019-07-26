@@ -21,3 +21,7 @@ export function getRandomCity(num, range?) {
       })
     );
 }
+
+export function randomName() {
+  return faker.name.findName();
+}
