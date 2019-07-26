@@ -57,6 +57,7 @@ export class LocalStateService {
   // Not like with `this.setSlice`
   connectSlices(config: { [key: string]: Observable<any> }): void {
     // @TODO validation / typing params
+    // @TODO consider multiple observables for the same key. Here I would suggest last one wins => switchAll
     Object.entries(config).map(([slice, state$]) => {
       const slice$ = state$.pipe(
         map(state => ({[slice]: state})),

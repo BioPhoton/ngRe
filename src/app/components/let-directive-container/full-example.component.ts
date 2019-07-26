@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {interval, Observable} from 'rxjs';
+import {combineLatest, interval, Observable} from 'rxjs';
 import {filter, map, share, take} from 'rxjs/operators';
 
 @Component({
@@ -8,43 +8,44 @@ import {filter, map, share, take} from 'rxjs/operators';
     <h2>*Full Example</h2>
 
     <p>
-      Binding a single value <code>*ngReLet="val1"</code>
+      Binding with as syntax <code>*ngReLet="val1$ as o"</code>
     </p>
     <ng-container
-      *ngReLet="val1">
-      <pre>{{val1 | json}}</pre>
+      *ngReLet="val1$ as o">
+      <pre>{{(o | json) || 'undefined'}}</pre>
+      <app-let-directive-value [value]="o"></app-let-directive-value>
     </ng-container>
-    
-        <p>
-          Binding a single value <code>*ngReLet="val1 as v1"</code>
-        </p>
-        <ng-container
-          *ngReLet="val1 as v1">
-          <pre>{{v1 | json}}</pre>
-        </ng-container>
-    <!--
-        <p>
-          Binding a single value <code>val1; let v1 = ngReLet</code>
-        </p>
-        
-        <p>
-          Binding an object of single values
-          <code>*ngReLet="object as o"</code>
-        </p>
-        <ng-container
-          *ngReLet="{v1: val1, v2: val2} as o">
-          <pre>{{o | json}}</pre>
-        </ng-container>
-    
-        <p>
-          Binding an object of single values
-          <code>*ngReLet="objectOverAsyncPipe as o"</code>
-        </p>
-        <ng-container
-          *ngReLet="{v1: val1$ | async, v2: val2$  | async} as o">
-          <pre>{{o | json}}</pre>
-        </ng-container>
-        -->
+
+    <p>
+      Binding composed object <code>*ngReLet="combinedInComponent$ as o"</code>
+    </p>
+    <ng-container
+      *ngReLet="combinedInComponent$ as o">
+      <pre>{{o | json}}</pre>
+      <app-let-directive-value [value]="o"></app-let-directive-value>
+    </ng-container>
+
+    <p>
+      Binding an object of single values <code>*ngReLet="combinedInComponent$ as o; val1 as val1; val2 as val2"</code>
+    </p>
+    <ng-container
+      *ngReLet="combinedInComponent$; val1 as val1; val2 as val2">
+      <pre>{{val1 | json}}</pre>
+      <pre>{{val2 | json}}</pre>
+      <app-let-directive-value [value]="val1"></app-let-directive-value>
+      <app-let-directive-value [value]="val2"></app-let-directive-value>
+    </ng-container>
+
+    <p>
+      Binding an object of single values <code>*ngReLet="combinedInComponent$; let val1 = val1; let val2 = val2"</code>
+    </p>
+    <ng-container
+      *ngReLet="combinedInComponent$; let val1 = val1; let val2 = val2">
+      <pre>{{val1 | json}}</pre>
+      <pre>{{val2 | json}}</pre>
+      <app-let-directive-value [value]="val1"></app-let-directive-value>
+      <app-let-directive-value [value]="val2"></app-let-directive-value>
+    </ng-container>
   `
 })
 export class LetDirectiveFullExampleComponent {
@@ -52,17 +53,20 @@ export class LetDirectiveFullExampleComponent {
   val1 = Math.random() * 100;
   val2 = Math.random() * 100;
 
-  val1$ = this.getHotRandomInterval('val1$', 1000).pipe(take(10));
-  val2$ = this.getHotRandomInterval('val2$', 1000).pipe(take(10));
-  combinedInComponent$ = {val1: this.val1$, val2: this.val2$};
+  val1$ = this.getHotRandomInterval('val1', 1000).pipe(take(2));
+  val2$ = this.getHotRandomInterval('val2', 1000).pipe(take(2));
+  combinedInComponent$ = combineLatest(
+    this.val1$,
+    this.val2$,
+    (val1, val2) => ({...val1, ...val2}));
 
   constructor() {
   }
 
-  getHotRandomInterval(name: string, intVal: number = 1000): Observable<{ [key: string]: number }> {
+  getHotRandomInterval(name: string, intVal: number = 1000): Observable<{ [key: string]: string }> {
     return interval(intVal)
       .pipe(
-        map(_ => ({[name]: Math.random()})),
+        map((_, i) => ({[name]: i + ':' + Math.random()})),
         share(),
         filter((v, i) => i < 1)
       );

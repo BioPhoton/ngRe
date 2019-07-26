@@ -1,7 +1,7 @@
 import {ChangeDetectorRef, Directive, Input, OnInit, TemplateRef, ViewContainerRef} from '@angular/core';
 import {invalidInputValueError} from 'ng-re/lib/core/invalid_pipe_argument_error';
-import {animationFrameScheduler, combineLatest, isObservable, Observable, of, ReplaySubject} from 'rxjs';
-import {observeOn, switchMap, tap} from 'rxjs/operators';
+import {animationFrameScheduler, combineLatest, EMPTY, isObservable, Observable, of, ReplaySubject} from 'rxjs';
+import {observeOn, startWith, switchMap, tap} from 'rxjs/operators';
 import {LocalStateService} from '../local-state/local-state';
 import {selectSlice} from '../local-state/operators/selectSlice';
 
@@ -18,7 +18,7 @@ export class LetContext {
 }
 
 @Directive({
-  selector: '[' + selector + ']',
+  selector: '[ngReLet]',
   providers: [LocalStateService]
 })
 export class LetDirective implements OnInit {
@@ -27,7 +27,9 @@ export class LetDirective implements OnInit {
 
   @Input()
   set ngReLet(o: { [key: string]: Observable<any> } | Observable<any>) {
-    if (isObservable(o)) {
+    if (o === null || o === undefined) {
+      this.lS.connectSlices({[selector]: EMPTY});
+    } else if (isObservable(o)) {
       this.lS.connectSlices({[selector]: o});
     } else {
       throw invalidInputValueError(LetDirective, selector);
@@ -45,33 +47,36 @@ export class LetDirective implements OnInit {
     private readonly templateRef: TemplateRef<LetContext>,
     private readonly viewContainerRef: ViewContainerRef
   ) {
-    this.context.$implicit = {};
-    this.context.ngReLet = {};
+    this.context.$implicit = undefined;
+    this.context.ngReLet = undefined;
 
     combineLatest(
       this.lS.state$.pipe(selectSlice((s) => s[selector])),
-      this.af$)
+      this.af$.pipe(startWith(false)))
       .pipe(
-        // apply scheduling
-        switchMap(([state, af]) => {
-          return of(state)
-            .pipe(observeOn(af ? animationFrameScheduler : null));
-        }),
+        switchMap(([state, af]) => af ?
+          // apply scheduling
+          of(state).pipe(observeOn(animationFrameScheduler)) :
+          of(state)),
         // running zone-less
-        tap(_ => this.cd.detectChanges())
+        // @TODO replace with detectChange after ivy fix
+        tap(_ => this.cd.markForCheck())
       )
       .subscribe(this.updateContext);
   }
 
   updateContext = (v) => {
-    // to enable `let` syntax we have to use $implicit
+    // to enable `let` syntax we have to use $implicit (var; let v = var)
     this.context.$implicit = v;
-    // to enable `as` syntax we have to assign the directives selector
+    // to enable `as` syntax we have to assign the directives selector (var as v)
     this.context.ngReLet = v;
     // @TODO Too much and remove?
     // tslint:disable-next-line
-    v && Object.entries(v).map(([key, value]) => this.context[key] = value);
-  };
+    Object.entries(v || {}).map(([key, value]) => {
+      console.log('key', key, value);
+      return this.context[key] = value;
+    });
+  }
 
   ngOnInit() {
     this.viewContainerRef

@@ -5,48 +5,28 @@ import {filter, map, share} from 'rxjs/operators';
 @Component({
   selector: 'app-let-directive-handling-conditions',
   template: `
-    <h1>*ngReLet Container</h1>
+    <h1>*ngReLet Handle Conditions</h1>
 
-    <div *ngIf="val1$ | async as o">
-      <p><b>*ngIf="test$ | async as o":</b></p>
-      <pre>{{o | json}}</pre>
-    </div>
-
-    <ng-container
-      *ngReLet="val1$ as o">
-      <p><b>*reLet="test$ as o":</b></p>
-      <pre>{{o | json}}</pre>
-    </ng-container>
+    <app-let-directive-value *ngIf="val1$ | async as val1; else placeholder" [value]="val1">
+    </app-let-directive-value>
+    <ng-template #placeholder>
+      <div class="spin" style="width: 100px">Placeholder Content Here</div>
+    </ng-template>
 
     <ng-container
-      *ngReLet="val1$; let o">
-      <p><b>*ngReLet="test$; let o":</b></p>
-      <pre>{{o | json}}</pre>
-    </ng-container>
-
-    <ng-container *ngReLet="{test:val1$, test2:val2$} as o">
-      <p><b>*ngReLet="observables as o":</b></p>
-      <pre>{{o | json}}</pre>
-      <div *ngIf="o?.test">
-        <p><b>*ngIf="o.test":</b></p>
-        <pre>{{o?.test | json}}</pre>
-      </div>
-      <div *ngIf="o?.test2">
-        <p><b> *ngIf="o.test2$":</b></p>
-        <pre>{{o?.test2 | json}}</pre>
-      </div>
-    </ng-container>
-    <ng-container *ngReLet="{test:val1$, test2:val2$}; test as t; test2 as t2">
-      <p><b> *ngReLet="test:test$, test2:test2$; test as t; test2 as t2":</b></p>
-      <pre>{{t | json}} : {{t2 | json}}</pre>
+      *ngReLet="val1$ as val1">
+      <pre>{{val1 | json}}</pre>
+      <app-let-directive-value *ngIf="val1; else placeholder" [value]="val1">
+      </app-let-directive-value>
+      <ng-template #placeholder>
+        <div class="spin" style="width: 100px">Placeholder Content Here</div>
+      </ng-template>
     </ng-container>
   `
 })
 export class LetDirectiveHandlingConditionsComponent {
 
-  test$ = this.getHotRandomInterval('test$', 1000);
-  test2$ = this.getHotRandomInterval('test2$', 1000);
-  observables$ = {test: this.test$, test2: this.test2$};
+  val1$ = this.getHotRandomInterval('test$', 3000);
 
   constructor() {
   }

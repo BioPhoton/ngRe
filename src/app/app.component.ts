@@ -29,7 +29,7 @@ import {Router} from '@angular/router';
             <a routerLink="from-view-event">FromViewEvent$(eventName)</a>
           </li>
           <li>
-            <a routerLink="let-directive">[*reLet]="observables | push$ as o"</a>
+            <a routerLink="let-directive">[*reLet]="observable$ as o"</a>
           </li>
           <li>
             <a routerLink="local-state">LocalState</a>
