@@ -6,41 +6,15 @@ import {filter, map, share} from 'rxjs/operators';
   selector: 'app-let-directive-container',
   template: `
     <h1>*ngReLet Container</h1>
-
-    <div *ngIf="test$ | async as o">
-      <p><b>*ngIf="test$ | async as o":</b></p>
-      <pre>{{o | json}}</pre>
-    </div>
-
-    <ng-container
-      *ngReLet="test$ as o">
-      <p><b>*reLet="test$ as o":</b></p>
-      <pre>{{o | json}}</pre>
-    </ng-container>
-
-    <ng-container
-      *ngReLet="test$; let o">
-      <p><b>*ngReLet="test$; let o":</b></p>
-      <pre>{{o | json}}</pre>
-    </ng-container>
-
-    <ng-container *ngReLet="{test:test$, test2:test2$} as o">
-      <p><b>*ngReLet="observables as o":</b></p>
-      <pre>{{o | json}}</pre>
-      <div *ngIf="o?.test">
-        <p><b>*ngIf="o.test":</b></p>
-        <pre>{{o?.test | json}}</pre>
-      </div>
-      <div *ngIf="o?.test2">
-        <p><b> *ngIf="o.test2$":</b></p>
-        <pre>{{o?.test2 | json}}</pre>
-      </div>
-    </ng-container>
-    <ng-container *ngReLet="{test:test$, test2:test2$}; test as t; test2 as t2">
-      <p><b> *ngReLet="test:test$, test2:test2$; test as t; test2 as t2":</b></p>
-      <pre>{{t | json}} : {{t2 | json}}</pre>
-    </ng-container>
-  `
+    <ul>
+      <li>
+        <a routerLink="./full-example">Full Example</a>
+      </li>
+      <li>
+        <a routerLink="./handling-conditions">Handling Conditions</a>
+      </li>
+    </ul>
+    <router-outlet></router-outlet>`
 })
 export class LetDirectiveContainerComponent {
 

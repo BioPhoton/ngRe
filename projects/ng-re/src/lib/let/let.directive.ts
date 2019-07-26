@@ -1,7 +1,11 @@
 import {ChangeDetectorRef, Directive, Input, OnInit, TemplateRef, ViewContainerRef} from '@angular/core';
-import {isObservable, Observable} from 'rxjs';
+import {invalidInputValueError} from 'ng-re/lib/core/invalid_pipe_argument_error';
+import {animationFrameScheduler, combineLatest, iif, isObservable, Observable, of, ReplaySubject} from 'rxjs';
+import {observeOn, switchMap, tap, withLatestFrom} from 'rxjs/operators';
 import {LocalStateService} from '../local-state/local-state';
 import {selectSlice} from '../local-state/operators/selectSlice';
+
+const selector = 'ngReLet';
 
 export class LetContext {
   constructor(
@@ -14,19 +18,25 @@ export class LetContext {
 }
 
 @Directive({
-  selector: '[ngReLet]',
+  selector: '[' + selector + ']',
   providers: [LocalStateService]
 })
 export class LetDirective implements OnInit {
   private context = new LetContext({});
+  private af$ = new ReplaySubject(1);
 
   @Input()
   set ngReLet(o: { [key: string]: Observable<any> } | Observable<any>) {
     if (isObservable(o)) {
-      this.lS.connectSlices({ngReLet: o});
+      this.lS.connectSlices({[selector]: o});
     } else {
-      this.lS.connectSlices(o as { [key: string]: Observable<any> });
+      throw invalidInputValueError(LetDirective, selector);
     }
+  }
+
+  @Input()
+  set afOn(o: boolean) {
+    this.af$.next(o);
   }
 
   constructor(
@@ -38,12 +48,18 @@ export class LetDirective implements OnInit {
     this.context.$implicit = {};
     this.context.ngReLet = {};
 
-    this.lS.state$
+    combineLatest(
+      this.lS.state$.pipe(selectSlice((s) => s[selector])),
+      this.af$)
       .pipe(
-        selectSlice(s => s.ngReLet)
+        // apply scheduling
+        switchMap(([state, af]) => {
+          return of(state)
+            .pipe(observeOn(af ? animationFrameScheduler : null));
+        }),
+        // running zone-less
+        tap(_ => this.cd.detectChanges())
       )
-      .subscribe(this.updateContext);
-    this.lS.state$
       .subscribe(this.updateContext);
   }
 
@@ -52,9 +68,9 @@ export class LetDirective implements OnInit {
     this.context.$implicit = v;
     // to enable `as` syntax we have to assign the directives selector
     this.context.ngReLet = v;
+    // @TODO Too much and remove?
     // tslint:disable-next-line
     v && Object.entries(v).map(([key, value]) => this.context[key] = value);
-    this.cd.detectChanges();
   }
 
   ngOnInit() {
