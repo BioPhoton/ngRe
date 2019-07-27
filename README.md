@@ -475,12 +475,13 @@ As we know exactly when changes happen we can trigger change detection manually.
 > **Implement strick and consistent handling of undefined for pipes**   
 > A pipe similar to `async` that should act as follows:
 > - when initially passed `undefined` the pipe should **forward `undefined`** as value as on value ever was emitted
-> - when initially passed `null` the pipe should **forward `undefined`** as value as on value ever was emitted
+> - when initially passed `null` the pipe should **forward `null`** as value as on value ever was emitted
 > - when initially passed `of(undefined)` the pipe should **forward `undefined`** as value as `undefined` was emitted
-> - when initially passed `of(null)` the pipe should **forward `undefined`** as value as `null` was emitted
+> - when initially passed `of(null)` the pipe should **forward `null`** as value as `null` was emitted
 > - when initially passed `EMPTY` the pipe should **forward `undefined`** as value as on value ever was emitted
 > - when initially passed `NEVER` the pipe should **forward `undefined`** as value as on value ever was emitted
-> - when reassigned a new `Observable` the pipe should **forward `undefined`** as value as on value was emitted from the new `Observable`
+> - when reassigned a new `Observable` the pipe should **forward `undefined`** as value as on value was emitted from the new
+> - when completed the pipe should **forward the last value** as value until reassigned another observable
 
 ##### Nested Template Scopes   
 One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some annoying situation where we have to nest multiple divs to have a context per bound variable.
@@ -566,8 +567,8 @@ export class AppComponent  {
   selector: 'my-app',
   template: `
   <ng-container *ngIf="observables$ | async as c">
-    <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
-    </app-color>
+    <app-list [color]="c.color">
+    </app-list>
     <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
     </app-color>
   </ng-container>
@@ -590,7 +591,6 @@ export class AppComponent  {
 }
 ```
 
-
 **Providing Placeholder Content over the `; else #Temlate` syntax**
 TBD
 
@@ -599,7 +599,8 @@ TBD
 TBD
 
 **Needs:**   
-Bringing it together into one object helps a lot. The syntax could be more convenient. Furthermore, we could implement some default behavior for falsy values.
+A disadvantage here is the availability of the context. It should be always present and not displaying/hiding something.
+
 
 > **Implement more convenient binding syntax**   
 > To improve usability we should fulfill the following:
@@ -611,6 +612,12 @@ Bringing it together into one object helps a lot. The syntax could be more conve
 > - implement the option to put additional logic for complete and error of an observable
 > - consider scheduling over `AnimationFrameScheduler` the output is always for the view
 > - handling changes could be done programmatically. Good for running zone-less
+
+
+Already existing similar packages:    
+- https://www.npmjs.com/package/rx-context
+- https://netbasal.com/diy-subscription-handling-directive-in-angular-c8f6e762697f
+- https://github.com/ngrx-utils/ngrx-utils#nglet-directive
 
 ---   
 
