@@ -5,6 +5,13 @@
   animation-duration: 5000ms;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
+  width: 10px;
+  text-align: center;
+  font-size: 20px;
+  line-height: 20px;
+  &::after{
+    content: '↻';
+  }
 }
 
 @keyframes spin {

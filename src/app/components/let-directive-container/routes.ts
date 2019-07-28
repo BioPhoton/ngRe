@@ -1,6 +1,7 @@
 import {LetDirectiveFullExampleComponent} from './full-example.component';
 import {LetDirectiveHandlingConditionsComponent} from './handling-conditions.component';
 import {LetDirectiveContainerComponent} from './let-directive-container.component';
+import {LetDirectiveObservableChannelsComponent} from './observable-channels.component';
 
 export const LET_ROUTES = [
   {
@@ -14,6 +15,10 @@ export const LET_ROUTES = [
       {
         path: 'handling-conditions',
         component: LetDirectiveHandlingConditionsComponent
+      },
+      {
+        path: 'observable-channels',
+        component: LetDirectiveObservableChannelsComponent
       }
     ]
   }

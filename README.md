@@ -46,14 +46,19 @@ In a second step We will show best usage and common proplems in a fully reactive
   * [Local State](#local-state)
     + [Encapsulation and Instantiation](#encapsulation-and-instantiation)
     + [Managing the State Structure](#managing-the-state-structure)
-    + [Late Subecriber](#late-subecriber)
+    + [Late Subscriber](#late-subscriber)
+    + [Sharing References over Observables](#sharing-references-over-observables)
     + [Early Producer](#early-producer)
     + [Subscription handling](#subscription-handling)
 - [Sections Important For Running Zone Less](#sections-important-for-running-zone-less)
-- [Needs Overview](#needs-overview)
+- [General Overview of Explored Problems](#general-overview-of-explored-problems)
+  * [General Timing Issues](#general-timing-issues)
+    + [The Late Subscriber Problem](#the-late-subscriber-problem)
+    + [The Early Producer Problem](#the-early-producer-problem)
+  * [Sharing references](#sharing-references)
+  * [Convenient Way To Wire Things Together](#convenient-way-to-wire-things-together)
   * [Automate Boilerplate](#automate-boilerplate)
   * [Intuitive Way To Handle Timing Issues](#intuitive-way-to-handle-timing-issues)
-  * [Convenient Way To Wire Things Together](#convenient-way-to-wire-things-together)
 - [Suggested Extensions](#suggested-extensions)
   * [Push Pipe](#push-pipe)
   * [Let Structural Directive](#let-structural-directive)
@@ -63,7 +68,8 @@ In a second step We will show best usage and common proplems in a fully reactive
   * [Observable Output Bindings](#observable-output-bindings)
   * [Local State Management](#local-state-management)
     + [selectSlices RxJS Operator](#selectslices-rxjs-operator)
-    + [Connection to global state management](#connection-to-global-state-management)
+- [Integrating third part](#integrating-third-part)
+  * [Probles of integration](#probles-of-integration)
 
 <!-- tocstop -->
 
@@ -472,7 +478,7 @@ As we know exactly when changes happen we can trigger change detection manually.
 > **Performance optimisations**
 > - consider scheduling over `AnimationFrameScheduler` the output is always for the view
 
-> **Implement strick and consistent handling of undefined for pipes**   
+> **Implement strict and consistent handling of undefined for pipes**   
 > A pipe similar to `async` that should act as follows:
 > - when initially passed `undefined` the pipe should **forward `undefined`** as value as on value ever was emitted
 > - when initially passed `null` the pipe should **forward `null`** as value as on value ever was emitted
@@ -482,6 +488,10 @@ As we know exactly when changes happen we can trigger change detection manually.
 > - when initially passed `NEVER` the pipe should **forward `undefined`** as value as on value ever was emitted
 > - when reassigned a new `Observable` the pipe should **forward `undefined`** as value as on value was emitted from the new
 > - when completed the pipe should **forward the last value** as value until reassigned another observable
+> - when sending a value the pipe should **forward the value** without changing it
+
+Already existing similar packages:    
+- https://github.com/ngrx-utils/ngrx-utils#push-pipe
 
 ##### Nested Template Scopes   
 One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some annoying situation where we have to nest multiple divs to have a context per bound variable.
@@ -550,8 +560,8 @@ Another solution could be to compose an object in the view.
     } as c">
     <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
     </app-color>  
-    <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
-    </app-color>
+    <app-other-thing [color]="c.color" [shape]="c.shape" [name]="c.name">
+    </app-other-thing>
   </ng-container>
   `})
 export class AppComponent  {
@@ -591,12 +601,27 @@ export class AppComponent  {
 }
 ```
 
-**Providing Placeholder Content over the `; else #Temlate` syntax**
-TBD
+**Providing Conditional Content over the `; else #Temlate` Syntax**
 
-
-**Providing Placeholder Content over `ng-content` wrapper**
-TBD
+```html
+@Component({
+  selector: 'my-app',
+  template: `
+    <div *ngIf="boolean1$ | async as val1; else placeholder">
+      <p *ngIf="val1 === true">TRUE VALUE</p>
+      <p *ngIf="val1 === false">FALSE VALUE</p>
+    </div>
+    <ng-template #placeholder>
+      <div class="spin" style="width: 100px">
+        ↻
+      </div>
+    </ng-template>
+  `})
+export class AppComponent  {
+  boolean$ = interval(5000)
+    .pipe(map(_ => Math.randow() < 0.5));
+}
+```
 
 **Needs:**   
 A disadvantage here is the availability of the context. It should be always present and not displaying/hiding something.
@@ -605,19 +630,23 @@ A disadvantage here is the availability of the context. It should be always pres
 > **Implement more convenient binding syntax**   
 > To improve usability we should fulfill the following:
 > - the context should be always present. `*ngIf="{}"` would do that already
-> - controlled change detection to run zone-less
 > - avoid multiple usages of the `async pipe
 > - better control over the context. Maybe we could get rid of the `as` as variable??
 > - implement an internal layer to handle null vs undefined etc
 > - implement the option to put additional logic for complete and error of an observable
+
+> **More performant performant/instant solution**
 > - consider scheduling over `AnimationFrameScheduler` the output is always for the view
 > - handling changes could be done programmatically. Good for running zone-less
-
+ 
+> **Implement strict and consistent handling of nuul/undefined for the bound value**    
+> Please visit the section [Input Binding](Input-Binding) for a full list of requirements
 
 Already existing similar packages:    
 - https://www.npmjs.com/package/rx-context
 - https://netbasal.com/diy-subscription-handling-directive-in-angular-c8f6e762697f
 - https://github.com/ngrx-utils/ngrx-utils#nglet-directive
+- https://www.npmjs.com/package/@se-ng/let
 
 ---   
 
@@ -1111,52 +1140,53 @@ As we see the provided example is not working. The reason for this is we subscri
 One time tin the template to render the form, the second time in the construtor to forward form value changes to the `EventEmitter`.
 Due to the fact that the `formGroup$` observbale is cold (every subscriber revieves a unique producer) we instanciate the `FormGroup` once per subscription.
  
-**Multicaste the referene**
-```typescriptimport {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+**Multicast the reference problem**
+
+```typescript
 @Component({
   selector: 'app-sharing-a-reference',
   template: `
     <h2>Sharing a reference</h2>
-    <p><b>default$:</b></p>
-    <form *ngIf="(formGroup$ | async$) as formGroup" [formGroup]="formGroup">
-      <div *ngFor="let c of formGroup.controls | keyvalue">
-        <label>{{c.key}}</label>
-        <input [formControlName]="c.key"/>
-      </div>
-    </form>
+    <p><b>newObject$:</b></p>
+    <div>
+      {{newObject$ | async | json}}
+    </div>
   `
 })
 export class SharingAReferenceComponent {
-  state$ = new ReplaySubject(1);
-  @Input()
-  set formGroupModel(value) {
-    this.state$.next(value);
-  }
-
-  @Output() formValueChange = new EventEmitter();
-
-  formGroup$: Observable<FormGroup> = combineLatest(this.state$, this.router.params)
-    .pipe(
-      map(this.preparingFormGroupConfig),
-      map(config => this.fb.group(config)),
-      shareReplay(1)
-    );
+  newObject$ = of(Math.random());
     
-  constructor(
-    private fb: FormBuilder,
-    private router: ActivatedRoute
-  ) {
-    this.formGroup$
-      .pipe(
-        switchMap((fg: FormGroup) => fg.valueChanges)
-      )
-      .subscribe(v => this.formValueChange.emit(v));
+  constructor() {
+    this.newObject$
+      .subscribe(console.log);
   }
 
-  preparingFormGroupConfig([modelFromInput, modelFromRouterParams]) {
-    // override defaults with router params if exist
-    return Object.entries({...modelFromInput, ...modelFromRouterParams})
-      .reduce((c, [name, initialValue]) => ({...c, [name]: [initialValue]}), {});
+}
+```
+
+As we see we end up with 2 different numbers. 
+
+
+**Multicast the reference solution**
+
+```typescript
+@Component({
+  selector: 'app-sharing-a-reference',
+  template: `
+    <h2>Sharing a reference</h2>
+    <p><b>newObject$:</b></p>
+    <div>
+      {{newObject$ | async | json}}
+    </div>
+  `
+})
+export class SharingAReferenceComponent {
+  newObject$ = of(Math.random())
+    .pipe(share());
+    
+  constructor() {
+    this.newObject$
+      .subscribe(console.log);
   }
 
 }
@@ -1496,8 +1526,6 @@ The current way of handling subscriptions in the view looks like that:
             } as c">
   <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
   </app-color>  
-  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
-  </app-color>  
 </ng-container>
 ```
 
@@ -1510,20 +1538,14 @@ The `*let` directive take over several things and makes it more convenient and s
 <ng-container *let="observables as c">
   <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
   </app-color>
-  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
-  </app-color>
 </ng-container>
 
 <ng-container *let="observables; let c">
   <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
   </app-color>
-  <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
-  </app-color>
 </ng-container>
 
 <ng-container *let="observables; color as c; shape as s; name as n">
-  <app-color [color]="c" [shape]="s" [name]="n">
-  </app-color>
   <app-color [color]="c" [shape]="s" [name]="n">
   </app-color>
 </ng-container>
@@ -1677,6 +1699,9 @@ Following things are done under the hood:
 - it handles late subscribers with `shareReplay(1)` 
 - it forwards only distinct values
 
-### Connection to global state management
+
+# Integrating third part
+
+## Probles of integration
 
 TBD

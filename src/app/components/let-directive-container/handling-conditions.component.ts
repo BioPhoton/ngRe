@@ -5,38 +5,45 @@ import {filter, map, share} from 'rxjs/operators';
 @Component({
   selector: 'app-let-directive-handling-conditions',
   template: `
-    <h1>*ngReLet Handle Conditions</h1>
+    <h2>*ngReLet Handle Conditions</h2>
 
-    <app-let-directive-value *ngIf="val1$ | async as val1; else placeholder" [value]="val1">
+    <app-let-directive-value *ngIf="boolean1$ | async as val1; else placeholder" [value]="val1">
     </app-let-directive-value>
     <ng-template #placeholder>
-      <div class="spin" style="width: 100px">Placeholder Content Here</div>
+      <div class="spin"></div>
     </ng-template>
 
     <ng-container
-      *ngReLet="val1$ as val1">
+      *ngReLet="boolean1$ as val1">
       <pre>{{val1 | json}}</pre>
-      <app-let-directive-value *ngIf="val1; else placeholder" [value]="val1">
-      </app-let-directive-value>
+      <div *ngIf="val1 === undefined; else placeholder"
+        class="spin">
+        
+      </div>
       <ng-template #placeholder>
-        <div class="spin" style="width: 100px">Placeholder Content Here</div>
+
+        <app-let-directive-value *ngIf="val1 === true" [value]="val1">
+        </app-let-directive-value>
+
+        <app-let-directive-value *ngIf="val1 === false" [value]="val1">
+        </app-let-directive-value>
+
       </ng-template>
     </ng-container>
   `
 })
 export class LetDirectiveHandlingConditionsComponent {
 
-  val1$ = this.getHotRandomInterval('test$', 3000);
+  boolean1$: Observable<boolean> = this.getHotRandomBoolena(2000);
 
   constructor() {
   }
 
-  getHotRandomInterval(name: string, intVal: number = 1000): Observable<{ [key: string]: number }> {
+  getHotRandomBoolena(intVal: number = 1000): Observable<boolean> {
     return interval(intVal)
       .pipe(
-        map(_ => ({[name]: Math.random()})),
-        share(),
-        filter((v, i) => i < 1)
+        map(_ => Math.random() < 0.5),
+        share()
       );
   }
 }
