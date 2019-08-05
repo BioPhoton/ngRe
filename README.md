@@ -486,15 +486,108 @@ As we know exactly when changes happen we can trigger change detection manually.
 > - when initially passed `of(null)` the pipe should **forward `null`** as value as `null` was emitted
 > - when initially passed `EMPTY` the pipe should **forward `undefined`** as value as on value ever was emitted
 > - when initially passed `NEVER` the pipe should **forward `undefined`** as value as on value ever was emitted
-> - when reassigned a new `Observable` the pipe should **forward `undefined`** as value as on value was emitted from the new
-> - when completed the pipe should **forward the last value** as value until reassigned another observable
+> - when reassigned a new `Observable` the pipe should **forward `undefined`** as value as no value was emitted from the new
+> - when completed the pipe should **keep the last value** in the view until reassigned another observable
 > - when sending a value the pipe should **forward the value** without changing it
 
 Already existing similar packages:    
 - https://github.com/ngrx-utils/ngrx-utils#push-pipe
 
-##### Nested Template Scopes   
-One more downside here. If we use the `as` template syntax and have multiple observable presents in the same div we run into some annoying situation where we have to nest multiple divs to have a context per bound variable.
+##### Template Context variables   
+In the following we try to explore the different needs when working with observables in the view.  
+
+Lets first the template syntax that Angular already provides and start with a simple problem. 
+
+**Multiple usages of `async` pipe**
+Here we have to use the `async` twice. This leads to polluted template and introduces another problem.
+As Subscriptions to Observables are mostly unicasted we would receive 2 different values.
+This pushes more complexity into the component code, because we have to make sure the observable is multicasted. 
+
+```html
+@Component({
+  selector: 'my-app',
+  template: `
+    <comp-a [value]="random$ | async">
+    </comp-a>
+    <comp-b [value]="random$ | async">
+    </comp-b>
+  `})
+export class AppComponent  {
+  random$ = interval(1000)
+    .pipe(
+      map(_ => Math.random()),
+      share()
+    );
+}
+```
+
+**Binding over the `as` syntax**
+To avoid such scenarios we could use the `as` syntax to bind the observable
+to a variable and use this variable multiple times instead of using the `async` pipe multiple times.
+
+```html
+@Component({
+  selector: 'my-app',
+  template: `
+    <ng-container *ngIf="random$ | async as random">
+        <comp-a [value]="random">
+        </comp-a>
+        <comp-b [value]="random">
+        </comp-b>
+    </ng-container>
+  `})
+export class AppComponent  {
+  random$ = interval(1000)
+    .pipe(
+      map(_ => Math.random())
+    );
+}
+```
+
+**Binding over the `let` syntax**
+Another way to avoid multiple usage of the `async` pipe is the `let` syntax to bind the observable to a variable.
+
+```html
+@Component({
+  selector: 'my-app',
+  template: `
+    <ng-container *ngIf="random$ | async; let random = ngIf">
+        <comp-a [value]="random">
+        </comp-a>
+        <comp-b [value]="random">
+        </comp-b>
+    </ng-container>
+  `})
+export class AppComponent  {
+  random$ = interval(1000)
+    .pipe(
+      map(_ => Math.random())
+    );
+}
+```
+
+**Handling conditions**
+There are several situations where we need to display content based on a condition.
+
+```html
+@Component({
+  selector: 'my-app',
+  template: `
+    <ng-container *ngIf="asyncCondition$ | async as asyncCondition; else zero">
+        {{asyncCondition}}
+    </ng-container>
+    <ng-template #zero>
+        zero
+    </ng-template>
+  `})
+export class AppComponent  {
+  random$ = interval(1000)
+    .pipe(
+      map(_ => Math.random() ? 0 : 1)
+    );
+}
+```
+
 
 **Nested Template Scope Problem**
 ```html
