@@ -493,22 +493,23 @@ As we know exactly when changes happen we can trigger change detection manually.
 Already existing similar packages:    
 - https://github.com/ngrx-utils/ngrx-utils#push-pipe
 
-##### Template Context variables   
+--- 
+
+#### Template Bindings   
 In the following we try to explore the different needs when working with observables in the view.  
 
-Lets first the template syntax that Angular already provides and start with a simple problem. 
+Lets examen different situations when binding observables to the view and see how the template syntax that Angular already providessolves this. Lets start with a simple exaple.
 
 **Multiple usages of `async` pipe**
-Here we have to use the `async` twice. This leads to polluted template and introduces another problem.
-As Subscriptions to Observables are mostly unicasted we would receive 2 different values.
+Here we have to use the `async` pipe twice. This leads to polluted template and introduces another problem with subscriptions.
+As observables are mostly unicasted we would receive 2 different values, one for each subscription.
 This pushes more complexity into the component code, because we have to make sure the observable is multicasted. 
 
 ```html
 @Component({
   selector: 'my-app',
   template: `
-    <comp-a [value]="random$ | async">
-    </comp-a>
+    {{random$ | async}}
     <comp-b [value]="random$ | async">
     </comp-b>
   `})
@@ -516,6 +517,7 @@ export class AppComponent  {
   random$ = interval(1000)
     .pipe(
       map(_ => Math.random()),
+      // needed to be multicasted
       share()
     );
 }
@@ -530,8 +532,7 @@ to a variable and use this variable multiple times instead of using the `async` 
   selector: 'my-app',
   template: `
     <ng-container *ngIf="random$ | async as random">
-        <comp-a [value]="random">
-        </comp-a>
+        {{random}}
         <comp-b [value]="random">
         </comp-b>
     </ng-container>
@@ -552,8 +553,7 @@ Another way to avoid multiple usage of the `async` pipe is the `let` syntax to b
   selector: 'my-app',
   template: `
     <ng-container *ngIf="random$ | async; let random = ngIf">
-        <comp-a [value]="random">
-        </comp-a>
+        {{random}}
         <comp-b [value]="random">
         </comp-b>
     </ng-container>
@@ -566,53 +566,61 @@ export class AppComponent  {
 }
 ```
 
-**Handling conditions**
-There are several situations where we need to display content based on a condition.
+Both ways missuse the `*ngIf` directive to introduce a context variable and not to display or hide a part of the template.
+This comes with several downsides:
+- **we loos the meaning** of the `*ngIf` directive 
+- the functionallity of hiding displaying it self.
+  **The `*ngIf` directive is triggered be falsy values**, but we dont want to conditionally show or hiding content, 
+  but just introduce  a context variable. This could lead to problems in several situations. 
+- The functionality of **subscribing has to be doe separately over the `async` pipe**  
 
+**`*ngIf` directive triggered by falsy values**
 ```html
 @Component({
   selector: 'my-app',
   template: `
-    <ng-container *ngIf="asyncCondition$ | async as asyncCondition; else zero">
-        {{asyncCondition}}
+    <ng-container *ngIf="random$ | async as random">
+        {{random}}
+        <comp-b [value]="random">
+        </comp-b>
     </ng-container>
-    <ng-template #zero>
-        zero
-    </ng-template>
   `})
 export class AppComponent  {
   random$ = interval(1000)
     .pipe(
-      map(_ => Math.random() ? 0 : 1)
+      map(_ => Math.random() > 0.5 ? 1 : 0)
     );
 }
 ```
 
+As we can see, in this example the `ng-container` would only be visible if hte value is `1` and there fore `truthy`. 
+All `falsy` values like `0` would be hidden. This is definitely a problem in some situations. 
 
-**Nested Template Scope Problem**
+We could try to use `*ngFor` to avoid this.
+
+**Context variable over the `*ngFor` directive**
 ```html
 @Component({
   selector: 'my-app',
   template: `
-  <div *ngIf="(observable1$ | async) as color">
-    <div *ngIf="(observable2$ | async) as shape">
-      <div *ngIf="(observable3$ | async) as name">
-        <app-color [color]="color" [shape]="shape" [name]="name">
-        </app-color>
-        <app-color [color]="color" [shape]="shape" [name]="name">
-        </app-color>
-       </div>
-     <div>
-  </div>
+    <ng-container *ngFor="let random of [random$ | async]">
+        {{random}}
+        <comp-b [value]="random">
+        </comp-b>
+    </ng-container>
   `})
 export class AppComponent  {
-  observable1$ = interval(1000);
-  observable2$ = interval(1500);
-  observable3$ = interval(2000);
+  random$ = interval(1000)
+    .pipe(
+      map(_ => Math.random() > 0.5 ? 1 : 0)
+    );
 }
 ```
 
-**Getting rid of Nested Div Problem**
+By usin `*ngFor` to creae a context variable we avoid the problem with `*ngIf` and `falsy` values.
+But we still **missuse a directive**. Aditionally `*ngFor` is less performant than `*ngIf`.   
+
+**Nested `ng-container` problem**
 
 ```html
 @Component({
@@ -621,8 +629,7 @@ export class AppComponent  {
   <ng-container *ngIf="observable1$ | async as color">
     <ng-container *ngIf="observable2$ | async as shape">
       <ng-container *ngIf="observable3$ | async as name">
-        <app-color [color]="color" [shape]="shape" [name]="name">
-        </app-color>
+        {{color}}-{{shape}}-{{name}}
         <app-color [color]="color" [shape]="shape" [name]="name">
         </app-color>
        </ng-container>
@@ -636,11 +643,12 @@ export class AppComponent  {
 }
 ```
 
-Here we still nest `ng-container` which feels bloatet for this need.
-Another solution could be to compose an object in the view.
-
+Here we nest `ng-container` which is unsessacary template code.
+A solution could be to compose an object out of the individual observables.
+This can be done in the view or in the component.
 
 **Composing Object in the View**
+
 ```html
 @Component({
   selector: 'my-app',
@@ -651,8 +659,7 @@ Another solution could be to compose an object in the view.
       shape: observable2$ | async,
       name:  observable3$ | async
     } as c">
-    <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
-    </app-color>  
+    {{color}}-{{shape}}-{{name}}
     <app-other-thing [color]="c.color" [shape]="c.shape" [name]="c.name">
     </app-other-thing>
   </ng-container>
@@ -664,14 +671,17 @@ export class AppComponent  {
 }
 ```
 
+Here we can use `*ngIf` again because and object is always `truthy`. However, the downside here is
+we have to use the ascny pipe for each observable. Furthermore we have less control over the songle observables. 
+A better way would be to **move the composition into the template** and only expost final compositions to the template.
+
 **Composition in the Component**
 ```html
 @Component({
   selector: 'my-app',
   template: `
-  <ng-container *ngIf="observables$ | async as c">
-    <app-list [color]="c.color">
-    </app-list>
+  <ng-container *ngIf="composition$ | async as c">
+    {{color}}-{{shape}}-{{name}}
     <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
     </app-color>
   </ng-container>
@@ -681,59 +691,42 @@ export class AppComponent  {
   observable2$ = interval(1500);
   observable3$ = interval(2000);
 
-  observables$ = combineLatest(
+  composition$ = combineLatest(
     this.observable1$.pipe(startWith(null), distinctUntilChanged()),
     this.observable2$.pipe(startWith(null), distinctUntilChanged()),
     this.observable3$.pipe(startWith(null), distinctUntilChanged()),
     (color, shape, name) => ({color, shape, name})
   )
   .pipe(
-    observeOn(AnimationFrameScheduler)
+    share()
   );
 
 }
 ```
+As we see in this example in the component we have full control over the composition. 
 
-**Providing Conditional Content over the `; else #Temlate` Syntax**
-
-```html
-@Component({
-  selector: 'my-app',
-  template: `
-    <div *ngIf="boolean1$ | async as val1; else placeholder">
-      <p *ngIf="val1 === true">TRUE VALUE</p>
-      <p *ngIf="val1 === false">FALSE VALUE</p>
-    </div>
-    <ng-template #placeholder>
-      <div class="spin" style="width: 100px">
-        ↻
-      </div>
-    </ng-template>
-  `})
-export class AppComponent  {
-  boolean$ = interval(5000)
-    .pipe(map(_ => Math.randow() < 0.5));
-}
-```
 
 **Needs:**   
-A disadvantage here is the availability of the context. It should be always present and not displaying/hiding something.
-
+We need **a directive** that just **defines a context variable** without any interaction of the actual dom structure.
+The **syntax should be simple and short** like the `as` syntax. It should take over basic performance optimisations.
+Also the **consistent handling of null and undefined** should be handled.
 
 > **Implement more convenient binding syntax**   
 > To improve usability we should fulfill the following:
 > - the context should be always present. `*ngIf="{}"` would do that already
 > - avoid multiple usages of the `async pipe
+> - move subscription handling in the directive
 > - better control over the context. Maybe we could get rid of the `as` as variable??
 > - implement an internal layer to handle null vs undefined etc
 > - implement the option to put additional logic for complete and error of an observable
 
-> **More performant performant/instant solution**
+> **Basic performance optimisations**
 > - consider scheduling over `AnimationFrameScheduler` the output is always for the view
 > - handling changes could be done programmatically. Good for running zone-less
  
 > **Implement strict and consistent handling of nuul/undefined for the bound value**    
 > Please visit the section [Input Binding](Input-Binding) for a full list of requirements
+
 
 Already existing similar packages:    
 - https://www.npmjs.com/package/rx-context
@@ -811,7 +804,7 @@ Angulars life cycle hooks are listed ere in order:
 
 The goal here is to find a unified way to have single shot, as well as ongoing life cycle hooks, and observable.
 
-### Component And Directive Life Cycle Hooks
+### Component and Directive Life Cycle Hooks
 
 **Imperative approach:**   
 
@@ -1795,6 +1788,6 @@ Following things are done under the hood:
 
 # Integrating third part
 
-## Probles of integration
-
+## Probles
+### promis wrapper
 TBD
