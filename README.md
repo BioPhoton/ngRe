@@ -12,12 +12,12 @@ For those who prefer imperative code, it's little effort to restrict it to a sin
 On the other hand for those who prefer reactive code, it's not that easy. 
 A lot of conveniences is missing, and beside the `async` pipe there is pretty much nothing there to take away the manual mapping to observables.  
 Furthermore, an increasing number of packages start to be fully observable based. A very popular and widely used example is [ngRx](https://ngrx.io/). It enables us to maintain global push-based state management based on observables. 
-Also other well known librariey, [angular material](https://material.angular.io/) provide a reactive way of usage.
+Also, other well-known libraries, [angular material](https://material.angular.io/) provide a reactive way of usage.
 
-This creates even more interest and for so called `reactive primitives` for the Angular framework, like the `async` and other template syntax, decorators and services.
+This creates even more interest and for so-called `reactive primitives` for the Angular framework, like the `async` and other template syntax, decorators and services.
  
-The the first setp would be to **give an overview** of the needs and a **suggested a set of extensions** to make it more convenient to **work in a reactive architecture**.
-In a second step We will show best usage and common proplems in a fully reactive architecture.
+The first step would be to **give an overview** of the needs and a **suggested a set of extensions** to make it more convenient to **work in a reactive architecture**.
+In the second step, We will show the best usage and common problems in a fully reactive architecture.
 
 ---
 ## Table of content
@@ -38,10 +38,10 @@ In a second step We will show best usage and common proplems in a fully reactive
       - [HostListener Decorator](#hostlistener-decorator)
       - [HostBinding Decorator](#hostbinding-decorator)
       - [Input Binding](#input-binding)
-        * [Nested Template Scopes](#nested-template-scopes)
+      - [Template Bindings](#template-bindings)
       - [Output Binding](#output-binding)
   * [Life Cycle Hooks](#life-cycle-hooks)
-    + [Component And Directive Life Cycle Hooks](#component-and-directive-life-cycle-hooks)
+    + [Component and Directive Life Cycle Hooks](#component-and-directive-life-cycle-hooks)
     + [Service Life Cycle Hooks](#service-life-cycle-hooks)
   * [Local State](#local-state)
     + [Encapsulation and Instantiation](#encapsulation-and-instantiation)
@@ -69,7 +69,8 @@ In a second step We will show best usage and common proplems in a fully reactive
   * [Local State Management](#local-state-management)
     + [selectSlices RxJS Operator](#selectslices-rxjs-operator)
 - [Integrating third part](#integrating-third-part)
-  * [Probles of integration](#probles-of-integration)
+  * [Probles](#probles)
+    + [promis wrapper](#promis-wrapper)
 
 <!-- tocstop -->
 
@@ -496,14 +497,14 @@ Already existing similar packages:
 --- 
 
 #### Template Bindings   
-In the following we try to explore the different needs when working with observables in the view.  
+In the following, we try to explore the different needs when working with observables in the view.  
 
-Lets examen different situations when binding observables to the view and see how the template syntax that Angular already providessolves this. Lets start with a simple exaple.
+Lets examen different situations when binding observables to the view and see how the template syntax that Angular already provides solves this. Let's start with a simple example.
 
 **Multiple usages of `async` pipe**
-Here we have to use the `async` pipe twice. This leads to polluted template and introduces another problem with subscriptions.
+Here we have to use the `async` pipe twice. This leads to a polluted template and introduces another problem with subscriptions.
 As observables are mostly unicasted we would receive 2 different values, one for each subscription.
-This pushes more complexity into the component code, because we have to make sure the observable is multicasted. 
+This pushes more complexity into the component code because we have to make sure the observable is multicasted. 
 
 ```html
 @Component({
@@ -546,7 +547,7 @@ export class AppComponent  {
 ```
 
 **Binding over the `let` syntax**
-Another way to avoid multiple usage of the `async` pipe is the `let` syntax to bind the observable to a variable.
+Another way to avoid multiple usages of the `async` pipe is the `let` syntax to bind the observable to a variable.
 
 ```html
 @Component({
@@ -566,13 +567,13 @@ export class AppComponent  {
 }
 ```
 
-Both ways missuse the `*ngIf` directive to introduce a context variable and not to display or hide a part of the template.
+Both ways misuse the `*ngIf` directive to introduce a context variable and not to display or hide a part of the template.
 This comes with several downsides:
-- **we loos the meaning** of the `*ngIf` directive 
-- the functionallity of hiding displaying it self.
-  **The `*ngIf` directive is triggered be falsy values**, but we dont want to conditionally show or hiding content, 
-  but just introduce  a context variable. This could lead to problems in several situations. 
-- The functionality of **subscribing has to be doe separately over the `async` pipe**  
+- **we lose the meaning** of the `*ngIf` directive 
+- the functionality of hiding displaying itself.
+  **The `*ngIf` directive is triggered be falsy values**, but we don't want to conditionally show or hiding content, 
+  but just introduce a context variable. This could lead to problems in several situations. 
+- The functionality of **subscribing has to be done separately over the `async` pipe**  
 
 **`*ngIf` directive triggered by falsy values**
 ```html
@@ -593,8 +594,8 @@ export class AppComponent  {
 }
 ```
 
-As we can see, in this example the `ng-container` would only be visible if hte value is `1` and there fore `truthy`. 
-All `falsy` values like `0` would be hidden. This is definitely a problem in some situations. 
+As we can see, in this example the `ng-container` would only be visible if the value is `1` and therefore `truthy`. 
+All `falsy` values like `0` would be hidden. This is a problem in some situations. 
 
 We could try to use `*ngFor` to avoid this.
 
@@ -617,8 +618,8 @@ export class AppComponent  {
 }
 ```
 
-By usin `*ngFor` to creae a context variable we avoid the problem with `*ngIf` and `falsy` values.
-But we still **missuse a directive**. Aditionally `*ngFor` is less performant than `*ngIf`.   
+By using `*ngFor` to create a context variable we avoid the problem with `*ngIf` and `falsy` values.
+But we still **misuse a directive**. Additionally `*ngFor` is less performant than `*ngIf`.   
 
 **Nested `ng-container` problem**
 
@@ -643,9 +644,9 @@ export class AppComponent  {
 }
 ```
 
-Here we nest `ng-container` which is unsessacary template code.
+Here we nest `ng-container` which is a useless template code.
 A solution could be to compose an object out of the individual observables.
-This can be done in the view or in the component.
+This can be done in the view or the component.
 
 **Composing Object in the View**
 
@@ -672,8 +673,8 @@ export class AppComponent  {
 ```
 
 Here we can use `*ngIf` again because and object is always `truthy`. However, the downside here is
-we have to use the ascny pipe for each observable. Furthermore we have less control over the songle observables. 
-A better way would be to **move the composition into the template** and only expost final compositions to the template.
+we have to use the `async` pipe for each observable. `Furthermore we have less control over the single observables. 
+A better way would be to **move the composition into the template** and only export final compositions to the template.
 
 **Composition in the Component**
 ```html
@@ -708,8 +709,8 @@ As we see in this example in the component we have full control over the composi
 
 **Needs:**   
 We need **a directive** that just **defines a context variable** without any interaction of the actual dom structure.
-The **syntax should be simple and short** like the `as` syntax. It should take over basic performance optimisations.
-Also the **consistent handling of null and undefined** should be handled.
+The **syntax should be simple and short** like the `as` syntax. It should take over basic performance optimizations.
+Also, the **consistent handling of null and undefined** should be handled.
 
 > **Implement more convenient binding syntax**   
 > To improve usability we should fulfill the following:
@@ -724,7 +725,7 @@ Also the **consistent handling of null and undefined** should be handled.
 > - consider scheduling over `AnimationFrameScheduler` the output is always for the view
 > - handling changes could be done programmatically. Good for running zone-less
  
-> **Implement strict and consistent handling of nuul/undefined for the bound value**    
+> **Implement strict and consistent handling of null/undefined for the bound value**    
 > Please visit the section [Input Binding](Input-Binding) for a full list of requirements
 
 
@@ -950,7 +951,7 @@ This problem can be solved as the subject is created in with instance constructi
 ### Service Life Cycle Hooks
 
 In general, services are global or even when lazy-loaded the are not unregistered at some point in time.
-The only exception is Services in the `Components` `providers` and ´viewProviders´ section.
+The only exception is Services in the `Components` `providers` 
 Their parts of the services logic could rely on the life of the service, which is exactly the lifetime of the component. 
 
 Angular for such scenarios angular provides the `OnDestroy` life cycle hook for classes decorated with `@Injectable`.
@@ -1157,7 +1158,7 @@ export class LateSubscriberComponent {
 We need to abstract timing issues away from the consumer. In the case of late subscribers, it is easily possible with subjects like `BehaviorSubject` or `ReplaySubject` or operators like `share` or `shareReplay`.
 
 
-> **Replaiing latest Values**
+> **Replaying latest Values**
 > - use `ReplaySubject` to cache the latest (n) values. In most of the cases, this is the way to go.
 > - there are rare cases where we want to use an initial value and are not able to use `startWith`, here a `BehaviorSubject` can be used 
 > - In cases where we have no control of the source we can also use `shareReplay`
@@ -1167,9 +1168,9 @@ We need to abstract timing issues away from the consumer. In the case of late su
 
 ### Sharing References over Observables
 
-There are sitiations where we have to compose multiple streams, compute new state and create a reference to some object, i.e. a `FromGroup`. This reference is than lateron shared with multiple subscribers.
+There are situations where we have to compose multiple streams, compute new state and create a reference to some object, i.e. a `FromGroup`. This reference is then later on shared with multiple subscribers.
 
-Such situations are handled by mutation a compoennt property in imperative programming. 
+Such situations are handled by mutation a component property in imperative programming. 
 In reactive programming, we solve this multicasting.
 
 **Problem of beeing shared references**
@@ -1223,8 +1224,8 @@ export class SharingAReferenceComponent {
 ```
 
 As we see the provided example is not working. The reason for this is we subscribe multiple times to the `formGroup$`.
-One time tin the template to render the form, the second time in the construtor to forward form value changes to the `EventEmitter`.
-Due to the fact that the `formGroup$` observbale is cold (every subscriber revieves a unique producer) we instanciate the `FormGroup` once per subscription.
+One time in the template to render the form, the second time in the constructor to forward form value changes to the `EventEmitter`.
+Because the `formGroup$` observable is cold (every subscriber receives a unique producer) we instantiate the `FormGroup` once per subscription.
  
 **Multicast the reference problem**
 
@@ -1278,16 +1279,16 @@ export class SharingAReferenceComponent {
 }
 ```
 
-Here we use `shareReplay(1)` to make sure all subscriber receive the same reference.
+Here we use `shareReplay(1)` to make sure all subscriber receives the same reference.
 
 **Needs**   
 
-To be able to share references creates on the fly over boservables we have to make shure the observables are multicasted.
+To be able to share references creates on the flyover observables we have to make sure the observables are multicasted.
 
 
 > **Sharing a reference over observables**
-> - use `shareReplay(1)` make shure all subscribers recieve the same reference
-> - forward last instance for late subscriber. Also done with `shareReplay(1)`
+> - use `shareReplay(1)` make sure all subscribers receive the same reference
+> - forward last instance for a late subscriber. Also done with `shareReplay(1)`
 
 --- 
 
@@ -1360,8 +1361,8 @@ We need to have the observable to be hot with component constructor. Additional 
 
 > **Providing State as Hot**
 > To ensure all values get processed we need to:
-> - call the `.connect()` from a `publish` method at component construction
-> - use `publishReplay(1)` to privide state for late suscriber
+> - call the `.connect()` on the observable created over `publish` at component construction
+> - use `publishReplay(1)` to provide state for late subcriber
 
 ---
 
@@ -1453,9 +1454,9 @@ TBD
 
 ## General Timing Issues
 
-As a lot of problem are related to timimg issues this section is here to give a comülete overview of all the different types issues. 
+As a lot of problems are related to timing issues this section is here to give a comülete overview of all the different types of issues. 
 
-There are two different problems occuring in multiple different situations:
+Two different problems are occurring in multiple different situations:
 - Late Subscriber Problem
 - Early Producer Problem
 
@@ -1484,23 +1485,23 @@ export class LateSubscriberComponent {
 ```
 
 We call this situation late subscriber problem. In this case, the view is a late subscribe to the values from '@Input()' properties.
-There are several situation from our previous explorations that have this problem:
+There are several situations from our previous explorations that have this problem:
 - [Input Decorators](Input-Decorators)
   - transporting values from `@Input` to `AfterViewInit` hook
   - transporting values from `@Input` to the view
   - transporting values from `@Input` to the constructor 
 - [Component And Directive Life Cycle Hooks](Component-And-Directive-Life-Cycle-Hooks)
   - transporting `OnChanges` to the view
-  - getting the state of any life cycle hook later in time (importen when hooks are composed)
+  - getting the state of any life cycle hook later in time (important when hooks are composed)
 - [Local State](Local-State)
   - transporting the current local state to the view
   - getting the current local state for other compositions
 
 **Solutions**
 
-All those problems boil down to 2 different solutions depending on the perticular problem.
+All those problems boil down to 2 different solutions depending on the particular problem.
 - using `ReplaySubjects` with `bufferSize` of `1` to cache the latest sent value
-- using `shareReplay` for referencial sharing as shown in [Sharing References over Observables](Sharing-References-over-Observables)
+- using `shareReplay` for referential sharing as shown in [Sharing References over Observables](Sharing-References-over-Observables)
 
 
 ### The Early Producer Problem
@@ -1785,9 +1786,9 @@ Following things are done under the hood:
 - it handles late subscribers with `shareReplay(1)` 
 - it forwards only distinct values
 
-
 # Integrating third part
 
-## Probles
-### promis wrapper
+## Problems
+
+### Promise wrapper
 TBD
