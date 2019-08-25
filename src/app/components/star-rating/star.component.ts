@@ -1,11 +1,9 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 
-
 @Component({
   selector: 'app-star',
   template: `
     <div class="star">
-      Star
       <i class="star-empty"></i>
       <i class="star-half"></i>
       <i class="star-filled"></i>
