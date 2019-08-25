@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Directive,
-  Input,
-  OnDestroy,
-  OnInit,
-  TemplateRef,
-  ViewContainerRef
-} from '@angular/core';
+import {ChangeDetectorRef, Directive, Input, OnDestroy, OnInit, TemplateRef, ViewContainerRef} from '@angular/core';
 import {invalidInputValueError} from 'ng-re/lib/core/invalid_pipe_argument_error';
 import {
   animationFrameScheduler,
@@ -23,14 +14,14 @@ import {
 import {isObject} from 'rxjs/internal-compatibility';
 import {map, observeOn, startWith, switchAll, takeUntil, tap} from 'rxjs/operators';
 
-const selector = 'ngReLet';
+const selector = 'ngrxLet';
 
 export class LetContext {
   constructor(
     // to enable let we have to use $implicit
     public $implicit?: any,
     // to enable as we have to assign this
-    public ngReLet?: any,
+    public ngrxLet?: any,
     // value of error of undefined
     public $error?: any,
     // true or undefined
@@ -40,17 +31,17 @@ export class LetContext {
 }
 
 @Directive({
-  selector: '[ngReLet]'
+  selector: '[ngrxLet]'
 })
 export class LetDirective<T> implements OnInit, OnDestroy {
   private onDestroy$ = new Subject();
 
-  private context = new LetContext();
+  private ViewContext = new LetContext();
   private af$ = new ReplaySubject(1);
   private observables$: ReplaySubject<Observable<T>> = new ReplaySubject(1);
 
   @Input()
-  set ngReLet(o: Observable<T>) {
+  set ngrxLet(o: Observable<T>) {
     if (o === null || o === undefined) {
       this.observables$.next(NEVER);
     } else if (isObservable(o)) {
@@ -61,7 +52,7 @@ export class LetDirective<T> implements OnInit, OnDestroy {
   }
 
   @Input()
-  set ngReLetUseAf(bool: boolean) {
+  set ngrxLetUseAf(bool: boolean) {
     this.af$.next(bool);
   }
 
@@ -69,10 +60,10 @@ export class LetDirective<T> implements OnInit, OnDestroy {
     // for every value reset context
     next: (_) => {
       // @TODO find out why we have to mutate the context object
-      this.context.$implicit = undefined;
-      this.context.ngReLet = undefined;
-      this.context.$error = undefined;
-      this.context.$complete = undefined;
+      this.ViewContext.$implicit = undefined;
+      this.ViewContext.ngrxLet = undefined;
+      this.ViewContext.$error = undefined;
+      this.ViewContext.$complete = undefined;
     }
   };
 
@@ -80,21 +71,21 @@ export class LetDirective<T> implements OnInit, OnDestroy {
     next: (v) => {
       // @TODO find out why we have to mutate the context object
       // to enable `let` syntax we have to use $implicit (var; let v = var)
-      this.context.$implicit = v;
+      this.ViewContext.$implicit = v;
       // to enable `as` syntax we have to assign the directives selector (var as v)
-      this.context.ngReLet = v;
+      this.ViewContext.ngrxLet = v;
       // @TODO Too much and remove?
       if (isObject(v)) {
-        Object.entries(v).forEach(([key, value]) => this.context[key] = value);
+        Object.entries(v).forEach(([key, value]) => this.ViewContext[key] = value);
       }
     },
     error: (e) => {
       // set context var complete to true (var$; let v = $error)
-      this.context.$error = e;
+      this.ViewContext.$error = e;
     },
     complete: () => {
       // set context var complete to true (var$; let v = $complete)
-      this.context.$complete = true;
+      this.ViewContext.$complete = true;
     }
   };
 
@@ -139,8 +130,9 @@ export class LetDirective<T> implements OnInit, OnDestroy {
 
   ngOnInit() {
     // @TODO https://github.com/angular/angular/issues/15280#issuecomment-430479166
+    // @TODO Also consider  this.viewContainerRef.clear(); maybe in ngOnDestroy?
     this.viewContainerRef
-      .createEmbeddedView(this.templateRef, this.context);
+      .createEmbeddedView(this.templateRef, this.ViewContext);
   }
 
   ngOnDestroy(): void {

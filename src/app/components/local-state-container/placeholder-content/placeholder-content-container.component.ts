@@ -13,7 +13,7 @@ import {delay} from 'rxjs/operators';
       <div class="spin" style="width: 100px">Placeholder Content Here</div>
     </ng-template>
     <hr>
-    <ng-container *ngReLet="httpData$ as data">
+    <ng-container *ngrxLet="httpData$ as data">
       {{data | json}}
       <div *ngIf="data">
         from http request{{data | json}}

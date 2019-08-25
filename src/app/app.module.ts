@@ -14,6 +14,7 @@ import {INPUT$_DECLARATIONS} from './components/input-container';
 import {LET_DECLARATIONS} from './components/let-directive-container';
 import {LOCAL_STATE_DECLARATIONS} from './components/local-state-container';
 import {PUSH$_DECLARATIONS} from './components/push-pipe-container';
+import {STAR_RATING_DECLARATIONS} from './components/star-rating';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import {PUSH$_DECLARATIONS} from './components/push-pipe-container';
     INPUT$_DECLARATIONS,
     FROM_VIEW_EVENT$_DECLARATIONS,
     LOCAL_STATE_DECLARATIONS,
-    LET_DECLARATIONS
+    LET_DECLARATIONS,
+    STAR_RATING_DECLARATIONS
   ],
   imports: [
     BrowserModule,

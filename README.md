@@ -6,7 +6,8 @@
 Its main goal is to serve as the glue between your reactive code and the framework.**
 
 
-Parts of Angular like the `ReactiveFromsModule`, `RouterModule`, `HttpClientModule` etc. are already reactive.
+Parts of Angular like the `ReactiveFormsModule`, `RouterModule`, `HttpClientModule` etc. are already reactive.
+And especially when composing them together we see the benefit of observables. i.e. http composed with router params.
 For those who prefer imperative code, it's little effort to restrict it to a single subscription.
 
 On the other hand for those who prefer reactive code, it's not that easy. 
@@ -26,21 +27,19 @@ In the second step, We will show the best usage and common problems in a fully r
 <!-- toc -->
 
 - [Sections Important For Reactive Architecture](#sections-important-for-reactive-architecture)
-  * [Component/Directive Bindings](#componentdirective-bindings)
-    + [DomElement](#domelement)
-      - [Send to property over ``](#send-to-property-over-)
-    + [WebComponent](#webcomponent)
-      - [Send to property over ``](#send-to-property-over--1)
-      - [Receive events over `elem.addEventListener()`](#receive-events-over-elemaddeventlistener)
-    + [AngularComponents](#angularcomponents)
-      - [Input Decorator](#input-decorator)
-      - [Output Decorator](#output-decorator)
-      - [HostListener Decorator](#hostlistener-decorator)
-      - [HostBinding Decorator](#hostbinding-decorator)
-      - [Input Binding](#input-binding)
-      - [Template Bindings](#template-bindings)
-      - [Output Binding](#output-binding)
-  * [Life Cycle Hooks](#life-cycle-hooks)
+  * [DomElement](#domelement)
+    + [Send to property over ``](#send-to-property-over-)
+  * [WebComponent](#webcomponent)
+    + [Send to property over ``](#send-to-property-over--1)
+    + [Receive events over `elem.addEventListener()`](#receive-events-over-elemaddeventlistener)
+  * [Component/Directive](#componentdirective)
+    + [Input Decorator](#input-decorator)
+    + [Output Decorator](#output-decorator)
+    + [HostListener Decorator](#hostlistener-decorator)
+    + [HostBinding Decorator](#hostbinding-decorator)
+    + [Input Binding](#input-binding)
+    + [Template Bindings](#template-bindings)
+    + [Output Binding](#output-binding)
     + [Component and Directive Life Cycle Hooks](#component-and-directive-life-cycle-hooks)
     + [Service Life Cycle Hooks](#service-life-cycle-hooks)
   * [Local State](#local-state)
@@ -69,8 +68,8 @@ In the second step, We will show the best usage and common problems in a fully r
   * [Local State Management](#local-state-management)
     + [selectSlices RxJS Operator](#selectslices-rxjs-operator)
 - [Integrating third part](#integrating-third-part)
-  * [Probles](#probles)
-    + [promis wrapper](#promis-wrapper)
+  * [Problems](#problems)
+    + [Promise wrapper](#promise-wrapper)
 
 <!-- tocstop -->
 
@@ -88,29 +87,17 @@ This should help to understand the problems and get a good overview of the optio
 Based on the collected information we can try to use the explored options to create an elegant solution for the explored needs.
 
 Following topics are documented below:
-- Component Bindings
-- Life Cycle Hooks
+- Dom-Elemet interaction
+- Webcomponent interaction
+- Component interaction
 
-## Component/Directive Bindings
-
-As the main requirement for a reactive architecture in current component-oriented 
-frameworks are handling properties and events of components.
-
-The goal here is to find a unified way to have properties and events as observables integrated into angular.
-
-Here we discuss 3 different types we consider: 
-- DomElement
-- WebComponent
-- AngularComponent
-
-
-### DomElement
+## DomElement
 
 DomElements is everything you can query from `document`.
 
 The goal is to list vanilla js versions as well as the angular way and list options on how to make property values and events working with angular.
 
-#### Send to property over `<elem attr=""></elem>`
+### Send to property over `<elem attr=""></elem>`
 
 To set a value for an input attribute you can query the dom get the item and set the value.
 
@@ -154,11 +141,11 @@ fromEvent(elem, 'click')
 **Needs:**   
 As Angular covered this already this section can be ignored for the suggested extensions.
 
-### WebComponent 
+## WebComponent 
 
 The goal is to list vanilla js versions as well as the angular way and list options on how to make property values and events working with angular.
 
-#### Send to property over `<elem attr=""></elem>`  
+### Send to property over `<elem attr=""></elem>`  
 
 **Imperative approach:**
 ```typescript
@@ -173,7 +160,7 @@ TBD
 **Needs:**   
 TBD
 
-#### Receive events over `elem.addEventListener()`
+### Receive events over `elem.addEventListener()`
 
 **Imperative approach:**
 ```typescript
@@ -188,12 +175,17 @@ TBD
 **Needs:**   
 TBD
 
-### AngularComponents
+## Component/Directive
+
+As the main requirement for a reactive architecture in current component-oriented 
+frameworks are handling properties and events of components as well as several specifics for 
+rendering and composition of observables.
 
 In angular, we have an equivalent to properties and events, _input_ and _output_ bindings_.
-But we also have several other options for available to interact with components.
+But we also have several other options available to interact with components.
 
-The goal is to list all features in angular that interfere with Component Bindings or similar and provide an imperative as well as a reactive approach for each option.
+The goal is to list all features in angular that need a better integration. 
+We cover an imperative as well as a reactive approach for each option.
 
 We consider the following decorators:
 - Input Decorator
@@ -205,7 +197,7 @@ And consider the following bindings:
 - Input Binding
 - Output Binding
 
-#### Input Decorator
+### Input Decorator
 
 Inside of a component or directive we can connect properties with the components in it bindings over the `@Input()` decorator.
 This enables us to access the values of the incoming in the component. 
@@ -261,7 +253,7 @@ Here `ReplaySubject` is critical because of the life cycle hooks.
 
 --- 
 
-#### Output Decorator
+### Output Decorator
 
 **_Send event over `eventEmitter.emit(42)`_**
 
@@ -317,7 +309,7 @@ No need for an extension.
 ---   
 
 
-#### HostListener Decorator
+### HostListener Decorator
 
 **_Receive event from the host over `@HostListener('click', ['$event'])`_**
 
@@ -374,7 +366,7 @@ This problem can be solved as the subject is created in with instance constructi
 
 ---   
 
-#### HostBinding Decorator
+### HostBinding Decorator
 
 **_Receive property changes from the host over `@HostBinding('class')`_**
 
@@ -426,7 +418,7 @@ This problem can be solved as the subject is created in with instance constructi
 ---   
 
 
-#### Input Binding 
+### Input Binding 
 
 **_Send value changes to child compoent input `[state]="state"`_**
 
@@ -496,7 +488,7 @@ Already existing similar packages:
 
 --- 
 
-#### Template Bindings   
+### Template Bindings   
 In the following, we try to explore the different needs when working with observables in the view.  
 
 Lets examen different situations when binding observables to the view and see how the template syntax that Angular already provides solves this. Let's start with a simple example.
@@ -737,9 +729,9 @@ Already existing similar packages:
 
 ---   
 
-#### Output Binding 
+### Output Binding 
 
-**_Receive events from child compoent over `(stateChange)="fn($event)"`_**
+**_Receive events from child component over `(stateChange)="fn($event)"`_**
 
 In the parent component, we can receive events from child components over specific template syntax, the round brackets `(stateChange)`.
 Angular automatically updates fires the provides function over change detection.
@@ -786,7 +778,7 @@ As it is minimal overhead we can stick with creating a `Subject` on our own.
 
 ---   
 
-## Life Cycle Hooks
+### Component and Directive Life Cycle Hooks
 
 As the component's logic can partially rely on the components life cycle hooks we also need to consider the in-out evaluation. 
 
@@ -804,8 +796,6 @@ Angulars life cycle hooks are listed ere in order:
 - OnDestroy (single shot)
 
 The goal here is to find a unified way to have single shot, as well as ongoing life cycle hooks, and observable.
-
-### Component and Directive Life Cycle Hooks
 
 **Imperative approach:**   
 
@@ -1095,7 +1085,7 @@ The state should be easy to receive and change to the state should be able with 
 > **Manage state as an object**  
 > Form the above explorations following things are needed to organize our state
 > - an object to identify every stored value over a key
-> - setup a `Subject` to have the observers `.next()` Methode available to send values
+> - setup a `Subject` to have the observers `.next()` Method available to send values
 > - accumulate the values in an object over the `scan` operator
 > - at least immutable changes to the shallow 
 >   done by i.e. the TypeScript spread operator `...` should be automated by the logic
@@ -1112,7 +1102,7 @@ Some meaningful examples could be:
 
 Such situations are handled over getter in imperative programming. In reactive programming, we solve this over thin caching layer.
 
-**Problem of beeing too late**
+**Problem of being too late**
 ```typescript
 @Component({
   selector: 'app-late-subscriber',
@@ -1133,7 +1123,7 @@ export class LateSubscriberComponent {
 }
 ```
 
-**Replaiing latest (n) values**
+**Replaying latest (n) values**
 ```typescript
 @Component({
   selector: 'app-late-subscriber',
@@ -1171,9 +1161,9 @@ We need to abstract timing issues away from the consumer. In the case of late su
 There are situations where we have to compose multiple streams, compute new state and create a reference to some object, i.e. a `FromGroup`. This reference is then later on shared with multiple subscribers.
 
 Such situations are handled by mutation a component property in imperative programming. 
-In reactive programming, we solve this multicasting.
+In reactive programming, we solve this multi-casting.
 
-**Problem of beeing shared references**
+**Problem of being shared references**
 ```typescript
 @Component({
   selector: 'app-sharing-a-reference',
@@ -1512,12 +1502,12 @@ For example, subscriptions to view elements the constructor happen before they e
 We call this situation early subscriber problem. In this case, the component constructor is an early subscribe to the events from '(click)' bindings. 
 
 All above decorators should rely on a generic way of wrapping a function or property as well as a way
-to configure the used Subject for multicasting similar to [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34)
+to configure the used Subject for multi-casting similar to [multicast](https://github.com/ReactiveX/rxjs/blob/a9fa9d421d69e6e07aec0fa835b273283f8a034c/src/internal/operators/multicast.ts#L34)
 
 In this way, it is easy to have a simplified public API but flexibility internally.
 
 **Decorators that:**
-- rely on configurable multicasting similar to `multicast` operator.
+- rely on configurable multi-casting similar to `multicast` operator.
   this provides a generic configurable way for all cases 
 ---
 
@@ -1526,7 +1516,7 @@ In this way, it is easy to have a simplified public API but flexibility internal
 TBD
 
 ## Convenient Way To Wire Things Together
-As discussed in [Automoate boilerplate](#Automoate-boilerplate) a lot of things that are related to angular can be solved by the right decorator. But there are other areas where we need to provide some solutions. A more general one than just life cycle hooks of a single component. 
+As discussed in [Automate boilerplate](#Automoate-boilerplate) a lot of things that are related to angular can be solved by the right decorator. But there are other areas where we need to provide some solutions. A more general one than just life cycle hooks of a single component. 
 
 The problem of connecting all component bindings, global state, locally provided services, view events and 
 The main reason here is getting the values over View elements that are instantiated later.
@@ -1601,16 +1591,12 @@ as well as input binding `[color]="thing$ | push"` and trigger the changes of th
 ## Let Structural Directive
 
 The `*let` directive serves a convenient way of binding multiple observables in the same view context.
-It also helps with Severyn default processing under the hood.
+It also helps with several default processing under the hood.
 
 The current way of handling subscriptions in the view looks like that:
 
 ```html
-<ng-container *ngIf="{
-              color: observable1$ | async,
-              shape: observable2$ | async,
-              name:  observable3$ | async
-            } as c">
+<ng-container *ngIf="observable1$ | async as c">
   <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
   </app-color>  
 </ng-container>
@@ -1622,17 +1608,17 @@ The `*let` directive take over several things and makes it more convenient and s
 ```html
 <!-- observables = { color: observable1$, shape: observable2$, name:  observable3$ } -->
 
-<ng-container *let="observables as c">
+<ng-container *let="observable as c">
   <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
   </app-color>
 </ng-container>
 
-<ng-container *let="observables; let c">
+<ng-container *let="observable; let c">
   <app-color [color]="c.color" [shape]="c.shape" [name]="c.name">
   </app-color>
 </ng-container>
 
-<ng-container *let="observables; color as c; shape as s; name as n">
+<ng-container *let="observable; color as c; shape as s; name as n">
   <app-color [color]="c" [shape]="s" [name]="n">
   </app-color>
 </ng-container>

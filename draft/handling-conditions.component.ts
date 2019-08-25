@@ -5,7 +5,7 @@ import {filter, map, share} from 'rxjs/operators';
 @Component({
   selector: 'app-let-directive-handling-conditions',
   template: `
-    <h2>*ngReLet Handle Conditions</h2>
+    <h2>*ngrxLet Handle Conditions</h2>
 
     <app-let-directive-value *ngIf="boolean1$ | async as val1; else placeholder" [value]="val1">
     </app-let-directive-value>
@@ -14,7 +14,7 @@ import {filter, map, share} from 'rxjs/operators';
     </ng-template>
 
     <ng-container
-      *ngReLet="boolean1$ as val1">
+      *ngrxLet="boolean1$ as val1">
       <pre>{{val1 | json}}</pre>
       <div *ngIf="val1 === undefined; else placeholder"
         class="spin">

@@ -34,6 +34,9 @@ import {Router} from '@angular/router';
           <li>
             <a routerLink="local-state">LocalState</a>
           </li>
+          <li>
+            <a routerLink="star-rating">StarRating</a>
+          </li>
         </ul>
       </div>
       <div class="content">

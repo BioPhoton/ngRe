@@ -5,6 +5,7 @@ import {INPUT$_ROUTES} from './components/input-container';
 import {LET_ROUTES} from './components/let-directive-container';
 import {LOCAL_STATE_ROUTES} from './components/local-state-container';
 import {PUSH$_ROUTES} from './components/push-pipe-container';
+import {STAR_RATING_ROUTES} from './components/star-rating';
 
 export const APP_ROUTES = [
  // {path: '', redirectTo: 'readme', pathMath: 'full'},
@@ -14,5 +15,6 @@ export const APP_ROUTES = [
   {path: 'input', children: INPUT$_ROUTES},
   {path: 'from-view-event', children: FROM_VIEW_EVENT$_ROUTES},
   {path: 'local-state', children: LOCAL_STATE_ROUTES},
-  {path: 'let-directive', children: LET_ROUTES}
+  {path: 'let-directive', children: LET_ROUTES},
+  {path: 'star-rating', children: STAR_RATING_ROUTES}
 ];

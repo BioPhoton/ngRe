@@ -5,13 +5,13 @@ import {filter, map, share, take} from 'rxjs/operators';
 @Component({
   selector: 'app-let-directive-observable-channels',
   template: `
-    <h2>*ngReLet Observable Channels</h2>
+    <h2>*ngrxLet Observable Channels</h2>
 
     <button (click)="assignObservable()">assignObservable</button>
     <button (click)="assignUndefined()">assignUndefined</button>
 
     <ng-container
-      *ngReLet="val1$ as val1; let error = $error; let complete = $complete">
+      *ngrxLet="val1$ as val1; let error = $error; let complete = $complete">
       <p><b>next:</b></p>
       <pre>{{(val1 | json) || 'undefined'}}</pre>
       <p><b>error:</b></p>
