@@ -1436,9 +1436,238 @@ We need to find an elegant way of controlling subscriptions in a component.
 
 ---
 
-# Sections Important For Running Zone Less
+# Running Zone Less
 
-TBD
+## Setup
+
+To run a angular project zone-less following steps should be made:
+1. Open `main.ts` of your project and pass `'noop'` as `NgZone` instance under the `compilerOptions` in the bootstrap call:
+```typescript
+...
+//                                                 !!! CHAGNE HERE !!! 
+platformBrowserDynamic().bootstrapModule(AppModule, {ngZone: 'noop'})
+  .catch(err => console.error(err));
+
+```
+2. Test it by importing `NgZone` into `app.component.ts` and log the instance:
+```txpescript
+ constructor(private ngZone: NgZone) {
+    console.log('ngZone', this.ngZone);
+ }
+```
+You should see `NoopNgZone` as class name. That's it. Now we run zone-less.
+
+Now let's setup build and serve scripts to switch between zone-full and zone-less.
+
+3. Copy `main.ts` and rename it to `main.zone-less.ts`. Then revert `main.ts` to the original state.
+4. Copy `polyfills.ts` and rename it to `polyfills.zone-less.ts`. 
+Open it and comment out following line:
+```typescript
+/***************************************************************************************************
+ * Zone JS is required by default for Angular itself.
+ */
+// !!! CHANGES HERE !!!
+// import 'zone.js/dist/zone';  // Included with Angular CLI.
+```
+5. Open `angular.json` and add following configurations:
+
+```json
+    {
+      ...
+      "projects": {
+        ...
+        "PROJECT_NAME_HERE": {
+          ...
+          "architect": {
+            "build": {
+              ...
+              "configurations": {
+                ... !!! CHANGES HERE !!!
+                "zoneLess": {
+                  "main": "pathToProject/src/main.zone-less.ts",
+                  "polyfills": "pathToProject/src/polyfills.zone-less.ts"
+                }
+              }
+            },
+            "serve": {
+              ...
+              "configurations": {
+                ... !!! CHANGES HERE !!!
+                "zoneLess": {
+                  "browserTarget": "elements:build:zoneLess"
+                }
+              }
+            }   
+          }
+        }
+      },
+      ...
+    }
+  ```
+6. Add a new scripts entry to `package.json` in the root folder to use your new configuration.
+```json
+{
+  ...
+  "scripts": {
+    ... !!! CHANGES HERE !!!
+    "start:zone-less": "ng serve --project YOUR-PROJECT-NAME -c=zoneLess"
+   },
+  ...
+}
+```
+7. Run `npm run start:zone-less` and `npm run start` and check the difference in the console log's.   
+
+## Problems when Running Zone Less
+
+Next to some edge cases with zones and web components it works change detection pretty seamless in angular.
+However, when exiting zone and approaching a fully reactive zone-less setup we run into several scenarios that end up problematic.
+
+Let's see what scenarios we should take a closer look:     
+- Template bindings 
+- Input bindings
+- Output bindings
+- DOM Events
+- Animations
+- Routing
+
+## Template Bindings
+
+If we test some basic template bindings, displaying a primitive or a simple object, we see no changes in the view.
+```html
+p: {{primitive}}, o: {{o | json}} 
+``
+
+Also with the `async` pipe nothing gets rendered. 
+This is the case because the async pipe only triggers `ChangeDetectorRef.markForCheck()`, 
+but change detection does not look for changes, as it is disabled. 
+
+```html
+p$: {{primitive$ | async}}, o$: {{o$ | async | json}} 
+```
+
+To solve it we need to trigger `ChangeDetectorRef.detectChanges()` whenever we want to render.
+
+One of the first approaches would be to implement a `tap` operator and trigger cd there before it is rendered in the view. 
+But this would end up in a off by one issue and therefore is no solution.
+
+A proper solution is trigger `detectChanges()` over a pipe,
+so rendering runs after the value arrives in the template.
+
+**Primitive Workaround**
+To achieve it in a quick an dirty way is following:
+1. Create a file called `push.pipe.ts` into your projects `src` folder.
+2. Copy the source file for the `async` pipe from the angular repo. Here the link to the file [async_pipe.ts](https://github.com/angular/angular/blob/ab29874f09463e634b6aa8ec61fb1f607e108e2f/packages/common/src/pipes/async_pipe.ts). 
+3. Replace [following line](https://github.com/angular/angular/blob/ab29874f09463e634b6aa8ec61fb1f607e108e2f/packages/common/src/pipes/async_pipe.ts#L144) with this snippet:
+```typescript
+ this._ref.detectChanges();
+```
+4. Replace [following line](https://github.com/angular/angular/blob/ab29874f09463e634b6aa8ec61fb1f607e108e2f/packages/common/src/pipes/async_pipe.ts#L71-L72) with this snippet:
+```typescript
+ @Pipe({name: 'push', pure: false})
+ export class PushPipe implements OnDestroy, PipeTransform {
+```
+5. Add it to you `app.module.ts` declarations: 
+```typescript
+...
+import {PushPipe} from "./push.pipe";
+
+@NgModule({
+  declarations: [
+    ...
+    PushPipe
+  ],
+  ...
+})
+export class AppModule {
+  ...
+}
+```
+6. Use it like this: `{{observable$ | push}}`
+
+**Needs**
+We refactor async pipe to fulfill strict and consistent undefined handling as described in [Input Bindings](Input-Bindings).
+Also the mentioned call of `detectChanges()` needs to be done inside. 
+Optional we could schedule side effects over `requestAnimationFrame`.
+
+## Input Bindings
+
+Input Bindings don't fire after the initial render. 
+The code below shows a setup where we can test this.
+```typescript
+...
+
+@Component({
+  selector: 'minimal',
+  template: `
+      <p>@Input() value: {{value$ | async}}</p>
+  `
+})
+export class MinimalComponent {
+  value$ = new ReplaySubject<string>(1);
+  @Input() set value(v: string) {
+    console.log('setter fired with:', v);
+    this.value$.next(v);
+  };
+}
+```
+
+The setter for the `value` property is only called once, no matter how often we change the input value.
+Also a switch to `ChangeDetectionStrategy.OnPush` behaves in the same way.
+
+The solution is to use the above explained push pipe to trigger change detection after the value arrived an the input binding:
+```html
+  <minimal
+    [value]="observable$ | push">
+  </minimal>
+```
+
+**NOTICE**
+Important to not here is that this external value change gets rendered also into the child components view.
+This means **every change trigger over a input binding automatically works run zone-less**.  
+
+## Output Bindings
+
+Output Bindings fire even without zone.js. 
+Below you see the sample:
+```typescript
+@Component({
+  selector: 'minimal',
+  template: `
+      <button (click)="update$.next($event)">trigger output</button>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class MinimalComponent {
+  update$ = new Subject();
+  @Output() update = this.update$;
+}
+```
+This means the function is fired in the parent. You can process it but if you want to render the value you again have to use the `push` pipe:
+```typescript
+@Component({
+  selector: 'app-root',
+  template: `
+      <code>{{update$ | push}}</code>
+      <minimal
+              (update)="log($event)">
+      </minimal>
+  `
+})
+export class AppComponent {
+  update$ = new Subject();
+
+  log(v) {
+    console.log('processing possible with:', v);
+    this.update$.next(v.clientY);
+  }
+}
+
+```
+
+
+
+
+
 
 # General Overview of Explored Problems
 
