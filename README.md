@@ -589,18 +589,30 @@ export class AppComponent  {
 As we can see, in this example the `ng-container` would only be visible if the value is `1` and therefore `truthy`. 
 All `falsy` values like `0` would be hidden. This is a problem in some situations. 
 
-We could try to use `*ngFor` to avoid this.
+In some cases the `ngIfElse` directive and `ng-template` helps, but in some situations we can't use it.
+
+```html
+@Component({
+  selector: 'my-app',
+  template: `
+    <a *ngIf="random$ | async as random" [routerLink]="[{outlets:{aside: random}}]">toggle + {{random ? 'aside' : ''}}</a>
+  `})
+export class AppComponent  {
+  random$ = interval(1000)
+    .pipe(
+      map(_ => Math.random() > 0.5 ? 1 : 0)
+    );
+}
+```
+
+Here we could try to use `*ngFor` to solve the problem.
 
 **Context variable over the `*ngFor` directive**
 ```html
 @Component({
   selector: 'my-app',
   template: `
-    <ng-container *ngFor="let random of [random$ | async]">
-        {{random}}
-        <comp-b [value]="random">
-        </comp-b>
-    </ng-container>
+     <a *ngFor="let random of [random$ | async]" [routerLink]="[{outlets:{aside: random}}]">{{random ? 'show' : 'hide'}}</a>
   `})
 export class AppComponent  {
   random$ = interval(1000)
@@ -612,6 +624,8 @@ export class AppComponent  {
 
 By using `*ngFor` to create a context variable we avoid the problem with `*ngIf` and `falsy` values.
 But we still **misuse a directive**. Additionally `*ngFor` is less performant than `*ngIf`.   
+
+There is another problem which we should consider. Nested scopes.
 
 **Nested `ng-container` problem**
 
@@ -1217,7 +1231,7 @@ As we see the provided example is not working. The reason for this is we subscri
 One time in the template to render the form, the second time in the constructor to forward form value changes to the `EventEmitter`.
 Because the `formGroup$` observable is cold (every subscriber receives a unique producer) we instantiate the `FormGroup` once per subscription.
  
-**Multicast the reference problem**
+**Sharing a reference problem**
 
 ```typescript
 @Component({
@@ -1241,7 +1255,7 @@ export class SharingAReferenceComponent {
 }
 ```
 
-As we see we end up with 2 different numbers. 
+As we see we end up with 2 different numbers. This is equivalent to having 2 different instances of and Object like the mentioned `FormGroup`. Whenever we have to share a reference we need to make shure to have it multicasted.  
 
 
 **Multicast the reference solution**
@@ -2007,3 +2021,69 @@ Following things are done under the hood:
 
 ### Promise wrapper
 TBD
+
+# Micro and Macro Architecture patterns
+
+## Micro 
+
+### FormGroup as EventEmitter
+
+There are situations where we have to compose multiple streams, compute new state and create a reference to some object, i.e. a `FromGroup`. This reference is then later on shared with multiple subscribers.
+
+Such situations are handled by mutation a component property in imperative programming. 
+In reactive programming, we solve this multicasting.
+
+**Problem of beeing shared references**
+```typescript
+@Component({
+  selector: 'app-sharing-a-reference',
+  template: `
+    <h2>Sharing a reference</h2>
+    <p><b>default$:</b></p>
+    <form *ngIf="(formGroup$ | async$) as formGroup" [formGroup]="formGroup">
+      <div *ngFor="let c of formGroup.controls | keyvalue">
+        <label>{{c.key}}</label>
+        <input [formControlName]="c.key"/>
+      </div>
+    </form>
+  `
+})
+export class SharingAReferenceComponent {
+  state$ = new ReplaySubject(1);
+  @Input()
+  set formGroupModel(value) {
+    this.state$.next(value);
+  }
+
+  @Output() formValueChange = new EventEmitter();
+
+  formGroup$: Observable<FormGroup> = combineLatest(this.state$, this.router.params)
+    .pipe(
+      map(this.preparingFormGroupConfig),
+      map(config => this.fb.group(config))
+    );
+    
+  constructor(
+    private fb: FormBuilder,
+    private router: ActivatedRoute
+  ) {
+    this.formGroup$
+      .pipe(
+        switchMap((fg: FormGroup) => fg.valueChanges)
+      )
+      .subscribe(v => this.formValueChange.emit(v));
+  }
+
+  preparingFormGroupConfig([modelFromInput, modelFromRouterParams]) {
+    // override defaults with router params if exist
+    return Object.entries({...modelFromInput, ...modelFromRouterParams})
+      .reduce((c, [name, initialValue]) => ({...c, [name]: [initialValue]}), {});
+  }
+
+}
+```
+
+As we see the provided example is not working. The reason for this is we subscribe multiple times to the `formGroup$`.
+One time in the template to render the form, the second time in the constructor to forward form value changes to the `EventEmitter`.
+Because the `formGroup$` observable is cold (every subscriber receives a unique producer) we instantiate the `FormGroup` once per subscription.
+ 
