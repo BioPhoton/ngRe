@@ -474,7 +474,7 @@ As we know exactly when changes happen we can trigger change detection manually.
 > **Implement strict and consistent handling of undefined for pipes**   
 > A pipe similar to `async` that should act as follows:
 > - when initially passed `undefined` the pipe should **forward `undefined`** as value as on value ever was emitted
-> - when initially passed `null` the pipe should **forward `null`** as value as on value ever was emitted
+> - when initially passed `null` the pipe should **forward `null`** as value as `null` was emitted
 > - when initially passed `of(undefined)` the pipe should **forward `undefined`** as value as `undefined` was emitted
 > - when initially passed `of(null)` the pipe should **forward `null`** as value as `null` was emitted
 > - when initially passed `EMPTY` the pipe should **forward `undefined`** as value as on value ever was emitted
@@ -1531,18 +1531,19 @@ Open it and comment out following line:
 ```
 7. Run `npm run start:zone-less` and `npm run start` and check the difference in the console log's.   
 
-## Problems when Running Zone Less
+## Problems with Commponents when Running Zone Less
 
 Next to some edge cases with zones and web components it works change detection pretty seamless in angular.
 However, when exiting zone and approaching a fully reactive zone-less setup we run into several scenarios that end up problematic.
 
 Let's see what scenarios we should take a closer look:     
-- Template bindings 
-- Input bindings
-- Output bindings
-- DOM Events
-- Animations
-- Routing
+- [Template bindings](#Template-bindings) 
+- [Input bindings](#Input-bindings)
+- [Output bindings](#Output-bindings)
+- [DOM Events](#DOM-Events)
+- [Animations](#Animations)
+- [Internal Logic](#Internal-Logic)
+- [Routing](#Routing)
 
 ## Template Bindings
 
@@ -1892,6 +1893,36 @@ This would simply not work with the above solution.
 **Needs:**
 Abstract change detection triggering of multiple events into a directive. 
 The component can stay free from any additional imports or logic.
+
+## Internal Logic
+
+We can run any kind of logic internally and don't have to think about `zone.js`. 
+Communicate with services, other parts of the component. Only if we want to render
+something to the view we have to consider change detection. 
+
+As we already know how to use observables we put the data to render in a stream and use the `push` pipe to trigger rendering.
+This is exactly the same thing we nearly always did so far.
+
+Let's look at a simple exampes where we render the actual time to the view:
+```typescript
+@Component({
+  ...,
+  template: `{{time$ | push}}`,
+ ...
+})
+export class MinimalComponent {
+  time$ = new interval(1000)
+    .pipe(map(_ => {
+              const d = new Date();
+              return d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+            }));
+}
+```
+
+That easy. :)
+
+## Routing
+@TODO
 
 # General Overview of Explored Problems
 

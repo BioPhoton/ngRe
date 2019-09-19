@@ -1,6 +1,7 @@
-import {ChangeDetectorRef, OnDestroy, Pipe, PipeTransform} from '@angular/core';
-import {isObservable, Observable, of, Subject} from 'rxjs';
-import {distinctUntilChanged, switchAll, takeUntil} from 'rxjs/operators';
+import {ChangeDetectorRef, NgZone, OnDestroy, Pipe, PipeTransform} from '@angular/core';
+import {isZoneLess} from 'ng-re/lib/core/isZoneLess';
+import {combineLatest, isObservable, Observable, of, Subject} from 'rxjs';
+import {distinctUntilChanged, map, switchAll, takeUntil} from 'rxjs/operators';
 import {STATE_DEFAULT} from '../core/state-default';
 
 /**
@@ -18,7 +19,9 @@ import {STATE_DEFAULT} from '../core/state-default';
  */
 // @TODO remove `pure: false` and experiment without zone
 @Pipe({name: 'push$', pure: false})
-export class Push$Pipe implements PipeTransform, OnDestroy {
+export class PushPipe implements PipeTransform, OnDestroy {
+  private forwardOnlyNewReferences$$ = new Subject<boolean>();
+  readonly cdFunction: () => void;
   private value: any = STATE_DEFAULT;
 
   ngOnDestroy$$ = new Subject<boolean>();
@@ -26,11 +29,24 @@ export class Push$Pipe implements PipeTransform, OnDestroy {
   // @TODO fix any types
   observablesToSubscribe$$ = new Subject<Observable<any>>();
 
-  constructor(private cdRef: ChangeDetectorRef) {
-    this.observablesToSubscribe$$
+  constructor(private cdRef: ChangeDetectorRef, private ngZone: NgZone) {
+    if (isZoneLess(this.ngZone)) {
+      this.cdFunction = () => this.cdRef.detectChanges();
+    } else {
+      this.cdFunction = () => this.cdRef.markForCheck();
+    }
+
+    const newObservables$ = this.observablesToSubscribe$$
       .pipe(
         // only forward new references (avoids holding a local reference to the previous observable => this.currentObs !== obs)
         distinctUntilChanged(),
+      );
+    combineLatest(newObservables$,
+      // only forward distinct values => less executions
+      this.forwardOnlyNewReferences$$.pipe(distinctUntilChanged()))
+      .pipe(
+        // Handle forwardOnlyNewReferences option
+        map(([o, onlyNewRef]) => (onlyNewRef) ? o.pipe(distinctUntilChanged()) : o),
         // unsubscribe from previous observables
         // then flatten the latest internal observables into the output
         switchAll(),
@@ -41,11 +57,10 @@ export class Push$Pipe implements PipeTransform, OnDestroy {
         // assign value that will get returned from the transform function on the next change detection
         this.value = value;
         // trigger change detection for the to get the newly assigned value rendered
-        this.cdRef.detectChanges();
+        this.cdFunction();
       });
   }
 
-  // @TODO Minor improvement: Use observable lifecycle hooks over decorators
   ngOnDestroy(): void {
     this.ngOnDestroy$$.next(true);
   }
@@ -53,6 +68,8 @@ export class Push$Pipe implements PipeTransform, OnDestroy {
   transform<T>(obj: null | undefined, forwardOnlyNewReferences: boolean): null;
   transform<T>(obj: Observable<T>, forwardOnlyNewReferences: boolean): T;
   transform<T>(obj: Observable<T> | null | undefined, forwardOnlyNewReferences = true): T | null {
+    this.forwardOnlyNewReferences$$.next(forwardOnlyNewReferences);
+
     this.observablesToSubscribe$$.next(!isObservable(obj) ? of(STATE_DEFAULT) : obj);
     return this.value;
   }
