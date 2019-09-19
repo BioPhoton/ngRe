@@ -1671,17 +1671,227 @@ export class AppComponent {
   update$ = new Subject();
 
   log(v) {
-    console.log('processing possible with:', v);
+    console.log('processing possible:', v);
     this.update$.next(v.clientY);
   }
 }
 
 ```
 
+## Dom Events
 
+Similar to output bindings dom events work without zone.js. 
+In the following example we see that the DOM event get's processed in `setFocus`.
+```typescript
+@Component({
+  ...
+  template: `
+      <input
+              (focus)="setFocus(true)"
+              (blur)="setFocus(false)">
+  `
+  ...
+})
+export class MinimalComponent {
+  focus = false;
+  setFocus($event) {
+    console.log('setFocus triggered', $event);
+    this.focus = $event;
+  }
+}
+```
 
+If we want to render it we solve it in the same way as we did with output bindings. 
+We simple use the `push` pipe.
+```typescript
+@Component({
+  ...,
+  template: `
+      focus: {{focused | push}}
+      <input
+              (focus)="setFocus(true)"
+              (blur)="setFocus(false)">
+  `,
+ ...
+})
+export class MinimalComponent {
+  focused = new BehaviorSubject<boolean>(false);
 
+  setFocus($event) {
+    this.focused.next($event);
+  }
+}
+```
 
+Another thing we could do is forward the state directly as output binding. 
+Here we already know we dont need to care about change detection.
+
+```typescript
+@Component({
+  ...,
+  template: `
+      {{focused | async}}
+      <input
+          (focus)="focused.next(true)"
+          (blur)="focused.next(false)">
+  `,
+ ...
+})
+export class MinimalComponent {
+  @Output() focused = new BehaviorSubject<boolean>(false);
+}
+```
+Now the parent has to take care about chane detection and we are out of the game ;).
+We can even use the async pipe because if change detection get's triggered from parent it will update.
+
+## Animations
+
+Animations in general work fine. They only need to be triggered.
+When we process any value coming from input bindings everything animates properly.
+As mentioned before values from input bindings are our **save path**.
+
+Here a example opening/closing a box over height transition:
+```typescript
+@Component({
+  selector: 'app-open-close',
+  animations: [
+    trigger('openClose', [
+      state('open', style({height: '200px'})),
+      state('closed', style({height: '100px'})),
+      transition('open => closed', [animate('1s')]),
+      transition('closed => open', [animate('0.5s')]),
+    ]),
+  ],
+  template: `
+      <div [@openClose]="isOpen ? 'open' : 'closed'" class="open-close-container">
+          <p>The box is now {{ _isOpen ? 'Open' : 'Closed' }}!</p>
+      </div>
+  `,
+  styles: [`
+      .open-close-container {
+          background-color: green;
+      }
+  `]
+})
+export class OpenCloseComponent {
+  @Input() isOpen: boolean;
+}
+```
+As you can see to trigger the animation we use normal template bindings `[@openClose]="_isOpen ? 'open' : 'closed'"`, 
+no `push` pipe needed.
+
+If we want to trigger the animation on click without values over input bindings is stops working: 
+
+```typescript
+...
+@Component({
+  selector: 'app-open-close',
+  animations: [...],
+  template: `
+      <div (click)="toggle()" [@openClose]="isOpen ? 'open' : 'closed'" class="open-close-container">
+          <p>The box is now {{ isOpen ? 'Open' : 'Closed' }}!</p>
+      </div>
+  `,
+  styles: [...]
+})
+export class OpenCloseComponent {
+
+  isOpen: boolean = true;
+
+  toggle() {
+    this.isOpen = !this.isOpen;
+  }
+
+}
+```
+
+Here we need to introduce some changes. 
+We could use the `push` pipe or trigger change detection based on dom events.
+
+With the `push` pipe it looks like this:
+```typescript
+...
+@Component({
+  ...
+  template: `
+    <div (click)="toggle()" [@openClose]="(isOpen$ | push$) ? 'open' : 'closed'" class="open-close-container">
+        <p>The box is now {{ (isOpen$ | push$) ? 'Open' : 'Closed' }}!</p>
+    </div>
+  `,
+  ...
+})
+export class OpenCloseComponent {
+
+    isOpen$$ = new BehaviorSubject<any>('');
+    isOpen$ = this.isOpen$$
+      .pipe(scan(acc => !acc, false));
+    
+    toggle() {
+      this.isOpen$$.next('');
+    }
+
+}
+```
+
+The approach with events depends on the given situation. 
+In best case we have access to the component and can implement a call of `.detectChanges()` if needed:
+
+```typescript
+...
+@Component({
+  ...
+  template: `
+      <div (click)="toggle()" [@openClose]="isOpen ? 'open' : 'closed'" class="open-close-container">
+          <p>The box is now {{ isOpen ? 'Open' : 'Closed' }}!</p>
+      </div>
+  `,
+  ...
+})
+export class OpenCloseComponent {
+
+  isOpen: boolean = true;
+  toggle() {
+    this.isOpen = !this.isOpen;
+    this.cd.detectChanges();
+  }
+
+  constructor(private cd: ChangeDetectorRef) {
+  }
+
+}
+```
+
+If this is not possible, think about third party components or directives, we need to go another path.
+
+As the animation is triggered over a click event we can apply a event binding for the same event 
+to our component from the parent view and trigger change detection from there. 
+
+```typescript
+@Component({
+  selector: 'app-root',
+  template: `
+      <app-open-close (click)="cd.detectChanges()"></app-open-close>
+  `
+})
+export class AppComponent {
+
+  constructor(private ngZone: NgZone, private cd: ChangeDetectorRef) {
+    console.log('ngZone', this.ngZone);
+  }
+
+}
+```
+
+To things are worth to mention here. 
+First we can imaging when we have many different events that trigger animations (or other internal processes)
+we end up in a very long and bulky snippet. 
+
+Second this workaround is not working for all cases. Imagine a focus event would be a trigger.
+This would simply not work with the above solution.
+ 
+**Needs:**
+Abstract change detection triggering of multiple events into a directive. 
+The component can stay free from any additional imports or logic.
 
 # General Overview of Explored Problems
 
@@ -1804,7 +2014,7 @@ Extensions suggested:
 - Observable ContentChild/Children
 - Local State Management
   - selectSlices RxJS Operator
-  - 
+- CdOn Directive 
 
 ## Push Pipe
 
@@ -2014,6 +2224,40 @@ buttons$ = this.lS.state$
 Following things are done under the hood:
 - it handles late subscribers with `shareReplay(1)` 
 - it forwards only distinct values
+
+## CdOn Directive
+The `cdOn` directive serves a convenient way of triggering change detection for multiple events.
+It is **only used to solve edge cases in zone-less applications**,
+by taking away bulky templates and externalizing `ChangeDetectionRef` handling.
+
+The current way of workaround looks like that:
+
+```html
+<my-component 
+    (click)="cd.detectChanges()"
+    (focus)="cd.detectChanges()"
+    (blur)="cd.detectChanges()"
+    (input)="cd.detectChanges()">
+</my-component>
+```
+
+The `cdOn` directive take over the multiple bindings and reduce them to a single input binding.
+`[cdOn]="['eventName']"`. Also the import of ChangeDetectionRef can be deleted now.
+
+```html
+<my-component 
+    [cdOn]="['click','focus','blur','input']">
+</my-component>
+```
+
+**Included Features:**
+- reduce template code 
+- manage multiple events
+- manage multiple outputBindings
+- controls change detection for provided events
+- optional change detection is triggered over `AnimationFrameScheduler`
+
+
 
 # Integrating third part
 
