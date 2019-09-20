@@ -49,7 +49,17 @@ In the second step, We will show the best usage and common problems in a fully r
     + [Sharing References over Observables](#sharing-references-over-observables)
     + [Early Producer](#early-producer)
     + [Subscription handling](#subscription-handling)
-- [Sections Important For Running Zone Less](#sections-important-for-running-zone-less)
+- [Running Zone Less](#running-zone-less)
+  * [Setup](#setup)
+  * [Problems with Components when Running Zone Less](#problems-with-components-when-running-zone-less)
+  * [Component Template Bindings](#component-template-bindings)
+  * [Input Bindings](#input-bindings)
+  * [Output Bindings](#output-bindings)
+  * [Dom Events](#dom-events)
+  * [Animations](#animations)
+  * [Internal Logic](#internal-logic)
+  * [Routing](#routing)
+- [Problems with WebComponents when Running Zone-Less](#problems-with-webcomponents-when-running-zone-less)
 - [General Overview of Explored Problems](#general-overview-of-explored-problems)
   * [General Timing Issues](#general-timing-issues)
     + [The Late Subscriber Problem](#the-late-subscriber-problem)
@@ -67,9 +77,13 @@ In the second step, We will show the best usage and common problems in a fully r
   * [Observable Output Bindings](#observable-output-bindings)
   * [Local State Management](#local-state-management)
     + [selectSlices RxJS Operator](#selectslices-rxjs-operator)
+  * [CdOn Directive](#cdon-directive)
 - [Integrating third part](#integrating-third-part)
   * [Problems](#problems)
     + [Promise wrapper](#promise-wrapper)
+- [Micro and Macro Architecture patterns](#micro-and-macro-architecture-patterns)
+  * [Micro](#micro)
+    + [FormGroup as EventEmitter](#formgroup-as-eventemitter)
 
 <!-- tocstop -->
 
@@ -87,7 +101,7 @@ This should help to understand the problems and get a good overview of the optio
 Based on the collected information we can try to use the explored options to create an elegant solution for the explored needs.
 
 Following topics are documented below:
-- Dom-Elemet interaction
+- Dom-Element interaction
 - Webcomponent interaction
 - Component interaction
 
@@ -1531,13 +1545,13 @@ Open it and comment out following line:
 ```
 7. Run `npm run start:zone-less` and `npm run start` and check the difference in the console log's.   
 
-## Problems with Commponents when Running Zone Less
+## Problems with Components when Running Zone Less
 
 Next to some edge cases with zones and web components it works change detection pretty seamless in angular.
 However, when exiting zone and approaching a fully reactive zone-less setup we run into several scenarios that end up problematic.
 
 Let's see what scenarios we should take a closer look:     
-- [Template bindings](#Template-bindings) 
+- [Template bindings](#Template-Bindings-and-Zones) 
 - [Input bindings](#Input-bindings)
 - [Output bindings](#Output-bindings)
 - [DOM Events](#DOM-Events)
@@ -1545,7 +1559,7 @@ Let's see what scenarios we should take a closer look:
 - [Internal Logic](#Internal-Logic)
 - [Routing](#Routing)
 
-## Template Bindings
+## Component Template Bindings
 
 If we test some basic template bindings, displaying a primitive or a simple object, we see no changes in the view.
 ```html
@@ -1924,6 +1938,17 @@ That easy. :)
 ## Routing
 @TODO
 
+# Problems with WebComponents when Running Zone-Less
+
+WebComponent Template bindings, output bindings, internal logic, dom events 
+as well as animations behave in the same way as they do for normal Angular components.
+ 
+**The differences:**
+Input bindings however, behave a bit different. We see no values entering until we trigger change detection. 
+But this is not a big deal as we are already used to use the `push` pipe.  
+
+If we use it for input bindings it works: `<web-component [value]="observable$ | push"><web-component>`
+
 # General Overview of Explored Problems
 
 ## General Timing Issues
@@ -2111,7 +2136,7 @@ The `*let` directive take over several things and makes it more convenient and s
 **Included Features:**
 - binding is always present. (`*ngIf="{}"` normally effects it)
 - it takes away the multiple usages of the `async` pipe 
-- propper handling of null and undefined values
+- proper handling of null and undefined values
 - removes state slices if bound observable completes or errors
 - an option to disable scheduling over `AnimationFrameScheduler` (on by default)
 - control change detection and therefore can run zone-less
@@ -2361,4 +2386,3 @@ export class SharingAReferenceComponent {
 As we see the provided example is not working. The reason for this is we subscribe multiple times to the `formGroup$`.
 One time in the template to render the form, the second time in the constructor to forward form value changes to the `EventEmitter`.
 Because the `formGroup$` observable is cold (every subscriber receives a unique producer) we instantiate the `FormGroup` once per subscription.
- 
