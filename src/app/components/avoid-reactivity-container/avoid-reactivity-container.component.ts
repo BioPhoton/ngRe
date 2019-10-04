@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'app-push-pipe',
+  selector: 'app-avoid-rx-container',
   template: `
     <h2>Avoid Reactive Programming</h2>
     <ul>

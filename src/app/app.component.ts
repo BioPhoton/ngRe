@@ -37,6 +37,9 @@ import {Router} from '@angular/router';
           <li>
             <a routerLink="star-rating">StarRating</a>
           </li>
+          <li>
+            <a routerLink="avoid-rx">Avoid Reactive Programming</a>
+          </li>
         </ul>
       </div>
       <div class="content">

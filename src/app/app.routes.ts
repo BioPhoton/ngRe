@@ -1,3 +1,4 @@
+import {AVOID_REACTIVITY_DECLARATIONS, AVOIDING_REACTIVITY_ROUTES} from './components/avoid-reactivity-container';
 import {FROM_VIEW_EVENT$_ROUTES} from './components/from-view-event-container';
 import {HOOKS$_ROUTES} from './components/hook$-container';
 import {HOST_LISTENER$_ROUTES} from './components/host-listener-container';
@@ -16,5 +17,6 @@ export const APP_ROUTES = [
   {path: 'from-view-event', children: FROM_VIEW_EVENT$_ROUTES},
   {path: 'local-state', children: LOCAL_STATE_ROUTES},
   {path: 'let-directive', children: LET_ROUTES},
-  {path: 'star-rating', children: STAR_RATING_ROUTES}
+  {path: 'star-rating', children: STAR_RATING_ROUTES},
+  {path: 'avoid-rx', children: AVOIDING_REACTIVITY_ROUTES}
 ];

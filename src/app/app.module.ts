@@ -7,6 +7,7 @@ import {NgReModule} from '../../projects/ng-re/src/lib/ng-re.module';
 
 import {AppComponent} from './app.component';
 import {APP_ROUTES} from './app.routes';
+import {AVOID_REACTIVITY_DECLARATIONS} from './components/avoid-reactivity-container';
 import {FROM_VIEW_EVENT$_DECLARATIONS} from './components/from-view-event-container';
 import {HOOK_DECLARATIONS} from './components/hook$-container';
 import {HOST_LISTENER$_DECLARATIONS} from './components/host-listener-container';
@@ -26,7 +27,8 @@ import {STAR_RATING_DECLARATIONS} from './components/star-rating';
     FROM_VIEW_EVENT$_DECLARATIONS,
     LOCAL_STATE_DECLARATIONS,
     LET_DECLARATIONS,
-    STAR_RATING_DECLARATIONS
+    STAR_RATING_DECLARATIONS,
+    AVOID_REACTIVITY_DECLARATIONS
   ],
   imports: [
     BrowserModule,
