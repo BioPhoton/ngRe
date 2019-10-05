@@ -1,9 +1,16 @@
 # How to Avoid Reactive Programming
 
-If you DON'T want to use a reactive approach in your component you 
+Angular is an object-oriented framework. 
+Even if there are a lot of things imperative some services and therefore also some third party libs, are reactive. 
+This is great because it provides both approaches in one framework, which is at the moment a more or less unique thing.
+
+As reactive programming is hard for an imperative thinking mind, many people try to avoid reactive programming.
+This article will help you to understand how to avoid it and why it is even here at all.
+
+If you **DON'T** want to use a reactive approach in your component you 
 should subscribe as soon as possible to the stream you want to get rid of and do the following things:
 - subscribe to a stream and assign incoming values to a component property 
-- unsubscribe the stream as soon as the component gets destroyed 
+- if necessary, unsubscribe the stream as soon as the component gets destroyed 
 
 To elaborate with some more practical things we start with a part of angular that provides reactivity and try to avoid it.
 
@@ -61,7 +68,7 @@ As observables from `HttpClient` are cold and they complete after the first emis
 **Avoid Reactive Programming** 
 ```typescript
 import { Component } from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'example1-im',
@@ -102,7 +109,7 @@ Again we start with the reactive approach first.
 ```typescript
 import { Component} from '@angular/core';
 import { ActivatedRoute} from '@angular/router';
-import {map} from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'example2-rx',
@@ -252,25 +259,41 @@ Here we have to manage the subscription in case the component gets destroyed.
 
 As these examples are very simple let me summarise the learning in with a broader view. 
 
-Angular is an object-oriented framework. Even if there are a lot of things imperative some services and therefore also some third party libs are reactive. 
-This is great because it provides both approaches in one framework, which is at the moment a unique thing.
-
-As reactive programming is hard for an imperative thinking mind, many people try to avoid reactive programming.
-
 ### What to do?
 
 
-We saw that we subscribe to observables either in the component or in the view.
-This is the critical thing, **subscribing**. 
-By subscribing we end the take the values out of their "lane" and assign them to a variable.
+We saw that we subscribe to observables in different places.
 
-This is the moment where reactive programming ends.
+Let's get a quick overview of the different options where we could subscribe.
 
-So now we know it's easy: 
+1. constructor
+2. ngOnChanges
+3. ngOnInit
+4. ngAfterContentInit
+5. ngAfterContentChecked
+6. subscription over `async` pipe in template
+7. ngAfterViewInit
+8. ngAfterViewChecked
+9. ngOnDestroy 
+
+If we take another look to the above code examples we realize that we put our subscription in the constructor to avoid reactive programming.
+And we put the subscription in the template when we leveraged reactive programming.
+
+This is the critical thing, the **subscription**. 
+The subscription is the place where values "dripping" out of the observable. 
+It's the moment we start to mutate a components property.
+
+**In RxJS `.subscribe()` is where reactive programming ends.**
+
+Let me give you a quick illustration of this learning:
+
+![alt text](https://github.com/BioPhoton//avoid-observables-subscripton-time.png "Avoid Reactive Programming")
+
+So now we know the following: 
 - If we want to **avoid** reactive programming we have to 
 **subscribe as early as possible**, i. e. in the `constructor`.
 - If we want to **leverage** reactive programming we have to 
-**subscribe as late as possible**, i. e. in the view.
+**subscribe as late as possible**, i. e. in the template.
 
 ### Make imperative programming even easier
 
@@ -281,9 +304,10 @@ As this is annoying or even tricky, if we forget to unsubscribe, we could create
 
 We could... But let's first look at some solutions out there.
 
-In recent times 2 people presented something that I call a "binding extension" for angular components.
-[@MikeRyanDev](https://twitter.com/MikeRyanDev) presented the "connect HOC" method in his presentation [Building with Ivy: rethinking reactive Angular](https://www.youtube.com/watch?v=rz-rcaGXhGk)
-And [@EliranEliassy](https://twitter.com/EliranEliassy) presented the "unsubscriber HOC" method in his presentation [Everything you need to know about Ivy](https://www.youtube.com/watch?v=AKibI36WNhY)
+In recent times 2 people presented something that I call "binding an observable to a property", for angular components.
+
+[@MikeRyanDev](https://twitter.com/MikeRyanDev) presented the "connect" method in his presentation [Building with Ivy: rethinking reactive Angular](https://www.youtube.com/watch?v=rz-rcaGXhGk)  
+and [@EliranEliassy](https://twitter.com/EliranEliassy) presented the "unsubscriber HOC" in his presentation [Everything you need to know about Ivy](https://www.youtube.com/watch?v=AKibI36WNhY)
 
 Both of them eliminate the need to assign incoming values to a component property as well as manage the subscription.
 The great thing about it is we can solve our problem with a one-liner and can switch to imperative programming without having any trouble.
@@ -322,13 +346,13 @@ As this article is on avoiding reactive programming I keep the next example shor
 
 ### Comparing composition
 
-In this section, we will compose values from the `Store` with results from HTTP requests and render it in the view.
+In this section, we will compose values from the `Store` with results from HTTP requests and render it in the template.
 
 **Leveraging Reactive Programming** 
 ```typescript
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, switchMap} from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 
 @Component({
@@ -358,7 +382,7 @@ export class Example4RxComponent  {
 ```
 
 Following things roughly happen here:
-- all values are retrieving by using the `async` pipe in the view
+- all values are retrieving by using the `async` pipe in the template
 - deriving the values from the `page` param from `this.store` by using the `select` method
 - deriving the HTTP result by combining the page observable with the HTTP observable
 - solving race conditions by using the `switchMap` operator
@@ -366,16 +390,16 @@ Following things roughly happen here:
   - subscribe to all observables on `AfterContentChecked`
   - applying all arriving values to the pipes return value
 
-On the next change detection run, we will see the latest emitted value in the view.
+On the next change detection run, we will see the latest emitted value in the template.
 
 If the component gets destroyed angular manages the subscription over the `async` pipe.
 
 **Avoiding Reactive Programming** 
 ```typescript
 import { Component, OnDestroy } from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Store } from '@ngrx/store';
-import {Subscription} from 'rxjs';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'example4-im',
@@ -466,13 +490,11 @@ it shows us 2 things:
 What we learned about Reactive programming and observables is:
 - Avoid it by subscribing as early as possible (use helpers for easy-going)
 - Leverage it by subscribing as late as possible
+- **Don't mix it!**
 - Functional programming brings a lot of headaches and considers a leaning effort
 - JavaScript's APIs for asynchronous operations is inconsistent (lots of lines of code)
 - Imperative code gets complex with asynchronous operations (lots of how instructions)
 
-
 Condensed there are 2 main learning:
 - The **2 biggest benefits** of reactive programming are **a unified API** and **functional composition** 
 - The **2 biggest constraints** of reactive programming are **a lot of headaches** and a **steep learning curve** 
-
-
