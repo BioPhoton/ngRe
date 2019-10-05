@@ -1,4 +1,4 @@
-# How to Avoid Reactive Programming
+# How to Avoid Observables in Angular
 
 Angular is an object-oriented framework. 
 Even if there are a lot of things imperative some services and therefore also some third party libs, are reactive. 
@@ -6,6 +6,21 @@ This is great because it provides both approaches in one framework, which is at 
 
 As reactive programming is hard for an imperative thinking mind, many people try to avoid reactive programming.
 This article will help you to understand how to avoid it and why it is even here at all.
+
+<!-- toc -->
+
+- [Comparing Basic Usecases](#comparing-basic-usecases)
+  * [Retrieving data over HTTP](#retrieving-data-over-http)
+  * [Retrieving values provided by Angular](#retrieving-values-provided-by-angular)
+  * [Retrieving values provided by third parties](#retrieving-values-provided-by-third-parties)
+- [Patterns to avoid observables](#patterns-to-avoid-observables)
+  * [Where to subscribe](#where-to-subscribe)
+  * [Make it even easier](#make-it-even-easier)
+- [The reason for reactive programming](#the-reason-for-reactive-programming)
+  * [Comparing composition](#comparing-composition)
+- [Summary](#summary)
+
+<!-- tocstop -->
 
 If you **DON'T** want to use a reactive approach in your component you 
 should subscribe as soon as possible to the stream you want to get rid of and do the following things:
@@ -25,10 +40,13 @@ We will take a look at:
 
 And see the reactive and imperative approach in comparison.
 
-### Retrieving data over HTTP and render it
+### Retrieving values from cold observables
 
 Let's solve a very primitive example first. 
 Retrieving data over HTTP and render it.
+
+![](https://github.com/BioPhoton/ngRe/raw/master/ex1-http.png "Retrieving values from cold observables")
+
 
 We start with the reactive approach and then try to convert it into an imperative approach.
 
@@ -97,11 +115,13 @@ On the next change detection run, we will see the result in the view.
 
 As observables from `HttpClient` are cold and they complete after the first emission we don't care about subscription handling here.
 
-### Retrieving observable values provided by Angular and render it
+### Retrieving values from hot observables provided by Angular
 
 Next, let's use a hot observable provided by angular the router params.
 
 Retrieving the route params, plucking out a single key and displaying its value in the view.
+
+![](https://github.com/BioPhoton/ngRe/raw/master/ex2-router-params.png "Retrieving values from hot observables provided by Angular")
 
 Again we start with the reactive approach first.
 
@@ -173,13 +193,14 @@ On the next change detection run, we will see the latest emitted value in the vi
 
 Even if observables from `ActivatedRoute` are hot we don't care about subscription handling because this is managed by angular.
 
-
-### Retrieving observable values provided by third parties and render it
+### Retrieving values from hot observables provided by third parties
 
 In this section, we take a look at a scenario not managed by the framework.
 For this example, I will use the `@ngrx/store` library and it's `Store` service.
 
 Retrieving state from the store and display its value in the view.
+
+![](https://github.com/BioPhoton/ngRe/raw/master/ex3-store.png "Retrieving values from hot observables provided by third parties")
 
 **Leveraging Reactive Programming** 
 ```typescript
@@ -255,12 +276,11 @@ Here we have to manage the subscription in case the component gets destroyed.
 - when the component gets destroyed
   - we call `this.subscription.unsubscribe()` in the `ngOnDestroy` life-cycle hook.
 
-## Learning on how to avoid reactive programming
+## Patterns to avoid observables
 
 As these examples are very simple let me summarise the learning in with a broader view. 
 
-### What to do?
-
+### Where to subscribe
 
 We saw that we subscribe to observables in different places.
 
@@ -304,7 +324,7 @@ So as a suggestion from my side try to avoid mixing stales as good as possible.
 ![](https://github.com/BioPhoton/ngRe/raw/master/mix-styles.png "Mixing Styles")
 
 
-### Make imperative programming even easier
+### Make it even easier
 
 We realized that there is a bit of boilerplate to write to get the values out of the observable.
 In some cases, we also need to manage the subscription according to the component's lifetime.
@@ -356,6 +376,10 @@ As this article is on avoiding reactive programming I keep the next example shor
 ### Comparing composition
 
 In this section, we will compose values from the `Store` with results from HTTP requests and render it in the template.
+As we want to avoid broken UI state we have to handle race-conditions. 
+Also if the component gets destroyed while a request is pending we don't process the result anymore. 
+
+![](https://github.com/BioPhoton/ngRe/raw/master/ex4-store-and-http.png "Comparing composition")
 
 **Leveraging Reactive Programming** 
 ```typescript
@@ -506,4 +530,4 @@ What we learned about Reactive programming and observables is:
 
 Condensed there are 2 main learning:
 - The **2 biggest benefits** of reactive programming are **a unified API** and **functional composition** 
-- The **2 biggest constraints** of reactive programming are **a lot of headaches** and a **steep learning curve** 
+- The **2 biggest constraints** of reactive programming are **a lot of headaches** and a **steep learning curve**
