@@ -1,5 +1,7 @@
 # How to Avoid Observables in Angular
 
+![](https://github.com/BioPhoton/ngRe/raw/master/avoid-observables-cover.png "How to Avoid Observables in Angular - Cover")
+
 Angular is an object-oriented framework. 
 Even if there are a lot of things imperative some services and therefore also some third party libs, are reactive. 
 This is great because it provides both approaches in one framework, which is at the moment a more or less unique thing.
