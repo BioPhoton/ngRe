@@ -281,19 +281,28 @@ And we put the subscription in the template when we leveraged reactive programmi
 
 This is the critical thing, the **subscription**. 
 The subscription is the place where values "dripping" out of the observable. 
-It's the moment we start to mutate a components property.
+It's the moment we start to mutate a components properties in an imperative way.
 
 **In RxJS `.subscribe()` is where reactive programming ends.**
 
+So the worst thing you could do to avoid reactive programming is to use the `async` pipe.
 Let me give you a quick illustration of this learning:
 
-![](https://github.com/BioPhoton/ngRe/raw/master/avoid-observables-subscripton-time.png "Avoid Reactive Programming")
+![](https://github.com/BioPhoton/ngRe/raw/master/avoid-leverage-observables.png "Avoid Reactive Programming")
 
 So now we know the following: 
 - If we want to **avoid** reactive programming we have to 
 **subscribe as early as possible**, i. e. in the `constructor`.
 - If we want to **leverage** reactive programming we have to 
 **subscribe as late as possible**, i. e. in the template.
+
+As a last thing to mention here is a thing that I discover a lot when I consult projects is mixing the styles.
+Until now I saw plenty of them and It was always a mess.
+
+So as a suggestion from my side try to avoid mixing stales as good as possible.
+
+![](https://github.com/BioPhoton/ngRe/raw/master/mix-styles.png "Mixing Styles")
+
 
 ### Make imperative programming even easier
 
