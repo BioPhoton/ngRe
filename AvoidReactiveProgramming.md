@@ -293,17 +293,17 @@ Let's get a quick overview of the different options where we could subscribe.
 3. ngOnInit
 4. ngAfterContentInit
 5. ngAfterContentChecked
-6. subscription over `async` pipe in template
+6. subscription over `async` pipe in the template
 7. ngAfterViewInit
 8. ngAfterViewChecked
 9. ngOnDestroy 
 
-If we take another look to the above code examples we realize that we put our subscription in the constructor to avoid reactive programming.
+If we take another look at the above code examples we realize that we put our subscription in the constructor to avoid reactive programming.
 And we put the subscription in the template when we leveraged reactive programming.
 
 This is the critical thing, the **subscription**. 
 The subscription is the place where values "dripping" out of the observable. 
-It's the moment we start to mutate a components properties in an imperative way.
+It's the moment we start to mutate the properties of a component in an imperative way.
 
 **In RxJS `.subscribe()` is where reactive programming ends.**
 
@@ -318,10 +318,10 @@ So now we know the following:
 - If we want to **leverage** reactive programming we have to 
 **subscribe as late as possible**, i. e. in the template.
 
-As a last thing to mention here is a thing that I discover a lot when I consult projects is mixing the styles.
+As the last thing to mention here is a thing that I discover a lot when I consult projects is mixing the styles.
 Until now I saw plenty of them and It was always a mess.
 
-So as a suggestion from my side try to avoid mixing stales as good as possible.
+So as a suggestion from my side tries to avoid mixing stales as good as possible.
 
 ![](https://github.com/BioPhoton/ngRe/raw/master/mix-styles.png "Mixing Styles")
 
