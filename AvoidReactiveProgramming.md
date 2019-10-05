@@ -287,7 +287,7 @@ It's the moment we start to mutate a components property.
 
 Let me give you a quick illustration of this learning:
 
-![alt text](https://github.com/BioPhoton//avoid-observables-subscripton-time.png "Avoid Reactive Programming")
+![](https://github.com/BioPhoton/ngRe/raw/master/avoid-observables-subscripton-time.png "Avoid Reactive Programming")
 
 So now we know the following: 
 - If we want to **avoid** reactive programming we have to 
