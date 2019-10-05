@@ -13,62 +13,20 @@ But in any case not mixing those two approaches!
 
 In the next sections I wil point out general problems on which people ran into most.
 
-## How to Avoid Reactive Programming
 
-If you DON'T want to use a reactive approach in your component you 
-should subscribe as soon as possible to the stream you want to get rid of and do following things:
-- subscribe to a stream and assign incoming values to a component property 
-- unsubscribe the stream as soon as the component gets destroyed 
 
-To elaborate with some more practical things we start with a part of angular that provides reactivity and try to avoid it.
 
-### Retrieving a single router-param and render it
-
-Let's solve a real-live problem in a very primitive way first. 
-Retrieving the route params, plucking out a single key and displaying it's value in the view.
-
-We start with the reactive approach first and then try to convert it into an imperative approach.
-
-**Reactive Approach** 
-```typescript
-import {Component} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {map} from 'rxjs/operators';
-
-@Component({
-  selector: 'my-component',
-  template: `
-    Route Param Id: {{id | async}}
-  `
-})
-export class AppComponent {
-  id;
-
-  constructor(private router: ActivatedRoute) {
-    this.id = router.params
-      .pipe(map(params => params.id));
-  }
-}
-```
-3 Things happen here:
-- retrieving the new route params 
-- deriving the values from the `id` param with a transformation operation 
-  by using the `map` operator
-- by using the `acync` pipe we:
-  - subscribe to the observable on `afterViewInit`
-  - applying the the internal value the the next pipe return value
- 
- 
  constructor
  ngOnChanges
  ngOnInit
  ngAfterContentInit
  ngAfterContentChecked
- Subscription
+ subscription over `async` pipe in template
  ngAfterViewInit
  ngAfterViewChecked
  ngOnDestroy 
-
+ 
+ 
 ## General Timing Issues
 
 As a lot of problems are related to timing issues this section is here to give a comülete overview of all the different types of issues. 

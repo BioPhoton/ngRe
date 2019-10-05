@@ -1,62 +1,39 @@
-import {
-  AfterContentChecked,
-  AfterContentInit,
-  AfterViewChecked,
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  Input, OnChanges, OnDestroy, OnInit, SimpleChanges
-} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {interval} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {HttpClient} from '@angular/common/http';
+import {ChangeDetectionStrategy, Component, OnInit,} from '@angular/core';
+import {map, tap} from 'rxjs/operators';
+import {TickService} from './tick.service';
 
 @Component({
   selector: 'app-avoid-subscription',
   template: `
     <h2>Retrieving a single router-param and render it</h2>
-    <div>value: {{value}}</div>
+    <h3>Avoid Rx</h3>
+    <div>Http result: {{result | json}}</div>
+    <div>TickService value: {{value | json}}</div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AvoidReactivitySubscriptionComponent  implements
-  OnChanges, OnInit, AfterContentInit, AfterContentChecked, AfterViewInit,
-  AfterViewChecked, OnDestroy {
-  @Input() value;
+export class AvoidReactivitySubscriptionComponent implements OnInit {
+  result;
+  value = 10;
 
-  id;
+  constructor(private tickService: TickService, private http: HttpClient) {
 
-  constructor(private router: ActivatedRoute) {
-    this.id = router.params
-      .pipe(map(params => params.id));
   }
 
-  ngAfterContentChecked(): void {
-    console.log('ngAfterContentChecked');
-  }
+  ngOnInit() {
+    this.result = this.http.get('https://api.github.com/users/octocat')
+      .pipe(map((user: any) => user.login))
+      .subscribe(result => this.result = result);
 
-  ngOnDestroy(): void {
-    console.log('ngOnDestroy');
+    this.tickService.tick$
+      .pipe(
+        map(measure => measure.value),
+        // tap(v => console.log('avoid:', v))
+      )
+      .subscribe(value => {
+        console.log('sub v:', value);
+        this.value = value;
+      });
   }
-
-  ngAfterContentInit(): void {
-    console.log('ngAfterContentInit');
-  }
-
-  ngOnInit(): void {
-    console.log('ngOnInit');
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log('ngOnChanges', changes);
-  }
-
-  ngAfterViewChecked(): void {
-    console.log('ngAfterViewChecked');
-  }
-
-  ngAfterViewInit(): void {
-    console.log('ngAfterViewInit');
-  }
-
 }

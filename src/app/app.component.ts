@@ -38,7 +38,7 @@ import {Router} from '@angular/router';
             <a routerLink="star-rating">StarRating</a>
           </li>
           <li>
-            <a routerLink="avoid-rx">Avoid Reactive Programming</a>
+            <a [routerLink]="['avoid-rx', {id: 3}]">Avoid Reactive Programming</a>
           </li>
         </ul>
       </div>
@@ -53,8 +53,12 @@ export class AppComponent implements AfterViewInit {
 
   runningZoneLess: boolean;
 
+
+
   constructor(z: NgZone, private cd: ChangeDetectorRef, private router: Router) {
     this.runningZoneLess = z.constructor.name === 'NoopNgZone';
+    requestAnimationFrame(() => {});
+    cancelAnimationFrame(3);
   }
 
   ngAfterViewInit(): void {
